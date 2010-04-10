@@ -1,0 +1,80 @@
+
+# PagedGeometry includes
+include_directories(${PagedGeometry_SOURCE_DIR}/include)
+include_directories(${PagedGeometry_BINARY_DIR}/include)
+
+# external includes
+include_directories(${Ogre_INCLUDE_DIRS})
+link_directories   (${Ogre_LIBRARY_DIRS})
+include_directories(${Ois_INCLUDE_DIRS})
+link_directories   (${Ois_LIBRARY_DIRS})
+
+IF(WIN32)
+	set(OS_LIBS "dinput8.lib dxguid.lib")
+	# directX
+	include_directories($ENV{DXSDK_DIR}/Include)
+	link_directories   ($ENV{DXSDK_DIR}/Lib/x86)
+	
+	# add DX path for checks
+	set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES} $ENV{DXSDK_DIR}/Include)
+		
+	# check for libs and include files we want to use
+	# XXX TODO: fix directx lib check
+	#set(CMAKE_REQUIRED_FLAGS "-L$ENV{DXSDK_DIR}/Lib/x86")
+	#CHECK_LIBRARY_EXISTS(dinput8 DirectInput8Create "" HAVE_DXINPUT_LIBS)
+	#if(NOT HAVE_DXINPUT_LIBS)
+	#	message(FATAL_ERROR "could not link against DirectX input, please check of you have the required libraries installed")
+	#endif()
+	CHECK_INCLUDE_FILE(dinput.h HAVE_DXINPUT_INCLUDES)
+	if(NOT HAVE_DXINPUT_INCLUDES)
+		message(FATAL_ERROR "could not find the DirectX includes. Please install them.")
+	endif()
+	CHECK_INCLUDE_FILE(windows.h HAVE_WINDOWS_INCLUDES)
+	if(NOT HAVE_WINDOWS_INCLUDES)
+		message(FATAL_ERROR "could not find the windows platform includes. Please install them.")
+	endif()
+ELSEIF(UNIX)
+	include_directories(${GTK_INCLUDE_DIRS})
+	set(OS_LIBS "X11")
+	# check for libs and include files we want to use
+	CHECK_LIBRARY_EXISTS(X11 XOpenDisplay "" HAVE_X11_LIBS)
+	if(NOT HAVE_X11_LIBS)
+		message(FATAL_ERROR "could not link against X11, please check of you have the required libraries installed")
+	endif()
+	CHECK_INCLUDE_FILE(X11/keysym.h HAVE_X11_INCLUDES)
+	if(NOT HAVE_X11_INCLUDES)
+		message(FATAL_ERROR "could not find the X11 includes. Please install them.")
+	endif()
+ELSEIF(APPLE)
+	include_directories(${GTK_INCLUDE_DIRS})
+	set(OS_LIBS "X11")
+	# check for libs and include files we want to use
+	CHECK_LIBRARY_EXISTS(X11 XOpenDisplay "" HAVE_X11_LIBS)
+	if(NOT HAVE_X11_LIBS)
+		message(FATAL_ERROR "could not link against X11, please check of you have the required libraries installed")
+	endif()
+	CHECK_INCLUDE_FILE(X11/keysym.h HAVE_X11_INCLUDES)
+	if(NOT HAVE_X11_INCLUDES)
+		message(FATAL_ERROR "could not find the X11 includes. Please install them.")
+	endif()
+ENDIF(WIN32)
+
+
+macro(example_app NAME)
+	add_executable(${NAME} ${NAME}.cpp)
+	target_link_libraries(${NAME} PagedGeometry ${OS_LIBS} ${Ogre_LIBRARIES} ${Ois_LIBRARIES})
+	windows_hacks(${NAME})
+endmacro(example_app)
+
+
+example_app(Example1)
+example_app(Example2)
+example_app(Example3)
+example_app(Example4)
+example_app(Example5)
+example_app(Example6)
+example_app(Example7)
+example_app(Example8)
+example_app(Example9)
+example_app(Example10)
+
