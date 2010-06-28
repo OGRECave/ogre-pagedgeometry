@@ -1363,7 +1363,11 @@ void GrassLayer::_updateShaders()
 					// GLSL can only have one entry point "main".
 
 					vertexShader->load();
+				} else
+				{
+					shaderLanguage = vertexShader->getLanguage();
 				}
+
 				//Now the vertex shader (vertexShader) has either been found or just generated
 				//(depending on whether or not it was already generated).
 
