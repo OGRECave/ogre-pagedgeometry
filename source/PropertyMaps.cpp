@@ -138,9 +138,11 @@ float DensityMap::_getDensityAt_Unfiltered(float x, float z, const TRect<Real> &
 	float boundsWidth = mapBounds.width();
 	float boundsHeight = mapBounds.height();
 
+#if OGRE_PLATFORM != OGRE_PLATFORM_APPLE
 	//Patch incorrect PixelBox::getWidth() in OpenGL mode
 	if (Root::getSingleton().getRenderSystem()->getName() == "OpenGL Rendering Subsystem")
 		--mapWidth;
+#endif //OGRE_PLATFORM_APPLE
 
 	uint32 xindex = mapWidth * (x - mapBounds.left) / boundsWidth;
 	uint32 zindex = mapHeight * (z - mapBounds.top) / boundsHeight;
@@ -168,9 +170,11 @@ float DensityMap::_getDensityAt_Bilinear(float x, float z, const TRect<Real> &ma
 	float boundsWidth = mapBounds.width();
 	float boundsHeight = mapBounds.height();
 
+#if OGRE_PLATFORM != OGRE_PLATFORM_APPLE
 	//Patch incorrect PixelBox::getWidth() in OpenGL mode
 	if (Root::getSingleton().getRenderSystem()->getName() == "OpenGL Rendering Subsystem")
 		--mapWidth;
+#endif //OGRE_PLATFORM_APPLE
 
 	float xIndexFloat = (mapWidth * (x - mapBounds.left) / boundsWidth) - 0.5f;
 	float zIndexFloat = (mapHeight * (z - mapBounds.top) / boundsHeight) - 0.5f;
