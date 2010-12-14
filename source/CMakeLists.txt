@@ -9,7 +9,6 @@ FILE(GLOB sources *.cpp ${PagedGeometry_SOURCE_DIR}/include/*.h)
 set(LIBNAME "PagedGeometry")
 
 ADD_LIBRARY(${LIBNAME} STATIC ${sources})
-windows_hacks(${LIBNAME})
 
 # install the library
 INSTALL(TARGETS ${LIBNAME}

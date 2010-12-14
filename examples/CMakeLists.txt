@@ -63,7 +63,6 @@ ENDIF(WIN32)
 macro(example_app NAME)
 	add_executable(${NAME} ${NAME}.cpp)
 	target_link_libraries(${NAME} PagedGeometry ${OS_LIBS} ${Ogre_LIBRARIES} ${Ois_LIBRARIES})
-	windows_hacks(${NAME})
 endmacro(example_app)
 
 

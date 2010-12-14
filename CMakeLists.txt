@@ -58,17 +58,6 @@ ELSEIF(UNIX)
   set(CMAKE_EXE_LINKER_FLAGS_RelWithDebug "${CMAKE_EXE_LINKER_FLAGS_RelWithDebug} -O0")
 endif(WIN32)
 
-# some ugly hack to fix cmake's stupidity
-macro(windows_hacks NAME)
-IF(WIN32)
-	if (MSVC_IDE)
-		# hack to get around the "Debug" and "Release" directories cmake tries to add on Windows
-		set_target_properties(${NAME} PROPERTIES PREFIX "../")
-		set_target_properties(${NAME} PROPERTIES IMPORT_PREFIX "../")
-	endif(MSVC_IDE)
-ENDIF(WIN32)
-endmacro(windows_hacks)
-
 # some PG build options
 set(PAGEDGEOMETRY_BUILD_SAMPLES         "TRUE"  CACHE BOOL "build the examples")
 set(PAGEDGEOMETRY_ALTERNATE_COORDSYSTEM "FALSE" CACHE BOOL "alternate coordinate system, do not use unless you are very sure about it")
