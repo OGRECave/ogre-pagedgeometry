@@ -10,11 +10,6 @@ include_directories(${Ois_INCLUDE_DIRS})
 link_directories   (${Ois_LIBRARY_DIRS})
 
 IF(WIN32)
-	set(OS_LIBS "dinput8.lib dxguid.lib")
-	# directX
-	include_directories($ENV{DXSDK_DIR}/Include)
-	link_directories   ($ENV{DXSDK_DIR}/Lib/x86)
-	
 	# add DX path for checks
 	set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES} $ENV{DXSDK_DIR}/Include)
 		
@@ -33,6 +28,11 @@ IF(WIN32)
 	if(NOT HAVE_WINDOWS_INCLUDES)
 		message(FATAL_ERROR "could not find the windows platform includes. Please install them.")
 	endif()
+
+	set(DirectX_INCLUDE_DIRS "$ENV{DXSDK_DIR}/Include" CACHE PATH "The DirectX include path to use")
+	set(DirectX_LIBRARY_DIRS "$ENV{DXSDK_DIR}/Lib/x86" CACHE PATH "The DirectX lib path to use")
+	set(DirectX_LIBRARIES    "dinput8.lib;dxguid.lib" CACHE PATH "The DirectX lib path to use")
+	
 ELSEIF(UNIX)
 	include_directories(${GTK_INCLUDE_DIRS})
 	set(OS_LIBS "X11")
@@ -61,8 +61,10 @@ ENDIF(WIN32)
 
 
 macro(example_app NAME)
+	include_directories(${DirectX_INCLUDE_DIRS})
+	link_directories   (${DirectX_LIBRARY_DIRS})
 	add_executable(${NAME} ${NAME}.cpp)
-	target_link_libraries(${NAME} PagedGeometry ${OS_LIBS} ${Ogre_LIBRARIES} ${Ois_LIBRARIES})
+	target_link_libraries(${NAME} PagedGeometry ${OS_LIBS} ${Ogre_LIBRARIES} ${Ois_LIBRARIES} ${DirectX_LIBRARIES})
 endmacro(example_app)
 
 
