@@ -63,7 +63,7 @@ ENDIF(WIN32)
 macro(example_app NAME)
 	include_directories(${DirectX_INCLUDE_DIRS})
 	link_directories   (${DirectX_LIBRARY_DIRS})
-	add_executable(${NAME} ${NAME}.cpp)
+	add_executable(${NAME} WIN32 ${NAME}.cpp)
 	target_link_libraries(${NAME} PagedGeometry ${OS_LIBS} ${Ogre_LIBRARIES} ${Ois_LIBRARIES} ${DirectX_LIBRARIES})
 endmacro(example_app)
 
