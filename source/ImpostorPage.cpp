@@ -349,14 +349,7 @@ ImpostorTexture::ImpostorTexture(ImpostorPage *group, Entity *entity)
 	//Calculate the entity's bounding box and it's diameter
 	boundingBox = entity->getBoundingBox();
 
-	//Note - this radius calculation assumes the object is somewhat rounded (like trees/rocks/etc.)
-	Real tmp;
-	entityRadius = boundingBox.getMaximum().x - boundingBox.getCenter().x;
-	tmp = boundingBox.getMaximum().y - boundingBox.getCenter().y;
-	if (tmp > entityRadius) entityRadius = tmp;
-	tmp = boundingBox.getMaximum().z - boundingBox.getCenter().z;
-	if (tmp > entityRadius) entityRadius = tmp;
-
+	entityRadius = Math::boundingRadiusFromAABB(boundingBox);
 	entityDiameter = 2.0f * entityRadius;
 	entityCenter = boundingBox.getCenter();
 	
