@@ -29,7 +29,7 @@ std::map<String, DensityMap*> DensityMap::selfList;
 DensityMap *DensityMap::load(const String &fileName, MapChannel channel)
 {
 	//Load image
-	TexturePtr map = TextureManager::getSingleton().load(fileName, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	TexturePtr map = TextureManager::getSingleton().load(fileName, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, 0);
 
 	//Copy image to pixelbox
 	return load(map, channel);
