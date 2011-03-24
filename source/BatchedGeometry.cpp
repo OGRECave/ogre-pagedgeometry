@@ -260,22 +260,33 @@ BatchedGeometry::SubBatchIterator BatchedGeometry::getSubBatchIterator() const
 
 String BatchedGeometry::getFormatString(SubEntity *ent)
 {
-	StringUtil::StrStreamType str;
+   const int bufSize = 1024;
+   int countWritten = 0;
+   char buf[bufSize];
 
-	str << ent->getMaterialName() << "|";
-	str << ent->getSubMesh()->indexData->indexBuffer->getType() << "|";
+   // add materialname and buffer type
+   countWritten =  sprintf( buf, 
+               "%s|%d",
+                ent->getMaterialName().c_str(), 
+                ent->getSubMesh()->indexData->indexBuffer->getType() 
+         );
 
-	const VertexDeclaration::VertexElementList &elemList = ent->getSubMesh()->vertexData->vertexDeclaration->getElements();
-	VertexDeclaration::VertexElementList::const_iterator i;
-	for (i = elemList.begin(); i != elemList.end(); ++i)
-	{
-		const VertexElement &element = *i;
-		str << element.getSource() << "|";
-		str << element.getSemantic() << "|";
-		str << element.getType() << "|";
-	}
+   // now add vertex decl
+   const VertexDeclaration::VertexElementList &elemList = ent->getSubMesh()->vertexData->vertexDeclaration->getElements();
+   VertexDeclaration::VertexElementList::const_iterator i;
+   VertexDeclaration::VertexElementList::const_iterator end = elemList.end();
+   for (i = elemList.begin(); i != end; ++i)
+   {
+      const VertexElement &element = *i;
+      countWritten += sprintf( buf + countWritten, 
+                         "|%d|%d|%d",
+                          element.getSource(),
+                          element.getSemantic(),
+                          element.getType()
+                        );
+   }
 
-	return str.str();
+   return buf;
 }
 
 void BatchedGeometry::build()
