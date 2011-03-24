@@ -487,8 +487,15 @@ void ImpostorTexture::renderTextures(bool force)
 	if (oldSceneNode) {
 		oldSceneNode->detachObject(entity);
 	}
-	node->attachObject(entity);
-	node->setPosition(-entityCenter);
+
+	Ogre::SceneNode *n1= node->createChildSceneNode();
+	n1->attachObject(entity);
+	n1->setPosition(-entityCenter + Vector3(10,0,10));
+
+	Entity *e2 = entity->clone(entity->getName() + "_clone");
+	Ogre::SceneNode *n2= node->createChildSceneNode();
+	n2->attachObject(e2);
+	n2->setPosition(-entityCenter + Vector3(10,0,10));
 	
 	//Set up camera FOV
 	const Real objDist = entityRadius * 100;
@@ -523,10 +530,13 @@ void ImpostorTexture::renderTextures(bool force)
 
 	uint8 oldRenderQueueGroup = entity->getRenderQueueGroup();
 	entity->setRenderQueueGroup(group->geom->getRenderQueue() + 1);
+	e2->setRenderQueueGroup(entity->getRenderQueueGroup());
 	bool oldVisible = entity->getVisible();
 	entity->setVisible(true);
+	e2->setVisible(true);
 	float oldMaxDistance = entity->getRenderingDistance();
 	entity->setRenderingDistance(0);
+	e2->setRenderingDistance(0);
 
 	bool needsRegen = true;
 #ifdef IMPOSTOR_FILE_SAVE
@@ -605,6 +615,9 @@ void ImpostorTexture::renderTextures(bool force)
 	entity->setVisible(oldVisible);
 	entity->setRenderQueueGroup(oldRenderQueueGroup);
 	entity->setRenderingDistance(oldMaxDistance);
+
+	sceneMgr->destroyEntity(e2);
+
 	sceneMgr->removeSpecialCaseRenderQueue(group->geom->getRenderQueue() + 1);
 	// Restore original state
 	sceneMgr->setSpecialCaseRenderQueueMode(OldSpecialCaseRenderQueueMode); 
@@ -621,9 +634,13 @@ void ImpostorTexture::renderTextures(bool force)
 	
 	//Delete scene node
 	node->detachAllObjects();
+	n2->detachAllObjects();
+	n1->detachAllObjects();
+	node->removeAndDestroyAllChildren();
 	if (oldSceneNode) {
 		oldSceneNode->attachObject(entity);
 	}
+
 #ifdef IMPOSTOR_FILE_SAVE
 	//Delete RTT texture
 	assert(!renderTexture.isNull());

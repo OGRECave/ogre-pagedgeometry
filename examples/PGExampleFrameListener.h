@@ -338,6 +338,7 @@ public:
 						 " " + "O: " + StringConverter::toString(mCamera->getDerivedOrientation());
 
 		//Make sure the camera doesn't go under the terrain
+		/*
 		Ogre::Vector3 camPos = mCamera->getPosition();
 		float terrY = HeightFunction::getTerrainHeight(camPos.x, camPos.z);
 		if (camPos.y < terrY + 1.5)
@@ -345,6 +346,7 @@ public:
 			camPos.y = terrY + 1.5;
 			mCamera->setPosition(camPos);
 		}
+		*/
 
 		// Return true to continue rendering
 		return true;

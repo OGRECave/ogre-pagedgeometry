@@ -78,4 +78,5 @@ example_app(Example7)
 example_app(Example8)
 example_app(Example9)
 example_app(Example10)
+example_app(Example11)
 
