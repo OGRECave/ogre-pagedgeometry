@@ -12,9 +12,6 @@ Permission is granted to anyone to use this software for any purpose, including 
 //BatchPage is an extension to PagedGeometry which displays entities as static geometry.
 //-------------------------------------------------------------------------------------
 
-#include "BatchPage.h"
-#include "BatchedGeometry.h"
-
 #include <OgreRoot.h>
 #include <OgreCamera.h>
 #include <OgreVector3.h>
@@ -25,6 +22,11 @@ Permission is granted to anyone to use this software for any purpose, including 
 #include <OgreHighLevelGpuProgram.h>
 #include <OgreHighLevelGpuProgramManager.h>
 #include <OgreLogManager.h>
+
+#include "BatchPage.h"
+#include "BatchedGeometry.h"
+
+
 using namespace Ogre;
 
 namespace Forests {
@@ -202,12 +204,12 @@ void BatchPage::_updateShaders()
 			tmpName << "fade_";
 		if (lightingEnabled)
 			tmpName << "lit_";
-		if (subBatch->vertexData->vertexDeclaration->findElementBySemantic(VES_DIFFUSE) != NULL)
+		if (subBatch->mpVertexData->vertexDeclaration->findElementBySemantic(VES_DIFFUSE) != NULL)
 			tmpName << "clr_";
 
-		for (unsigned short i = 0; i < subBatch->vertexData->vertexDeclaration->getElementCount(); ++i)
+		for (unsigned short i = 0; i < subBatch->mpVertexData->vertexDeclaration->getElementCount(); ++i)
 		{
-			const VertexElement *el = subBatch->vertexData->vertexDeclaration->getElement(i);
+			const VertexElement *el = subBatch->mpVertexData->vertexDeclaration->getElement(i);
 			if (el->getSemantic() == VES_TEXTURE_COORDINATES) {
 				String uvType = "";
 				switch (el->getType()) {
@@ -247,13 +249,15 @@ void BatchPage::_updateShaders()
 					"	float3 normal    : NORMAL,	\n"
 					"	out float4 oPosition : POSITION, \n";
 
-				if (subBatch->vertexData->vertexDeclaration->findElementBySemantic(VES_DIFFUSE) != NULL) vertexProgSource +=
+				if (subBatch->mpVertexData->vertexDeclaration->findElementBySemantic(VES_DIFFUSE) != NULL) vertexProgSource +=
 					"	float4 iColor    : COLOR, \n";
 
 				unsigned texNum = 0;
-				for (unsigned short i = 0; i < subBatch->vertexData->vertexDeclaration->getElementCount(); ++i) {
-					const VertexElement *el = subBatch->vertexData->vertexDeclaration->getElement(i);
-					if (el->getSemantic() == VES_TEXTURE_COORDINATES) {
+				for (unsigned short i = 0; i < subBatch->mpVertexData->vertexDeclaration->getElementCount(); ++i)
+            {
+					const VertexElement *el = subBatch->mpVertexData->vertexDeclaration->getElement(i);
+					if (el->getSemantic() == VES_TEXTURE_COORDINATES)
+               {
 						String uvType = "";
 						switch (el->getType()) {
 							case VET_FLOAT1: uvType = "float"; break;
@@ -293,12 +297,14 @@ void BatchPage::_updateShaders()
 					vertexProgSource +=
 					"	float3 light = normalize(objSpaceLight.xyz - (iPosition.xyz * objSpaceLight.w)); \n"
 					"	float diffuseFactor = max(dot(normal, light), 0); \n";
-					if (subBatch->vertexData->vertexDeclaration->findElementBySemantic(VES_DIFFUSE) != NULL)
+					if (subBatch->mpVertexData->vertexDeclaration->findElementBySemantic(VES_DIFFUSE) != NULL)
 						vertexProgSource += "oColor = (lightAmbient + diffuseFactor * lightDiffuse) * iColor; \n";
 					else
 						vertexProgSource += "oColor = (lightAmbient + diffuseFactor * lightDiffuse); \n";
-				} else {
-					if (subBatch->vertexData->vertexDeclaration->findElementBySemantic(VES_DIFFUSE) != NULL)
+				}
+            else
+            {
+					if (subBatch->mpVertexData->vertexDeclaration->findElementBySemantic(VES_DIFFUSE) != NULL)
 						vertexProgSource += "oColor = iColor; \n";
 					else
 						vertexProgSource += "oColor = float4(1, 1, 1, 1); \n";
@@ -310,8 +316,8 @@ void BatchPage::_updateShaders()
 					"	oColor.a *= (invisibleDist - dist) / fadeGap;   \n";
 
 				texNum = 0;
-				for (unsigned short i = 0; i < subBatch->vertexData->vertexDeclaration->getElementCount(); ++i) {
-					const VertexElement *el = subBatch->vertexData->vertexDeclaration->getElement(i);
+				for (unsigned short i = 0; i < subBatch->mpVertexData->vertexDeclaration->getElementCount(); ++i) {
+					const VertexElement *el = subBatch->mpVertexData->vertexDeclaration->getElement(i);
 					if (el->getSemantic() == VES_TEXTURE_COORDINATES) {
 						vertexProgSource +=
 						"	oUV" + StringConverter::toString(texNum) + " = iUV" + StringConverter::toString(texNum) + ";	\n";
@@ -349,7 +355,7 @@ void BatchPage::_updateShaders()
 					vertexProgSource +=
 					"   vec3 light = normalize(objSpaceLight.xyz - (gl_Vertex.xyz * objSpaceLight.w)); \n"
 					"   float diffuseFactor = max(dot(gl_Normal, light), 0.0); \n";
-					if (subBatch->vertexData->vertexDeclaration->findElementBySemantic(VES_DIFFUSE) != NULL)
+					if (subBatch->mpVertexData->vertexDeclaration->findElementBySemantic(VES_DIFFUSE) != NULL)
 					{
 						vertexProgSource += "   gl_FrontColor = (lightAmbient + diffuseFactor * lightDiffuse) * gl_Color; \n";
 					}
@@ -360,7 +366,7 @@ void BatchPage::_updateShaders()
 				}
 				else
 				{
-					if (subBatch->vertexData->vertexDeclaration->findElementBySemantic(VES_DIFFUSE) != NULL)
+					if (subBatch->mpVertexData->vertexDeclaration->findElementBySemantic(VES_DIFFUSE) != NULL)
 					{
 						vertexProgSource += "   gl_FrontColor = gl_Color; \n";
 					}
@@ -379,9 +385,9 @@ void BatchPage::_updateShaders()
 				}
 
 				unsigned texNum = 0;
-				for (unsigned short i = 0; i < subBatch->vertexData->vertexDeclaration->getElementCount(); ++i)
+				for (unsigned short i = 0; i < subBatch->mpVertexData->vertexDeclaration->getElementCount(); ++i)
 				{
-					const VertexElement *el = subBatch->vertexData->vertexDeclaration->getElement(i);
+					const VertexElement *el = subBatch->mpVertexData->vertexDeclaration->getElement(i);
 					if (el->getSemantic() == VES_TEXTURE_COORDINATES)
 					{
 						vertexProgSource +=

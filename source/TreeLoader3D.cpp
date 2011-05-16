@@ -8,14 +8,16 @@ Permission is granted to anyone to use this software for any purpose, including 
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------------*/
 
-#include "TreeLoader3D.h"
-#include "PagedGeometry.h"
-#include "PropertyMaps.h"
-
 #include <OgreRoot.h>
 #include <OgreException.h>
 #include <OgreVector3.h>
 #include <OgreQuaternion.h>
+
+
+#include "TreeLoader3D.h"
+#include "PagedGeometry.h"
+#include "PropertyMaps.h"
+
 using namespace Ogre;
 
 namespace Forests {

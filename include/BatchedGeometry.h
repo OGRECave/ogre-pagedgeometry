@@ -21,119 +21,136 @@ Permission is granted to anyone to use this software for any purpose, including 
 #include <OgreSceneNode.h>
 #include <OgreMaterialManager.h>
 
-namespace Forests {
-
-class BatchedGeometry: public Ogre::MovableObject
+namespace Forests
 {
-public:
-	BatchedGeometry(Ogre::SceneManager *mgr, Ogre::SceneNode *rootSceneNode);
-	~BatchedGeometry();
 
-	virtual void addEntity(Ogre::Entity *ent, const Ogre::Vector3 &position, const Ogre::Quaternion &orientation = Ogre::Quaternion::IDENTITY, const Ogre::Vector3 &scale = Ogre::Vector3::UNIT_SCALE, const Ogre::ColourValue &color = Ogre::ColourValue::White);
-	void build();
-	void clear();
-
-	Ogre::Vector3 _convertToLocal(const Ogre::Vector3 &globalVec) const;
-
-	void _notifyCurrentCamera(Ogre::Camera *cam);
-	void _updateRenderQueue(Ogre::RenderQueue *queue);
-	bool isVisible();
-	const Ogre::AxisAlignedBox &getBoundingBox(void) const { return bounds; }
-	Ogre::Real getBoundingRadius(void) const { return radius; }
-	const Ogre::String &getMovableType(void) const { static Ogre::String t = "BatchedGeometry"; return t; }
-
-	#if OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR > 4
-	//Shaggoth compatibility
-	void visitRenderables(Ogre::Renderable::Visitor* visitor, bool debugRenderables) {}
-	#endif
-
-	class SubBatch: public Ogre::Renderable
-	{
-	public:
-		SubBatch(BatchedGeometry *parent, Ogre::SubEntity *ent);
-		~SubBatch();
-
-		void addSubEntity(Ogre::SubEntity *ent, const Ogre::Vector3 &position, const Ogre::Quaternion &orientation, const Ogre::Vector3 &scale, const Ogre::ColourValue &color = Ogre::ColourValue::White, void* userData = NULL);
-		virtual void build();
-		void clear();
-		
-		void setMaterial(Ogre::MaterialPtr &mat) { material = mat; }
-		void setMaterialName(const Ogre::String &mat) { material = Ogre::MaterialManager::getSingleton().getByName(mat); }
-		inline Ogre::String getMaterialName() const { return material->getName(); }
-
-		void addSelfToRenderQueue(Ogre::RenderQueue *queue, Ogre::uint8 group);
-		void getRenderOperation(Ogre::RenderOperation& op);
-		Ogre::Real getSquaredViewDepth(const Ogre::Camera* cam) const;
-		const Ogre::LightList& getLights(void) const;
-
-		Ogre::Technique *getTechnique() const { return bestTechnique; }
-		const Ogre::MaterialPtr &getMaterial(void) const { return material; }
-		void getWorldTransforms(Ogre::Matrix4* xform) const { *xform = parent->_getParentNodeFullTransform(); }
-		const Ogre::Quaternion& getWorldOrientation(void) const { return parent->sceneNode->_getDerivedOrientation(); }
-		const Ogre::Vector3& getWorldPosition(void) const { return parent->sceneNode->_getDerivedPosition(); }
-		bool castsShadows(void) const { return parent->getCastShadows(); }
-
-		Ogre::VertexData *vertexData;
-		Ogre::IndexData *indexData;
-
-	private:
-		// This function is used to make a single clone of materials used, since the materials
-		// will be modified by the batch system (and it wouldn't be good to modify the original materials
-		// that the user may be using somewhere else).
-		Ogre::Material *getMaterialClone(Ogre::Material &mat);
-
-		Ogre::Technique *bestTechnique;	//This is recalculated every frame
-
-	protected:
-		bool built;
-		bool requireVertexColors;
-		Ogre::SubMesh *meshType;
-		BatchedGeometry *parent;
-		Ogre::MaterialPtr material;
-		
-		// A structure defining the desired position/orientation/scale of a batched mesh. The
-		// SubMesh is not specified since that can be determined by which MeshQueue this belongs to.
-		struct QueuedMesh
-		{
-			Ogre::SubMesh *mesh;
-			Ogre::Vector3 position;
-			Ogre::Quaternion orientation;
-			Ogre::Vector3 scale;
-			Ogre::ColourValue color;
-			void* userData;
-		};
-		typedef std::vector<QueuedMesh>::iterator MeshQueueIterator;
-		typedef std::vector<QueuedMesh> MeshQueue;
-		MeshQueue meshQueue;	//The list of meshes to be added to this batch
-	};
+   //--------------------------------------------------------------------------
+   ///
+   class BatchedGeometry: public Ogre::MovableObject
+   {
+   public:
+      //--------------------------------------------------------------------------
+      /// Visible chunk of geometry
+      class SubBatch: public Ogre::Renderable
+      {
+      protected:
+         // A structure defining the desired position/orientation/scale of a batched mesh. The
+         // SubMesh is not specified since that can be determined by which MeshQueue this belongs to.
+         struct QueuedMesh
+         {
+            Ogre::SubMesh *mesh;
+            Ogre::Vector3 position;
+            Ogre::Quaternion orientation;
+            Ogre::Vector3 scale;
+            Ogre::ColourValue color;
+            void* userData;
+         };
+         typedef std::vector<QueuedMesh>::iterator MeshQueueIterator;
+         typedef std::vector<QueuedMesh> MeshQueue;
 
 
-private:
-	Ogre::Real radius;
+      public:
+         /// Constructor
+         SubBatch(BatchedGeometry *parent, Ogre::SubEntity *ent);
+         /// Destructor
+         ~SubBatch();
 
-	Ogre::SceneManager *sceneMgr;
-	Ogre::SceneNode *sceneNode, *parentSceneNode;
+         void addSubEntity(Ogre::SubEntity *ent, const Ogre::Vector3 &position, const Ogre::Quaternion &orientation, const Ogre::Vector3 &scale, const Ogre::ColourValue &color = Ogre::ColourValue::White, void* userData = NULL);
+         virtual void build();
+         void clear();
 
-	Ogre::Real minDistanceSquared;
-	bool withinFarDistance;
+         void addSelfToRenderQueue(Ogre::RenderQueueGroup *rqg);
+         void getRenderOperation(Ogre::RenderOperation& op);
+         Ogre::Real getSquaredViewDepth(const Ogre::Camera* cam) const;
+         const Ogre::LightList& getLights(void) const;
+
+         void setMaterial(Ogre::MaterialPtr &mat)                 { mPtrMaterial = mat; }
+         void setMaterialName(const Ogre::String &mat, const Ogre::String &rg =  Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME) {
+            mPtrMaterial = Ogre::MaterialManager::getSingleton().getByName(mat, rg);
+         }
+         const Ogre::String& getMaterialName() const              { return mPtrMaterial->getName(); }
+
+         Ogre::Technique *getTechnique() const                    { return m_pBestTechnique; }
+         const Ogre::MaterialPtr& getMaterial(void) const         { return mPtrMaterial; }
+         void getWorldTransforms(Ogre::Matrix4* xform) const      { *xform = mpParentGeom->_getParentNodeFullTransform(); }
+         const Ogre::Quaternion& getWorldOrientation(void) const  { return mpParentGeom->mpSceneNode->_getDerivedOrientation(); }
+         const Ogre::Vector3& getWorldPosition(void) const        { return mpParentGeom->mpSceneNode->_getDerivedPosition(); }
+         bool castsShadows(void) const                            { return mpParentGeom->getCastShadows(); }
+
+         Ogre::VertexData *mpVertexData;
+         Ogre::IndexData *mpIndexData;
+
+      private:
+         /// Build vertex of QueuedMesh if it have identity orientation
+         static void _buildIdentiryOrientation(const QueuedMesh &queuedMesh, const Ogre::Vector3 &parentGeomCenter,
+            const std::vector<Ogre::VertexDeclaration::VertexElementList> &vertexBufferElements, std::vector<Ogre::uchar*> &vertexBuffers,
+            Ogre::VertexData *dst);
+         /// Build vertex of QueuedMesh if it have some orientation
+         static void _buildFullTransform(const QueuedMesh &queuedMesh, const Ogre::Vector3 &parentGeomCenter,
+            const std::vector<Ogre::VertexDeclaration::VertexElementList> &vertexBufferElements, std::vector<Ogre::uchar*> &vertexBuffers,
+            Ogre::VertexData *dst);
+
+         Ogre::Technique*  m_pBestTechnique;       ///< This is recalculated every frame
+
+      protected:
+         bool              mBuilt;                 ///<
+         bool              mRequireVertexColors;   ///<
+         Ogre::SubMesh*    mpSubMesh;              ///< Ogre::SubMesh for Index/Vertex buffers manipulation
+         BatchedGeometry*  mpParentGeom;           ///<
+         Ogre::MaterialPtr mPtrMaterial;
+         MeshQueue         meshQueue;	//The list of meshes to be added to this batch
+      }; // end class SubBatch
 
 
-protected:
-	static void extractVertexDataFromShared(Ogre::MeshPtr mesh);
+   public:
+      BatchedGeometry(Ogre::SceneManager *mgr, Ogre::SceneNode *rootSceneNode);
+      ~BatchedGeometry();
 
-	Ogre::String getFormatString(Ogre::SubEntity *ent);
-	typedef std::map<Ogre::String, SubBatch*> SubBatchMap;	//Stores a list of GeomBatch'es, using a format string (generated with getGeometryFormatString()) as the key value
-	SubBatchMap subBatchMap;
-	Ogre::Vector3 center;	
-	Ogre::AxisAlignedBox bounds;
-	bool boundsUndefined;
+      virtual void addEntity(Ogre::Entity *ent, const Ogre::Vector3 &position, const Ogre::Quaternion &orientation = Ogre::Quaternion::IDENTITY, const Ogre::Vector3 &scale = Ogre::Vector3::UNIT_SCALE, const Ogre::ColourValue &color = Ogre::ColourValue::White);
+      void build();
+      void clear();
 
-	bool built;
+      Ogre::Vector3 _convertToLocal(const Ogre::Vector3 &globalVec) const;
 
-public:
-	typedef Ogre::MapIterator<SubBatchMap> SubBatchIterator;
-	SubBatchIterator getSubBatchIterator() const;
-};
+      void _notifyCurrentCamera(Ogre::Camera *cam);
+      void _updateRenderQueue(Ogre::RenderQueue *queue);
+      bool isVisible();
+      const Ogre::AxisAlignedBox &getBoundingBox(void) const   { return bounds; }
+      Ogre::Real getBoundingRadius(void) const                 { return mfRadius; }
+      const Ogre::String &getMovableType(void) const           { static const Ogre::String tp = "BatchedGeometry"; return tp; }
+
+      void visitRenderables(Ogre::Renderable::Visitor* visitor, bool debugRenderables) { /* empty */ }
+
+
+
+   protected:
+      static void extractVertexDataFromShared(const Ogre::MeshPtr &mesh);
+
+
+   private:
+      Ogre::Real           mfRadius;
+      Ogre::Real           mfMinDistanceSquared;
+      Ogre::SceneManager*  mpSceneMgr;
+      Ogre::SceneNode*     mpSceneNode;
+      Ogre::SceneNode*     mpParentSceneNode;
+      bool                 mbWithinFarDistance;
+
+
+   protected:
+
+      Ogre::String getFormatString(Ogre::SubEntity *ent);
+      typedef std::map<Ogre::String, SubBatch*> SubBatchMap;	//Stores a list of GeomBatch'es, using a format string (generated with getGeometryFormatString()) as the key value
+      SubBatchMap subBatchMap;
+      Ogre::Vector3 center;	
+      Ogre::AxisAlignedBox bounds;
+
+      bool mBoundsUndefined;
+      bool mBuilt;
+
+   public:
+      typedef Ogre::MapIterator<SubBatchMap> SubBatchIterator;
+      SubBatchIterator getSubBatchIterator() const;
+   };
 
 
 }

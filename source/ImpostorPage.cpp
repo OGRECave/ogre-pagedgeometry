@@ -13,9 +13,6 @@ Permission is granted to anyone to use this software for any purpose, including 
 //ImposterPage is an extension to PagedGeometry which displays entities as imposters.
 //-------------------------------------------------------------------------------------
 
-#include "ImpostorPage.h"
-#include "StaticBillboardSet.h"
-
 #include <OgreRoot.h>
 #include <OgreTimer.h>
 #include <OgreCamera.h>
@@ -24,6 +21,10 @@ Permission is granted to anyone to use this software for any purpose, including 
 #include <OgreEntity.h>
 #include <OgreSubEntity.h>
 #include <OgreHardwarePixelBuffer.h>
+
+#include "ImpostorPage.h"
+#include "StaticBillboardSet.h"
+
 using namespace Ogre;
 
 namespace Forests {
@@ -103,11 +104,12 @@ void ImpostorPage::build()
 		center.y = 0.0f;
 
 	//Build all batches
-	std::map<String, ImpostorBatch *>::iterator iter;
-	for (iter = impostorBatches.begin(); iter != impostorBatches.end(); ++iter){
-		ImpostorBatch *ibatch = iter->second;
-		ibatch->build();
-	}
+	std::map<String, ImpostorBatch *>::iterator it = impostorBatches.begin(), iend = impostorBatches.end();
+   while (it != iend)
+   {
+      it->second->build();
+      ++it;
+   }
 }
 
 void ImpostorPage::setVisible(bool visible)
@@ -146,6 +148,9 @@ void ImpostorPage::removeEntities()
 
 void ImpostorPage::update()
 {
+   if (impostorBatches.empty())  // SVA speed up
+      return;
+
 	//Calculate the direction the impostor batches should be facing
 	Vector3 camPos = geom->_convertToLocal(geom->getCamera()->getDerivedPosition());
 	

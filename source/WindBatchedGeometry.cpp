@@ -13,9 +13,6 @@ Permission is granted to anyone to use this software for any purpose, including 
 //over the batch materials, etc.
 //-------------------------------------------------------------------------------------
 
-#include "WindBatchedGeometry.h"
-#include "PagedGeometry.h"
-
 #include <OgreRoot.h>
 #include <OgreRenderSystem.h>
 #include <OgreCamera.h>
@@ -33,6 +30,10 @@ Permission is granted to anyone to use this software for any purpose, including 
 #include <OgreHardwareBuffer.h>
 #include <OgreMaterialManager.h>
 #include <OgreMaterial.h>
+
+#include "WindBatchedGeometry.h"
+#include "PagedGeometry.h"
+
 using namespace Ogre;
 
 namespace Forests {
@@ -51,7 +52,8 @@ void WindBatchedGeometry::addEntity(Entity *ent, const Vector3 &position, const 
 		OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "Shared vertex data not allowed", "BatchedGeometry::addEntity()");
 
 	//For each subentity
-	for (uint32 i = 0; i < ent->getNumSubEntities(); ++i){
+	for (uint32 i = 0; i < ent->getNumSubEntities(); ++i)
+   {
 		//Get the subentity
 		SubEntity *subEntity = ent->getSubEntity(i);
 		SubMesh *subMesh = subEntity->getSubMesh();
@@ -65,11 +67,10 @@ void WindBatchedGeometry::addEntity(Entity *ent, const Vector3 &position, const 
 		//If a batch using an identical format exists...
 		WindSubBatch *batch;
 		SubBatchMap::iterator batchIter = subBatchMap.find(formatStr);
-		if (batchIter != subBatchMap.end()){
-			//Use the batch
-			batch = dynamic_cast<WindBatchedGeometry::WindSubBatch*>(batchIter->second);
-		} else {
-			//Otherwise create a new batch
+		if (batchIter != subBatchMap.end())
+			batch = static_cast < WindBatchedGeometry::WindSubBatch* > (batchIter->second);  //Use the batch
+      else
+      {  //Otherwise create a new batch
 			batch = new WindSubBatch(this, subEntity);
 			subBatchMap.insert(std::pair<String, WindSubBatch*>(formatStr, batch));
 		}
@@ -84,11 +85,14 @@ void WindBatchedGeometry::addEntity(Entity *ent, const Vector3 &position, const 
 	AxisAlignedBox entBounds = ent->getBoundingBox();
 	entBounds.transform(mat);
 
-	if (boundsUndefined){
+	if (mBoundsUndefined)
+   {
 		bounds.setMinimum(entBounds.getMinimum() + position);
 		bounds.setMaximum(entBounds.getMaximum() + position);
-		boundsUndefined = false;
-	} else {
+		mBoundsUndefined = false;
+	}
+   else
+   {
 		Vector3 min = bounds.getMinimum();
 		Vector3 max = bounds.getMaximum();
 		min.makeFloor(entBounds.getMinimum() + position);
@@ -99,133 +103,152 @@ void WindBatchedGeometry::addEntity(Entity *ent, const Vector3 &position, const 
 	
 }
 
-WindBatchedGeometry::WindSubBatch::WindSubBatch(WindBatchedGeometry *parent, SubEntity *ent):BatchedGeometry::SubBatch(parent, ent)
-{}
 
+//-----------------------------------------------------------------------------
+/// Constructor
+WindBatchedGeometry::WindSubBatch::WindSubBatch(WindBatchedGeometry *parent, SubEntity *ent) : 
+BatchedGeometry::SubBatch(parent, ent)
+{
+   // empty
+}
+
+
+//-----------------------------------------------------------------------------
+///
 void WindBatchedGeometry::WindSubBatch::build()
 {
-	assert(!built);
+	assert(!mBuilt);
 
 	//Misc. setup
-	Vector3 batchCenter = dynamic_cast<WindBatchedGeometry*>(parent)->center;
+	const Vector3 &batchCenter = static_cast < WindBatchedGeometry* > (mpParentGeom)->center;
 
-	HardwareIndexBuffer::IndexType srcIndexType = meshType->indexData->indexBuffer->getType();
+	HardwareIndexBuffer::IndexType srcIndexType = mpSubMesh->indexData->indexBuffer->getType();
 	HardwareIndexBuffer::IndexType destIndexType;
-	if (vertexData->vertexCount > 0xFFFF || srcIndexType == HardwareIndexBuffer::IT_32BIT)
+	if (mpVertexData->vertexCount > 0xFFFF || srcIndexType == HardwareIndexBuffer::IT_32BIT)
 		destIndexType = HardwareIndexBuffer::IT_32BIT;
 	else
 		destIndexType = HardwareIndexBuffer::IT_16BIT;
 
 	//Allocate the index buffer
-	indexData->indexBuffer = HardwareBufferManager::getSingleton()
-		.createIndexBuffer(destIndexType, indexData->indexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY);
+	mpIndexData->indexBuffer = HardwareBufferManager::getSingleton().createIndexBuffer(
+      destIndexType, mpIndexData->indexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY);
 
 	//Lock the index buffer
-	uint32 *indexBuffer32;
-	uint16 *indexBuffer16;
+	uint32 *indexBuffer32 = 0;
+	uint16 *indexBuffer16 = 0;
 	if (destIndexType == HardwareIndexBuffer::IT_32BIT)
-		indexBuffer32 = static_cast<uint32*>(indexData->indexBuffer->lock(HardwareBuffer::HBL_DISCARD));
+		indexBuffer32 = static_cast<uint32*>(mpIndexData->indexBuffer->lock(HardwareBuffer::HBL_DISCARD));
 	else
-		indexBuffer16 = static_cast<uint16*>(indexData->indexBuffer->lock(HardwareBuffer::HBL_DISCARD));
+		indexBuffer16 = static_cast<uint16*>(mpIndexData->indexBuffer->lock(HardwareBuffer::HBL_DISCARD));
 
-	//Allocate & lock the vertex buffers
-	std::vector<uchar*> vertexBuffers;
-	std::vector<VertexDeclaration::VertexElementList> vertexBufferElements;
-
-	VertexBufferBinding *vertBinding = vertexData->vertexBufferBinding;
-	VertexDeclaration *vertDecl = vertexData->vertexDeclaration;
+   VertexBufferBinding *vertBinding = mpVertexData->vertexBufferBinding;
+	VertexDeclaration *vertDecl = mpVertexData->vertexDeclaration;
 
 	unsigned short texCoordCount = 0;
-		for (unsigned short j = 0; j < vertexData->vertexDeclaration->getElementCount(); ++j) 
-		{
-			const VertexElement *el = vertexData->vertexDeclaration->getElement(j);
-			if (el->getSemantic() == VES_TEXTURE_COORDINATES) 
-			{
-				++ texCoordCount;
-			}
-		}
-		Ogre::ushort k = (Ogre::ushort)vertBinding->getBufferCount();
+   {
+      const VertexDeclaration::VertexElementList &vlist = vertDecl->getElements();
+      VertexDeclaration::VertexElementList::const_iterator it = vlist.begin(), iend = vlist.end();
+      while (it != iend)
+      {
+         if ((*it).getSemantic() == VES_TEXTURE_COORDINATES)
+            ++texCoordCount;
+         ++it;
+      }
+   }
 
-		vertDecl->addElement(k-1, vertDecl->getVertexSize(0), VET_FLOAT4 , VES_TEXTURE_COORDINATES, texCoordCount);
-		vertDecl->addElement(k-1, vertDecl->getVertexSize(0), VET_FLOAT4 , VES_TEXTURE_COORDINATES, texCoordCount+1);
+   Ogre::ushort numVertBuffs = (Ogre::ushort)vertBinding->getBufferCount();
 
-	for (Ogre::ushort i = 0; i < vertBinding->getBufferCount(); ++i)
+   vertDecl->addElement(numVertBuffs - 1, vertDecl->getVertexSize(0), VET_FLOAT4 , VES_TEXTURE_COORDINATES, texCoordCount);
+   vertDecl->addElement(numVertBuffs - 1, vertDecl->getVertexSize(0), VET_FLOAT4 , VES_TEXTURE_COORDINATES, texCoordCount+1);
+
+   //Allocate & lock the vertex buffers
+   std::vector<uchar*> vertexBuffers(numVertBuffs);
+   std::vector<VertexDeclaration::VertexElementList> vertexBufferElements(numVertBuffs);
+
+	for (Ogre::ushort i = 0; i < numVertBuffs; ++i)
 	{
-		HardwareVertexBufferSharedPtr buffer = HardwareBufferManager::getSingleton()
-			.createVertexBuffer(vertDecl->getVertexSize(i), vertexData->vertexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY);
+		HardwareVertexBufferSharedPtr buffer = HardwareBufferManager::getSingleton().createVertexBuffer(
+         vertDecl->getVertexSize(i), mpVertexData->vertexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY);
+
 		vertBinding->setBinding(i, buffer);
 		
-		vertexBuffers.push_back(static_cast<uchar*>(buffer->lock(HardwareBuffer::HBL_DISCARD)));
-		vertexBufferElements.push_back(vertDecl->findElementsBySource(i));
+		vertexBuffers[i] = static_cast<uchar*>(buffer->lock(HardwareBuffer::HBL_DISCARD));
+		vertexBufferElements[i] = vertDecl->findElementsBySource(i);
 	}
 
 	//If no vertex colors are used, make sure the final batch includes them (so the shade values work)
-	if (requireVertexColors) {
-		if (!vertexData->vertexDeclaration->findElementBySemantic(VES_DIFFUSE)) {
-			Ogre::ushort i = (Ogre::ushort)vertBinding->getBufferCount();
+   if (mRequireVertexColors)
+   {
+      if (!mpVertexData->vertexDeclaration->findElementBySemantic(VES_DIFFUSE))
+      {
+         Ogre::ushort i = (Ogre::ushort)vertBinding->getBufferCount();
 
-			vertDecl->addElement(i, 0, VET_COLOUR, VES_DIFFUSE);
+         vertDecl->addElement(i, 0, VET_COLOUR, VES_DIFFUSE);
 
-			HardwareVertexBufferSharedPtr buffer = HardwareBufferManager::getSingleton()
-				.createVertexBuffer(vertDecl->getVertexSize(i), vertexData->vertexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY);
-			vertBinding->setBinding(i, buffer);
-			
-			vertexBuffers.push_back(static_cast<uchar*>(buffer->lock(HardwareBuffer::HBL_DISCARD)));
-			vertexBufferElements.push_back(vertDecl->findElementsBySource(i));
+         HardwareVertexBufferSharedPtr buffer = HardwareBufferManager::getSingleton().createVertexBuffer(
+            vertDecl->getVertexSize(i), mpVertexData->vertexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY);
+         vertBinding->setBinding(i, buffer);
 
-		}
+         vertexBuffers.push_back(static_cast<uchar*>(buffer->lock(HardwareBuffer::HBL_DISCARD)));
+         vertexBufferElements.push_back(vertDecl->findElementsBySource(i));
+      }
 
-		Pass *p = material->getTechnique(0)->getPass(0);
+      Pass *p = mPtrMaterial->getTechnique(0)->getPass(0);
+      p->setVertexColourTracking(TVC_AMBIENT);
+   }
 
-		p->setVertexColourTracking(TVC_AMBIENT);
-	}
 
-	std::string entityName;
-	Ogre::AxisAlignedBox entityBounds;
 
 	//For each queued mesh...
-	MeshQueueIterator it;
 	size_t indexOffset = 0;
-	for (it = meshQueue.begin(); it != meshQueue.end(); ++it) {
-		const QueuedMesh queuedMesh =  (*it);
+	for (MeshQueueIterator it = meshQueue.begin(), iend = meshQueue.end(); it != iend; ++it)
+   {
+		const QueuedMesh &queuedMesh = *it;
 		//const QueuedMesh queuedMesh =  dynamic_cast<WindBatchedGeometry::WindSubBatch::QueuedMesh>((*it));
+
 		const IndexData *sourceIndexData = queuedMesh.mesh->indexData;
 		const VertexData *sourceVertexData = queuedMesh.mesh->vertexData;
-
 		Entity * ent = static_cast<Ogre::Entity*>(queuedMesh.userData);
-		entityName = ent->getName();
-		entityBounds = ent->getBoundingBox();
 
-		// vector to stock the original y value of every vertex because batchCenter doesn't take consider the height of the ground
-		Vector3 vertexPos;
-		float maxHeight = entityBounds.getMaximum().y;
-		float factorX = dynamic_cast<WindBatchedGeometry*>(parent)->mGeom->getCustomParam(entityName, "windFactorX", 0);	// amplitude in X
-		float factorY = dynamic_cast<WindBatchedGeometry*>(parent)->mGeom->getCustomParam(entityName, "windFactorY", 0);	// amplitude in Y
+      static const std::string c_windFactorX = "windFactorX", c_windFactorY = "windFactorY";
+		float factorX = static_cast<WindBatchedGeometry*>(mpParentGeom)->mGeom->getCustomParam(ent->getName(), c_windFactorX, 0.f);	// amplitude in X
+		float factorY = static_cast<WindBatchedGeometry*>(mpParentGeom)->mGeom->getCustomParam(ent->getName(), c_windFactorY, 0.f);	// amplitude in Y
+
+
+      float invMaxHeight = Ogre::Real(1.) / ent->getBoundingBox().getMaximum().y;
 
 		//Copy mesh vertex data into the vertex buffer
 		VertexBufferBinding *sourceBinds = sourceVertexData->vertexBufferBinding;
-		VertexBufferBinding *destBinds = vertexData->vertexBufferBinding;
+		VertexBufferBinding *destBinds = mpVertexData->vertexBufferBinding;
+
+      // SVA speed up. Rotate 3d vector by matrix 3x3 instead of quaternion
+      Ogre::Matrix3 mat3MeshRotation;
+      queuedMesh.orientation.ToRotationMatrix(mat3MeshRotation);
 
 		for (Ogre::ushort i = 0; i < destBinds->getBufferCount(); ++i)
 		{
-			if (i < sourceBinds->getBufferCount()){
+			if (i < sourceBinds->getBufferCount())
+         {
 				//Lock the input buffer
-				HardwareVertexBufferSharedPtr sourceBuffer = sourceBinds->getBuffer(i);
+				const HardwareVertexBufferSharedPtr &sourceBuffer = sourceBinds->getBuffer(i);
 				uchar *sourceBase = static_cast<uchar*>(sourceBuffer->lock(HardwareBuffer::HBL_READ_ONLY));
 
 				//Get the locked output buffer
 				uchar *destBase = vertexBuffers[i];
 
 				//Copy vertices
-				float *sourcePtr, *destPtr;
-				for (size_t v = 0; v < sourceVertexData->vertexCount; ++v)
+				float *sourcePtr = 0, *destPtr = 0;
+				for (size_t v = 0, vertexCount = sourceVertexData->vertexCount; v < vertexCount; ++v)
 				{
+               // vector to stock the original y value of every vertex because batchCenter doesn't take consider the height of the ground
+               Vector3 vertexPos;
+
 					// Iterate over vertex elements
-					VertexDeclaration::VertexElementList &elems = vertexBufferElements[i];
-					VertexDeclaration::VertexElementList::iterator ei;
-					for (ei = elems.begin(); ei != elems.end(); ++ei)
+					const VertexDeclaration::VertexElementList &elems = vertexBufferElements[i];
+               VertexDeclaration::VertexElementList::const_iterator ei = elems.begin(), iend = elems.end();
+					for ( ; ei != iend; ++ei)
 					{
-						VertexElement &elem = *ei;
+						const VertexElement &elem = *ei;
 						elem.baseVertexPointerToElement(sourceBase, &sourcePtr);
 						elem.baseVertexPointerToElement(destBase, &destPtr);
 
@@ -241,11 +264,17 @@ void WindBatchedGeometry::WindSubBatch::build()
 							tmp.z = *sourcePtr++;
 							
 							//Transform
-							tmp = (queuedMesh.orientation * (tmp * queuedMesh.scale)) + queuedMesh.position;
-							
-							vertexPos = tmp - queuedMesh.position;
 
-							tmp -= batchCenter;		//Adjust for batch center
+                     // original code
+							//tmp = (queuedMesh.orientation * (tmp * queuedMesh.scale)) + queuedMesh.position;
+							//vertexPos = tmp - queuedMesh.position;
+							//tmp -= batchCenter;		//Adjust for batch center
+
+                     // SVA speed up
+                     {
+                        vertexPos = mat3MeshRotation * (tmp * queuedMesh.scale);
+                        tmp = vertexPos + queuedMesh.position - batchCenter;
+                     }
 
 							*destPtr++ = tmp.x;
 							*destPtr++ = tmp.y;
@@ -258,7 +287,11 @@ void WindBatchedGeometry::WindSubBatch::build()
 							tmp.z = *sourcePtr++;
 
 							//Rotate
-							tmp = queuedMesh.orientation * tmp;
+							//tmp = queuedMesh.orientation * tmp;
+                     // SVA
+                     {
+                        tmp = mat3MeshRotation * tmp;
+                     }
 
 							*destPtr++ = tmp.x;
 							*destPtr++ = tmp.y;
@@ -283,7 +316,11 @@ void WindBatchedGeometry::WindSubBatch::build()
 							tmp.z = *sourcePtr++;
 
 							//Rotate
-							tmp = queuedMesh.orientation * tmp;
+							//tmp = queuedMesh.orientation * tmp;
+                     // SVA
+                     {
+                        tmp = mat3MeshRotation * tmp;
+                     }
 
 							*destPtr++ = tmp.x;
 							*destPtr++ = tmp.y;
@@ -294,8 +331,8 @@ void WindBatchedGeometry::WindSubBatch::build()
 							if (elem.getIndex() == texCoordCount)
 							{
 								// parameters to be passed to the shader
-								*destPtr++ = vertexPos.x;	// radius coefficient
-								*destPtr++ = vertexPos.y / maxHeight;  // height coefficient
+								*destPtr++ = vertexPos.x;                 // radius coefficient
+								*destPtr++ = vertexPos.y * invMaxHeight;  // height coefficient
 								*destPtr++ = factorX;
 								*destPtr++ = factorY;
 							}
@@ -315,6 +352,7 @@ void WindBatchedGeometry::WindSubBatch::build()
 								}
 							}
 							break;	
+
 						default:
 							//Raw copy
 							memcpy(destPtr, sourcePtr, VertexElement::getTypeSize(elem.getType()));
@@ -330,8 +368,10 @@ void WindBatchedGeometry::WindSubBatch::build()
 				//Unlock the input buffer
 				vertexBuffers[i] = destBase;
 				sourceBuffer->unlock();
-			} else {
-				assert(requireVertexColors);
+         }
+         else
+         {
+				assert(mRequireVertexColors);
 
 				//Get the locked output buffer
 				uint32 *startPtr = (uint32*)vertexBuffers[vertBinding->getBufferCount()-1];
@@ -344,21 +384,22 @@ void WindBatchedGeometry::WindSubBatch::build()
 				uint32 tmpColor = tmpR | (tmpG << 8) | (tmpB << 16) | (0xFF << 24);
 
 				//Copy colors
-				while (startPtr < endPtr) {
+				while (startPtr < endPtr)
+            {
 					*startPtr++ = tmpColor;
 				}
 
 				vertexBuffers[vertBinding->getBufferCount()-1] += (sizeof(uint32) * sourceVertexData->vertexCount);
-			}
+         }
 		}
 
 
 		//Copy mesh index data into the index buffer
-		if (srcIndexType == HardwareIndexBuffer::IT_32BIT) {
+		if (srcIndexType == HardwareIndexBuffer::IT_32BIT)
+      {
 			//Lock the input buffer
 			uint32 *source = static_cast<uint32*>(sourceIndexData->indexBuffer->lock(
-				sourceIndexData->indexStart, sourceIndexData->indexCount, HardwareBuffer::HBL_READ_ONLY
-				));
+				sourceIndexData->indexStart, sourceIndexData->indexCount, HardwareBuffer::HBL_READ_ONLY));
 			uint32 *sourceEnd = source + sourceIndexData->indexCount;
 
 			//And copy it to the output buffer
@@ -371,8 +412,11 @@ void WindBatchedGeometry::WindSubBatch::build()
 
 			//Increment the index offset
 			indexOffset += sourceVertexData->vertexCount;
-		} else {
-			if (destIndexType == HardwareIndexBuffer::IT_32BIT){
+		}
+      else
+      {
+			if (destIndexType == HardwareIndexBuffer::IT_32BIT)
+         {
 				//-- Convert 16 bit to 32 bit indices --
 				//Lock the input buffer
 				uint16 *source = static_cast<uint16*>(sourceIndexData->indexBuffer->lock(
@@ -391,7 +435,9 @@ void WindBatchedGeometry::WindSubBatch::build()
 
 				//Increment the index offset
 				indexOffset += sourceVertexData->vertexCount;
-			} else {
+			}
+         else
+         {
 				//Lock the input buffer
 				uint16 *source = static_cast<uint16*>(sourceIndexData->indexBuffer->lock(
 					sourceIndexData->indexStart, sourceIndexData->indexCount, HardwareBuffer::HBL_READ_ONLY
@@ -399,7 +445,8 @@ void WindBatchedGeometry::WindSubBatch::build()
 				uint16 *sourceEnd = source + sourceIndexData->indexCount;
 
 				//And copy it to the output buffer
-				while (source != sourceEnd) {
+				while (source != sourceEnd)
+            {
 					*indexBuffer16++ = static_cast<uint16>(*source++ + indexOffset);
 				}
 
@@ -413,14 +460,14 @@ void WindBatchedGeometry::WindSubBatch::build()
 	}
 
 	//Unlock buffers
-	indexData->indexBuffer->unlock();
+	mpIndexData->indexBuffer->unlock();
 	for (Ogre::ushort i = 0; i < vertBinding->getBufferCount(); ++i)
 		vertBinding->getBuffer(i)->unlock();
 
 	//Clear mesh queue
 	meshQueue.clear();
 
-	built = true;
+	mBuilt = true;
 }
 
 }

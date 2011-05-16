@@ -12,9 +12,6 @@ Permission is granted to anyone to use this software for any purpose, including 
 //WindBatchPage is an extension to PagedGeometry which displays entities as static geometry but that is affected by wind.
 //-------------------------------------------------------------------------------------
 
-#include "WindBatchPage.h"
-#include "WindBatchedGeometry.h"
-
 #include <OgreRoot.h>
 #include <OgreCamera.h>
 #include <OgreVector3.h>
@@ -24,6 +21,9 @@ Permission is granted to anyone to use this software for any purpose, including 
 #include <OgreRenderSystemCapabilities.h>
 #include <OgreHighLevelGpuProgram.h>
 #include <OgreHighLevelGpuProgramManager.h>
+
+#include "WindBatchPage.h"
+#include "WindBatchedGeometry.h"
 
 // to dump the shader source in a file
 #include <fstream>
@@ -91,11 +91,11 @@ void WindBatchPage::_updateShaders()
 			tmpName << "fade_";
 		if (lightingEnabled)
 			tmpName << "lit_";
-		if (subBatch->vertexData->vertexDeclaration->findElementBySemantic(VES_DIFFUSE) != NULL)
+		if (subBatch->mpVertexData->vertexDeclaration->findElementBySemantic(VES_DIFFUSE) != NULL)
 			tmpName << "clr_";
 
-		for (unsigned short i = 0; i < subBatch->vertexData->vertexDeclaration->getElementCount(); ++i) {
-			const VertexElement *el = subBatch->vertexData->vertexDeclaration->getElement(i);
+		for (unsigned short i = 0; i < subBatch->mpVertexData->vertexDeclaration->getElementCount(); ++i) {
+			const VertexElement *el = subBatch->mpVertexData->vertexDeclaration->getElement(i);
 			if (el->getSemantic() == VES_TEXTURE_COORDINATES) {
 				String uvType = "";
 				switch (el->getType()) {
@@ -135,7 +135,7 @@ void WindBatchPage::_updateShaders()
 					"	float3 normal	 : NORMAL, \n"
 					"	out float4 oPosition : POSITION, \n";
 
-				if (subBatch->vertexData->vertexDeclaration->findElementBySemantic(VES_DIFFUSE) != NULL)
+				if (subBatch->mpVertexData->vertexDeclaration->findElementBySemantic(VES_DIFFUSE) != NULL)
 				{
 					vertexProgSource += 
 						"	float4 iColor	 : COLOR, \n";
@@ -144,18 +144,18 @@ void WindBatchPage::_updateShaders()
 				int texNum = 0;
 
 				unsigned short texCoordCount = 0;
-				for (unsigned short j = 0; j < subBatch->vertexData->vertexDeclaration->getElementCount(); ++j) 
+				for (unsigned short j = 0; j < subBatch->mpVertexData->vertexDeclaration->getElementCount(); ++j) 
 				{
-					const VertexElement *el = subBatch->vertexData->vertexDeclaration->getElement(j);
+					const VertexElement *el = subBatch->mpVertexData->vertexDeclaration->getElement(j);
 					if (el->getSemantic() == VES_TEXTURE_COORDINATES) 
 					{
 						++ texCoordCount;
 					}
 				}
 
-				for (unsigned short i = 0; i < subBatch->vertexData->vertexDeclaration->getElementCount(); ++i)
+				for (unsigned short i = 0; i < subBatch->mpVertexData->vertexDeclaration->getElementCount(); ++i)
 				{
-					const VertexElement *el = subBatch->vertexData->vertexDeclaration->getElement(i);
+					const VertexElement *el = subBatch->mpVertexData->vertexDeclaration->getElement(i);
 					if (el->getSemantic() == VES_TEXTURE_COORDINATES)
 					{
 						if (el->getIndex() == texCoordCount - 2)
@@ -222,7 +222,7 @@ void WindBatchPage::_updateShaders()
 						"	float3 light = normalize(objSpaceLight.xyz - (iPosition.xyz * objSpaceLight.w)); \n"
 						"	float diffuseFactor = max(dot(normal, light), 0); \n";
 
-					if (subBatch->vertexData->vertexDeclaration->findElementBySemantic(VES_DIFFUSE) != NULL)
+					if (subBatch->mpVertexData->vertexDeclaration->findElementBySemantic(VES_DIFFUSE) != NULL)
 					{
 						vertexProgSource +=
 							"	oColor = (lightAmbient + diffuseFactor * lightDiffuse) * iColor; \n";
@@ -235,7 +235,7 @@ void WindBatchPage::_updateShaders()
 				}
 				else
 				{
-					if (subBatch->vertexData->vertexDeclaration->findElementBySemantic(VES_DIFFUSE) != NULL)
+					if (subBatch->mpVertexData->vertexDeclaration->findElementBySemantic(VES_DIFFUSE) != NULL)
 					{
 						vertexProgSource +=
 							"	oColor = iColor; \n";
@@ -275,7 +275,7 @@ void WindBatchPage::_updateShaders()
 
 						a sin approximation could be use to optimize performances
 					*/
-	#if 1
+	#if 0
 					"	tmpPos.y += sin(time + originPos.z + tmpPos.y + tmpPos.x) * radiusCoeff * radiusCoeff * factorY; \n"
 					"	tmpPos.x += sin(time + originPos.z ) * heightCoeff * heightCoeff * factorX ; \n"
 	#else
@@ -291,9 +291,9 @@ void WindBatchPage::_updateShaders()
 			if(!shaderLanguage.compare("glsl"))
 			{
 				unsigned short texCoordCount = 0;
-				for (unsigned short j = 0; j < subBatch->vertexData->vertexDeclaration->getElementCount(); ++j) 
+				for (unsigned short j = 0; j < subBatch->mpVertexData->vertexDeclaration->getElementCount(); ++j) 
 				{
-					const VertexElement *el = subBatch->vertexData->vertexDeclaration->getElement(j);
+					const VertexElement *el = subBatch->mpVertexData->vertexDeclaration->getElement(j);
 					if (el->getSemantic() == VES_TEXTURE_COORDINATES) 
 					{
 						++ texCoordCount;
@@ -323,9 +323,9 @@ void WindBatchPage::_updateShaders()
 
 				int texNum = 0;
 
-				for (unsigned short i = 0; i < subBatch->vertexData->vertexDeclaration->getElementCount(); ++i)
+				for (unsigned short i = 0; i < subBatch->mpVertexData->vertexDeclaration->getElementCount(); ++i)
 				{
-					const VertexElement *el = subBatch->vertexData->vertexDeclaration->getElement(i);
+					const VertexElement *el = subBatch->mpVertexData->vertexDeclaration->getElement(i);
 					if (el->getSemantic() == VES_TEXTURE_COORDINATES)
 					{
 						if (el->getIndex() == texCoordCount - 2)
@@ -357,7 +357,7 @@ void WindBatchPage::_updateShaders()
 						"	vec3 light = normalize(objSpaceLight.xyz - (gl_Vertex.xyz * objSpaceLight.w)); \n"
 						"	float diffuseFactor = max(dot(gl_Normal.xyz, light), 0.0); \n";
 
-					if (subBatch->vertexData->vertexDeclaration->findElementBySemantic(VES_DIFFUSE) != NULL)
+					if (subBatch->mpVertexData->vertexDeclaration->findElementBySemantic(VES_DIFFUSE) != NULL)
 					{
 						vertexProgSource +=
 							"	gl_FrontColor = (lightAmbient + diffuseFactor * lightDiffuse) * gl_Color; \n";
@@ -370,7 +370,7 @@ void WindBatchPage::_updateShaders()
 				}
 				else
 				{
-					if (subBatch->vertexData->vertexDeclaration->findElementBySemantic(VES_DIFFUSE) != NULL)
+					if (subBatch->mpVertexData->vertexDeclaration->findElementBySemantic(VES_DIFFUSE) != NULL)
 					{
 						vertexProgSource += "	gl_FrontColor = gl_Color; \n";
 					}

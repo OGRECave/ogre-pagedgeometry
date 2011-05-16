@@ -8,11 +8,6 @@ Permission is granted to anyone to use this software for any purpose, including 
 	3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------------*/
 
-#include "GrassLoader.h"
-#include "PagedGeometry.h"
-#include "PropertyMaps.h"
-#include "RandomTable.h"
-
 #include "OgreRoot.h"
 #include "OgreTimer.h"
 #include "OgreCamera.h"
@@ -35,9 +30,15 @@ Permission is granted to anyone to use this software for any purpose, including 
 #include "OgreRenderSystemCapabilities.h"
 #include "OgreHighLevelGpuProgram.h"
 #include "OgreHighLevelGpuProgramManager.h"
-using namespace Ogre;
+
+#include "GrassLoader.h"
+#include "PagedGeometry.h"
+#include "PropertyMaps.h"
+#include "RandomTable.h"
 
 #include <limits> //for numeric_limits
+
+using namespace Ogre;
 
 namespace Forests {
 

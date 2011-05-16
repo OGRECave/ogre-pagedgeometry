@@ -188,14 +188,17 @@ public:
 		else
 			c = _getColorAt_Bilinear(x, z, mapBounds);
 		
-		Ogre::Real r, g, b, a;
+		float r, g, b, a;
 		static Ogre::VertexElementType format = Ogre::Root::getSingleton().getRenderSystem()->getColourVertexElementType();
-		if (format == Ogre::VET_COLOUR_ARGB){
+		if (format == Ogre::VET_COLOUR_ARGB)
+      {
 			b = ((c) & 0xFF) / 255.0f;
 			g = ((c >> 8) & 0xFF) / 255.0f;
 			r = ((c >> 16) & 0xFF) / 255.0f;
 			a = ((c >> 24) & 0xFF) / 255.0f;
-		} else {
+		}
+      else
+      {
 			r = ((c) & 0xFF) / 255.0f;
 			g = ((c >> 8) & 0xFF) / 255.0f;
 			b = ((c >> 16) & 0xFF) / 255.0f;

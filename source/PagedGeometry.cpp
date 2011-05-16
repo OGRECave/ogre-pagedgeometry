@@ -12,20 +12,22 @@ Permission is granted to anyone to use this software for any purpose, including 
 //Main source file for the PagedGeometry engine.
 //-------------------------------------------------------------------------------------
 
-#include "PagedGeometry.h"
-#include "StaticBillboardSet.h"
-
 #include <OgreRoot.h>
 #include <OgreTimer.h>
 #include <OgreCamera.h>
 #include <OgreVector3.h>
+
+#include "PagedGeometry.h"
+#include "StaticBillboardSet.h"
+
 using namespace Ogre;
 using namespace std;
 
 namespace Forests {
 
 //-------------------------------------------------------------------------------------
-PagedGeometry::PagedGeometry(Camera* cam, const Real pageSize, Ogre::RenderQueueGroupID queue) : mRenderQueue(queue)
+PagedGeometry::PagedGeometry(Camera* cam, const Real pageSize, Ogre::RenderQueueGroupID queue) :
+mRenderQueue(queue)
 {
 	//Setup camera, scene manager, and scene node
 	if (cam)
@@ -39,7 +41,9 @@ PagedGeometry::PagedGeometry(Camera* cam, const Real pageSize, Ogre::RenderQueue
 		#else
 		rootNode = sceneMgr->getRootSceneNode();
 		#endif
-	} else {
+	}
+   else
+   {
 		sceneCam = NULL;
 		sceneMgr = NULL;
 		rootNode = NULL;
@@ -236,7 +240,8 @@ void PagedGeometry::update()
 		bool enableCache = true;
 		std::list<GeometryPageManager *>::iterator it;
 		GeometryPageManager *prevMgr = NULL;
-		for (it = managerList.begin(); it != managerList.end(); ++it){
+		for (it = managerList.begin(); it != managerList.end(); ++it)
+      {
 			GeometryPageManager *mgr = *it;
 			mgr->update(deltaTime, camPos, camSpeed, enableCache, prevMgr);
 			prevMgr = mgr;
@@ -244,7 +249,7 @@ void PagedGeometry::update()
 	}
 
 	//Update misc. subsystems
-	StaticBillboardSet::updateAll(_convertToLocal(getCamera()->getDerivedDirection()));
+   StaticBillboardSet::updateAll(_convertToLocal(sceneCam->getDerivedDirection()));
 }
 
 void PagedGeometry::reloadGeometry()
@@ -368,31 +373,25 @@ void PagedGeometry::_addDetailLevel(GeometryPageManager *mgr, Real maxRange, Rea
 	managerList.push_back(mgr);
 }
 
-void  PagedGeometry::setCustomParam(string entity, string paramName, float paramValue)
+void  PagedGeometry::setCustomParam(const string &entity, const string &paramName, float paramValue)
 {
 	setCustomParam(entity + "." + paramName, paramValue);
 }
 
-void  PagedGeometry::setCustomParam(string paramName, float paramValue)
+void  PagedGeometry::setCustomParam(const string &paramName, float paramValue)
 {
 	customParam[paramName] = paramValue;
 }
 
-float PagedGeometry::getCustomParam(string entity, string paramName, float defaultParamValue) const
+float PagedGeometry::getCustomParam(const string &entity, const string &paramName, float defaultParamValue) const
 {
 	return getCustomParam(entity + "." + paramName, defaultParamValue);
 }
 
-float PagedGeometry::getCustomParam(string paramName, float defaultParamValue) const
+float PagedGeometry::getCustomParam(const string &paramName, float defaultParamValue) const
 {
-	std::map<string, float>::const_iterator it;
-	it = customParam.find(paramName);
-	if (it != customParam.end()) {
-		float x = it->second;
-		return x;
-	}
-	else
-		return defaultParamValue;
+	std::map<string, float>::const_iterator it = customParam.find(paramName);
+   return it != customParam.end() ? it->second : defaultParamValue;
 }
 
 Ogre::RenderQueueGroupID PagedGeometry::getRenderQueue() const
@@ -445,7 +444,8 @@ void GeometryPageManager::update(unsigned long deltaTime, Vector3 &camPos, Vecto
 	int x2 = Math::Floor(((camPos.x + cacheDist) - gridBounds.left) / mainGeom->getPageSize());
 	int z1 = Math::Floor(((camPos.z - cacheDist) - gridBounds.top) / mainGeom->getPageSize());
 	int z2 = Math::Floor(((camPos.z + cacheDist) - gridBounds.top) / mainGeom->getPageSize());
-	if(scrollBuffer)
+
+	if (scrollBuffer)
 	{
 		//Check if the page grid needs to be scrolled
 		int shiftX = 0, shiftZ = 0;

@@ -713,7 +713,7 @@ public:
 	\param paramName Name of the parameter for this entity
 	\param paramValue Value to assign to the parameter
 	*/
-	void setCustomParam( std::string entity, std::string paramName, float paramValue);
+	void setCustomParam(const std::string &entity, const std::string &paramName, float paramValue);
 
 	/**
 	\brief Sets or creates a custom parameter for an entity managed by PagedGeometry
@@ -733,7 +733,7 @@ public:
 	\param paramName Name of the parameter for this entity
 	\param paramValue Value to assign to the parameter
 	*/
-	void setCustomParam( std::string paramName, float paramValue);
+	void setCustomParam(const std::string &paramName, float paramValue);
 
 	/**
 	\brief Returns the value of the custom parameter
@@ -742,7 +742,7 @@ public:
 	\param defaultParamValue Value to return if no entry is found
 	\returns float value if entry is found or the defaultParamValue if not
 	*/
-	float getCustomParam( std::string entity, std::string paramName, float defaultParamValue) const;
+	float getCustomParam(const std::string &entity, const std::string &paramName, float defaultParamValue) const;
 
 	/**
 	\brief Returns the value of the custom parameter
@@ -751,7 +751,7 @@ public:
 	\param defaultParamValue Value to return if no entry is found
 	\returns float value if entry is found or the defaultParamValue if not
 	*/
-	float getCustomParam( std::string paramName, float defaultParamValue) const;
+	float getCustomParam(const std::string &paramName, float defaultParamValue) const;
 
 
 	/**

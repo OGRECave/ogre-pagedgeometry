@@ -8,9 +8,6 @@ Permission is granted to anyone to use this software for any purpose, including 
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------------*/
 
-#include "PropertyMaps.h"
-#include "PagedGeometry.h"
-
 #include <OgreRoot.h>
 #include <OgrePrerequisites.h>
 #include <OgrePixelFormat.h>
@@ -20,6 +17,10 @@ Permission is granted to anyone to use this software for any purpose, including 
 #include <OgreRenderSystem.h>
 #include <OgreString.h>
 #include <OgreStringConverter.h>
+
+#include "PropertyMaps.h"
+#include "PagedGeometry.h"
+
 using namespace Ogre;
 
 namespace Forests {
