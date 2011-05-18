@@ -210,7 +210,7 @@ void WindBatchedGeometry::WindSubBatch::build()
 		const VertexData *sourceVertexData = queuedMesh.mesh->vertexData;
 		Entity * ent = static_cast<Ogre::Entity*>(queuedMesh.userData);
 
-      static const std::string c_windFactorX = "windFactorX", c_windFactorY = "windFactorY";
+      static const Ogre::String c_windFactorX = "windFactorX", c_windFactorY = "windFactorY";
 		float factorX = static_cast<WindBatchedGeometry*>(mpParentGeom)->mGeom->getCustomParam(ent->getName(), c_windFactorX, 0.f);	// amplitude in X
 		float factorY = static_cast<WindBatchedGeometry*>(mpParentGeom)->mGeom->getCustomParam(ent->getName(), c_windFactorY, 0.f);	// amplitude in Y
 
@@ -222,8 +222,10 @@ void WindBatchedGeometry::WindSubBatch::build()
 		VertexBufferBinding *destBinds = mpVertexData->vertexBufferBinding;
 
       // SVA speed up. Rotate 3d vector by matrix 3x3 instead of quaternion
-      Ogre::Matrix3 mat3MeshRotation;
-      queuedMesh.orientation.ToRotationMatrix(mat3MeshRotation);
+      Ogre::Matrix3 m3MeshRotation;
+      queuedMesh.orientation.ToRotationMatrix(m3MeshRotation);
+      Ogre::Real *mat = m3MeshRotation[0]; // Ogre::Matrix is row major
+      Ogre::Vector3 v3AddBatchCenter = queuedMesh.position - batchCenter;
 
 		for (Ogre::ushort i = 0; i < destBinds->getBufferCount(); ++i)
 		{
@@ -252,106 +254,68 @@ void WindBatchedGeometry::WindSubBatch::build()
 						elem.baseVertexPointerToElement(sourceBase, &sourcePtr);
 						elem.baseVertexPointerToElement(destBase, &destPtr);
 
-						Vector3 tmp;
-						uint32 tmpColor;
-						uint8 tmpR, tmpG, tmpB, tmpA;
-
 						switch (elem.getSemantic())
 						{
 						case VES_POSITION:
-							tmp.x = *sourcePtr++;
-							tmp.y = *sourcePtr++;
-							tmp.z = *sourcePtr++;
-							
-							//Transform
-
-                     // original code
-							//tmp = (queuedMesh.orientation * (tmp * queuedMesh.scale)) + queuedMesh.position;
-							//vertexPos = tmp - queuedMesh.position;
-							//tmp -= batchCenter;		//Adjust for batch center
-
-                     // SVA speed up
                      {
-                        vertexPos = mat3MeshRotation * (tmp * queuedMesh.scale);
-                        tmp = vertexPos + queuedMesh.position - batchCenter;
-                     }
+                        Ogre::Vector3 tmp(sourcePtr[0], sourcePtr[1], sourcePtr[2]);
+                        tmp *= queuedMesh.scale;
+                        // rotate vector by matrix. Ogre::Matrix3::operator* (const Vector3&) is not fast
+                        vertexPos.x = mat[0] * tmp.x + mat[1] * tmp.y + mat[2] * tmp.z;
+                        vertexPos.y = mat[3] * tmp.x + mat[4] * tmp.y + mat[5] * tmp.z;
+                        vertexPos.z = mat[6] * tmp.x + mat[7] * tmp.y + mat[8] * tmp.z;
 
-							*destPtr++ = tmp.x;
-							*destPtr++ = tmp.y;
-							*destPtr++ = tmp.z;
+                        tmp = vertexPos + v3AddBatchCenter;
+                        destPtr[0] = tmp.x; destPtr[1] = tmp.y; destPtr[2] = tmp.z;
+                     }
 							break;
 
-						case VES_NORMAL:
-							tmp.x = *sourcePtr++;
-							tmp.y = *sourcePtr++;
-							tmp.z = *sourcePtr++;
-
-							//Rotate
-							//tmp = queuedMesh.orientation * tmp;
-                     // SVA
+                  case VES_NORMAL:
+                  case VES_BINORMAL:
+                  case VES_TANGENT:
                      {
-                        tmp = mat3MeshRotation * tmp;
+                        // rotate vector by matrix. Ogre::Matrix3::operator* (const Vector3&) is not fast
+                        destPtr[0] = mat[0] * sourcePtr[0] + mat[1] * sourcePtr[1] + mat[2] * sourcePtr[2]; // x
+                        destPtr[1] = mat[3] * sourcePtr[0] + mat[4] * sourcePtr[1] + mat[5] * sourcePtr[2]; // y
+                        destPtr[2] = mat[6] * sourcePtr[0] + mat[6] * sourcePtr[1] + mat[6] * sourcePtr[2]; // z
                      }
-
-							*destPtr++ = tmp.x;
-							*destPtr++ = tmp.y;
-							*destPtr++ = tmp.z;
-							break;
+                     break;
 
 						case VES_DIFFUSE:
-							tmpColor = *((uint32*)sourcePtr++);
-							tmpR = ((tmpColor) & 0xFF) * queuedMesh.color.r;
-							tmpG = ((tmpColor >> 8) & 0xFF) * queuedMesh.color.g;
-							tmpB = ((tmpColor >> 16) & 0xFF) * queuedMesh.color.b;
-							tmpA = (tmpColor >> 24) & 0xFF;
-
-							tmpColor = tmpR | (tmpG << 8) | (tmpB << 16) | (tmpA << 24);
-							*((uint32*)destPtr++) = tmpColor;
-							break;
-
-						case VES_TANGENT:
-						case VES_BINORMAL:
-							tmp.x = *sourcePtr++;
-							tmp.y = *sourcePtr++;
-							tmp.z = *sourcePtr++;
-
-							//Rotate
-							//tmp = queuedMesh.orientation * tmp;
-                     // SVA
                      {
-                        tmp = mat3MeshRotation * tmp;
-                     }
+                        Ogre::uint32 tmpColor = *(reinterpret_cast<uint32*>(sourcePtr));
+                        Ogre::uint8 tmpR = (tmpColor & 0xFF)         * queuedMesh.color.r;
+                        Ogre::uint8 tmpG = ((tmpColor >> 8) & 0xFF)  * queuedMesh.color.g;
+                        Ogre::uint8 tmpB = ((tmpColor >> 16) & 0xFF) * queuedMesh.color.b;
+                        Ogre::uint8 tmpA = ((tmpColor >> 24) & 0xFF) * queuedMesh.color.a;
 
-							*destPtr++ = tmp.x;
-							*destPtr++ = tmp.y;
-							*destPtr++ = tmp.z;
+                        tmpColor = tmpR | (tmpG << 8) | (tmpB << 16) | (tmpA << 24);
+                        *(reinterpret_cast<uint32*>(destPtr)) = tmpColor;
+                     }
 							break;
-						
+
 						case VES_TEXTURE_COORDINATES:
-							if (elem.getIndex() == texCoordCount)
-							{
-								// parameters to be passed to the shader
-								*destPtr++ = vertexPos.x;                 // radius coefficient
-								*destPtr++ = vertexPos.y * invMaxHeight;  // height coefficient
-								*destPtr++ = factorX;
-								*destPtr++ = factorY;
-							}
-							else
-							{
-								if (elem.getIndex() == texCoordCount + 1 )
-								{
-									// original position for each vertex
-									*destPtr++ = queuedMesh.position.x;
-									*destPtr++ = queuedMesh.position.y;
-									*destPtr++ = queuedMesh.position.z;
-									*destPtr++ = 0;
-								}
-								else
-								{
-									memcpy(destPtr, sourcePtr, VertexElement::getTypeSize(elem.getType()));
-								}
-							}
-							break;	
+                     {
+                        if (elem.getIndex() == texCoordCount)
+                        {
+                           // parameters to be passed to the shader
+                           destPtr[0] = (float)vertexPos.x;                // radius coefficient
+                           destPtr[1] = (float)vertexPos.y * invMaxHeight; // height coefficient
+                           destPtr[2] = factorX;
+                           destPtr[3] = factorY;
+                        }
+                        else if (elem.getIndex() == texCoordCount + 1)
+                        {
+                           // original position for each vertex
+                           destPtr[0] = (float)queuedMesh.position.x;
+                           destPtr[1] = (float)queuedMesh.position.y;
+                           destPtr[2] = (float)queuedMesh.position.z;
+                           destPtr[3] = 0.f;
+                        }
+                        else
+                           memcpy(destPtr, sourcePtr, VertexElement::getTypeSize(elem.getType()));
+                     }                  
+                     break;	
 
 						default:
 							//Raw copy
