@@ -758,54 +758,56 @@ void StaticBillboardSet::updateAll(const Vector3 &cameraDirection)
    if (vUp.y < 0)
       vUp *= -1;
 
+   // Precompute preRotatedQuad for both cases (BBO_CENTER, BBO_BOTTOM_CENTER)
+   
+   Vector3 vPoint0 = (-vRight + vUp);
+   Vector3 vPoint1 = ( vRight + vUp);
+   Vector3 vPoint2 = (-vRight - vUp);
+   Vector3 vPoint3 = ( vRight - vUp);
+
+   float preRotatedQuad_BBO_CENTER[16] = // single prerotated quad oriented towards the camera
+   {
+      (float)vPoint0.x, (float)vPoint0.y, (float)vPoint0.z, 0.0f,
+      (float)vPoint1.x, (float)vPoint1.y, (float)vPoint1.z, 0.0f,
+      (float)vPoint2.x, (float)vPoint2.y, (float)vPoint2.z, 0.0f,
+      (float)vPoint3.x, (float)vPoint3.y, (float)vPoint3.z, 0.0f
+   };
+
+   vPoint0 = (-vRight + vUp + vUp);
+   vPoint1 = ( vRight + vUp + vUp);
+   vPoint2 = (-vRight);
+   vPoint3 = ( vRight);
+   float preRotatedQuad_BBO_BOTTOM_CENTER[16] =
+   {
+      (float)vPoint0.x, (float)vPoint0.y, (float)vPoint0.z, 0.0f,
+      (float)vPoint1.x, (float)vPoint1.y, (float)vPoint1.z, 0.0f,
+      (float)vPoint2.x, (float)vPoint2.y, (float)vPoint2.z, 0.0f,
+      (float)vPoint3.x, (float)vPoint3.y, (float)vPoint3.z, 0.0f
+   };
+
    // Shaders uniform variables
    static const Ogre::String uScroll = "uScroll", vScroll = "vScroll", preRotatedQuad0 = "preRotatedQuad[0]",
       preRotatedQuad1 = "preRotatedQuad[1]", preRotatedQuad2 = "preRotatedQuad[2]", preRotatedQuad3 = "preRotatedQuad[3]";
 
-   //For each material in use by the billboard system..
+   // SVA for Ogre::Material hack
+   const GpuConstantDefinition *pGPU_ConstDef_preRotatedQuad0 = 0,
+      *pGPU_ConstDef_uScroll = 0, *pGPU_ConstDef_vScroll = 0;
+
+   // For each material in use by the billboard system..
+   bool firstIteraion = true;
    SBMaterialRefList::iterator i1 = SBMaterialRef::getList().begin(), iend = SBMaterialRef::getList().end();
    while (i1 != iend)
    {
-      Material *mat = i1->second->getMaterial();
-      BillboardOrigin bbOrigin = i1->second->getOrigin();
+      Ogre::Material *mat = i1->second->getMaterial();
 
-      Vector3 vPoint0, vPoint1, vPoint2, vPoint3;
-      if (bbOrigin == BBO_CENTER)
-      {
-         vPoint0 = (-vRight + vUp);
-         vPoint1 = ( vRight + vUp);
-         vPoint2 = (-vRight - vUp);
-         vPoint3 = ( vRight - vUp);
-      }
-      else if (bbOrigin == BBO_BOTTOM_CENTER)
-      {
-         vPoint0 = (-vRight + vUp + vUp);
-         vPoint1 = ( vRight + vUp + vUp);
-         vPoint2 = (-vRight);
-         vPoint3 = ( vRight);
-      }
-      else
-      {
-         assert(false && "Unsupported billboard origin");
-      }
-
-      //single prerotated quad oriented towards the camera
-      float preRotatedQuad[16] =
-      {
-         (float)vPoint0.x, (float)vPoint0.y, (float)vPoint0.z, 0.0f,
-         (float)vPoint1.x, (float)vPoint1.y, (float)vPoint1.z, 0.0f,
-         (float)vPoint2.x, (float)vPoint2.y, (float)vPoint2.z, 0.0f,
-         (float)vPoint3.x, (float)vPoint3.y, (float)vPoint3.z, 0.0f
-      };
-      
-      //Ensure material is set up with the vertex shader
+      // Ensure material is set up with the vertex shader
       Pass *p = mat->getTechnique(0)->getPass(0);
       if (!p->hasVertexProgram())
       {
          static const Ogre::String Sprite_vp = "Sprite_vp";
          p->setVertexProgram(Sprite_vp);
 
-         //glsl can use the built in gl_ModelViewProjectionMatrix
+         // glsl can use the built in gl_ModelViewProjectionMatrix
          if (!s_isGLSL)
             p->getVertexProgramParameters()->setNamedAutoConstant("worldViewProj", GpuProgramParameters::ACT_WORLDVIEWPROJ_MATRIX);
 
@@ -818,12 +820,35 @@ void StaticBillboardSet::updateAll(const Vector3 &cameraDirection)
          params->setNamedAutoConstant(preRotatedQuad3, GpuProgramParameters::ACT_CUSTOM);
       }
 
-      //Update the vertex shader parameters
-      GpuProgramParametersSharedPtr params = p->getVertexProgramParameters();
-      params->setNamedConstant(preRotatedQuad0, preRotatedQuad, 4);
-      params->setNamedConstant(uScroll, p->getTextureUnitState(0)->getTextureUScroll());
-      params->setNamedConstant(vScroll, p->getTextureUnitState(0)->getTextureVScroll());
+      // Which prerotated quad use
+      const float *pQuad = i1->second->getOrigin() == BBO_CENTER ? preRotatedQuad_BBO_CENTER : preRotatedQuad_BBO_BOTTOM_CENTER;
 
+      // Update the vertex shader parameters
+      GpuProgramParametersSharedPtr params = p->getVertexProgramParameters();
+      //params->setNamedConstant(preRotatedQuad0, pQuad, 4);
+      //params->setNamedConstant(uScroll, p->getTextureUnitState(0)->getTextureUScroll());
+      //params->setNamedConstant(vScroll, p->getTextureUnitState(0)->getTextureVScroll());
+
+      // SVA some hack of Ogre::Material.
+      // Since material are cloned and use same vertex shader "Sprite_vp" hardware GPU indices
+      // must be same. I don`t know planes of Ogre Team to change this behaviour.
+      // Therefore this may be unsafe code. Instead of 3 std::map lookups(map::find(const Ogre::String&)) do only 1
+      {
+         const GpuConstantDefinition *def = params->_findNamedConstantDefinition(preRotatedQuad0, true);
+         if (def != pGPU_ConstDef_preRotatedQuad0) // new material, reread
+         {
+            pGPU_ConstDef_preRotatedQuad0 = def;
+            pGPU_ConstDef_uScroll         = params->_findNamedConstantDefinition(uScroll, true);
+            pGPU_ConstDef_vScroll         = params->_findNamedConstantDefinition(vScroll, true);
+         }
+      }
+
+      float fUScroll = (float)p->getTextureUnitState(0)->getTextureUScroll(),
+         fVScroll = (float)p->getTextureUnitState(0)->getTextureVScroll();
+      params->_writeRawConstants(pGPU_ConstDef_preRotatedQuad0->physicalIndex, pQuad, 16);
+      params->_writeRawConstants(pGPU_ConstDef_uScroll->physicalIndex, &fUScroll, 1);
+      params->_writeRawConstants(pGPU_ConstDef_vScroll->physicalIndex, &fVScroll, 1);
+      
       ++i1; // next material in billboard system
    }
 }

@@ -35,24 +35,29 @@ Permission is granted to anyone to use this software for any purpose, including 
 #include "PagedGeometry.h"
 
 using namespace Ogre;
+using namespace Forests;
 
-namespace Forests {
 
-//-------------------------------------------------------------------------------------
-
-WindBatchedGeometry::WindBatchedGeometry(SceneManager *mgr, SceneNode *rootSceneNode):BatchedGeometry(mgr, rootSceneNode)
+//-----------------------------------------------------------------------------
+///
+WindBatchedGeometry::WindBatchedGeometry(SceneManager *mgr, SceneNode *rootSceneNode, const PagedGeometry *pagedGeom) : 
+BatchedGeometry(mgr, rootSceneNode),
+mGeom (pagedGeom)
 {
-	mGeom = NULL;
+   // empty
 }
 
-void WindBatchedGeometry::addEntity(Entity *ent, const Vector3 &position, const Quaternion &orientation, const Vector3 &scale, const Ogre::ColourValue &color)
+
+//-----------------------------------------------------------------------------
+///
+void WindBatchedGeometry::addEntity(Entity *ent, const Vector3 &position, const Quaternion &orientation, const Vector3 &scale, const ColourValue &color)
 {
 	MeshPtr mesh = ent->getMesh();
 	if (mesh->sharedVertexData != NULL)
 		OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "Shared vertex data not allowed", "BatchedGeometry::addEntity()");
 
 	//For each subentity
-	for (uint32 i = 0; i < ent->getNumSubEntities(); ++i)
+	for (unsigned int i = 0, cntSubEnt = ent->getNumSubEntities(); i < cntSubEnt; ++i)
    {
 		//Get the subentity
 		SubEntity *subEntity = ent->getSubEntity(i);
@@ -66,13 +71,13 @@ void WindBatchedGeometry::addEntity(Entity *ent, const Vector3 &position, const 
 		
 		//If a batch using an identical format exists...
 		WindSubBatch *batch;
-		SubBatchMap::iterator batchIter = subBatchMap.find(formatStr);
-		if (batchIter != subBatchMap.end())
+		TSubBatchMap::iterator batchIter = m_mapSubBatch.find(formatStr);
+		if (batchIter != m_mapSubBatch.end())
 			batch = static_cast < WindBatchedGeometry::WindSubBatch* > (batchIter->second);  //Use the batch
       else
       {  //Otherwise create a new batch
 			batch = new WindSubBatch(this, subEntity);
-			subBatchMap.insert(std::pair<String, WindSubBatch*>(formatStr, batch));
+			m_mapSubBatch.insert(std::pair<String, SubBatch*>(formatStr, batch));
 		}
 
 		//Now add the submesh to the compatible batch
@@ -85,20 +90,20 @@ void WindBatchedGeometry::addEntity(Entity *ent, const Vector3 &position, const 
 	AxisAlignedBox entBounds = ent->getBoundingBox();
 	entBounds.transform(mat);
 
-	if (mBoundsUndefined)
+	if (m_BoundsUndefined)
    {
-		bounds.setMinimum(entBounds.getMinimum() + position);
-		bounds.setMaximum(entBounds.getMaximum() + position);
-		mBoundsUndefined = false;
+		m_boundsAAB.setMinimum(entBounds.getMinimum() + position);
+		m_boundsAAB.setMaximum(entBounds.getMaximum() + position);
+		m_BoundsUndefined = false;
 	}
    else
    {
-		Vector3 min = bounds.getMinimum();
-		Vector3 max = bounds.getMaximum();
+		Vector3 min = m_boundsAAB.getMinimum();
+		Vector3 max = m_boundsAAB.getMaximum();
 		min.makeFloor(entBounds.getMinimum() + position);
 		max.makeCeil(entBounds.getMaximum() + position);
-		bounds.setMinimum(min);
-		bounds.setMaximum(max);
+		m_boundsAAB.setMinimum(min);
+		m_boundsAAB.setMaximum(max);
 	}
 	
 }
@@ -117,32 +122,30 @@ BatchedGeometry::SubBatch(parent, ent)
 ///
 void WindBatchedGeometry::WindSubBatch::build()
 {
-	assert(!mBuilt);
+	assert(!m_Built);
 
 	//Misc. setup
-	const Vector3 &batchCenter = static_cast < WindBatchedGeometry* > (mpParentGeom)->center;
+	const Vector3 &batchCenter = static_cast < WindBatchedGeometry* > (m_pParentGeom)->m_vecCenter;
 
-	HardwareIndexBuffer::IndexType srcIndexType = mpSubMesh->indexData->indexBuffer->getType();
-	HardwareIndexBuffer::IndexType destIndexType;
-	if (mpVertexData->vertexCount > 0xFFFF || srcIndexType == HardwareIndexBuffer::IT_32BIT)
-		destIndexType = HardwareIndexBuffer::IT_32BIT;
-	else
-		destIndexType = HardwareIndexBuffer::IT_16BIT;
+	HardwareIndexBuffer::IndexType srcIndexType = m_pSubMesh->indexData->indexBuffer->getType();
+	HardwareIndexBuffer::IndexType destIndexType = 
+      m_pVertexData->vertexCount > 0xFFFF || srcIndexType == HardwareIndexBuffer::IT_32BIT ?
+      HardwareIndexBuffer::IT_32BIT : HardwareIndexBuffer::IT_16BIT;
 
 	//Allocate the index buffer
-	mpIndexData->indexBuffer = HardwareBufferManager::getSingleton().createIndexBuffer(
-      destIndexType, mpIndexData->indexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY);
+	m_pIndexData->indexBuffer = HardwareBufferManager::getSingleton().createIndexBuffer(
+      destIndexType, m_pIndexData->indexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY);
 
 	//Lock the index buffer
 	uint32 *indexBuffer32 = 0;
 	uint16 *indexBuffer16 = 0;
 	if (destIndexType == HardwareIndexBuffer::IT_32BIT)
-		indexBuffer32 = static_cast<uint32*>(mpIndexData->indexBuffer->lock(HardwareBuffer::HBL_DISCARD));
+		indexBuffer32 = static_cast<uint32*>(m_pIndexData->indexBuffer->lock(HardwareBuffer::HBL_DISCARD));
 	else
-		indexBuffer16 = static_cast<uint16*>(mpIndexData->indexBuffer->lock(HardwareBuffer::HBL_DISCARD));
+		indexBuffer16 = static_cast<uint16*>(m_pIndexData->indexBuffer->lock(HardwareBuffer::HBL_DISCARD));
 
-   VertexBufferBinding *vertBinding = mpVertexData->vertexBufferBinding;
-	VertexDeclaration *vertDecl = mpVertexData->vertexDeclaration;
+   VertexBufferBinding *vertBinding = m_pVertexData->vertexBufferBinding;
+	VertexDeclaration *vertDecl = m_pVertexData->vertexDeclaration;
 
 	unsigned short texCoordCount = 0;
    {
@@ -168,7 +171,7 @@ void WindBatchedGeometry::WindSubBatch::build()
 	for (Ogre::ushort i = 0; i < numVertBuffs; ++i)
 	{
 		HardwareVertexBufferSharedPtr buffer = HardwareBufferManager::getSingleton().createVertexBuffer(
-         vertDecl->getVertexSize(i), mpVertexData->vertexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY);
+         vertDecl->getVertexSize(i), m_pVertexData->vertexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY);
 
 		vertBinding->setBinding(i, buffer);
 		
@@ -177,49 +180,47 @@ void WindBatchedGeometry::WindSubBatch::build()
 	}
 
 	//If no vertex colors are used, make sure the final batch includes them (so the shade values work)
-   if (mRequireVertexColors)
+   if (m_RequireVertexColors)
    {
-      if (!mpVertexData->vertexDeclaration->findElementBySemantic(VES_DIFFUSE))
+      if (!m_pVertexData->vertexDeclaration->findElementBySemantic(VES_DIFFUSE))
       {
          Ogre::ushort i = (Ogre::ushort)vertBinding->getBufferCount();
 
          vertDecl->addElement(i, 0, VET_COLOUR, VES_DIFFUSE);
 
          HardwareVertexBufferSharedPtr buffer = HardwareBufferManager::getSingleton().createVertexBuffer(
-            vertDecl->getVertexSize(i), mpVertexData->vertexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY);
+            vertDecl->getVertexSize(i), m_pVertexData->vertexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY);
          vertBinding->setBinding(i, buffer);
 
          vertexBuffers.push_back(static_cast<uchar*>(buffer->lock(HardwareBuffer::HBL_DISCARD)));
          vertexBufferElements.push_back(vertDecl->findElementsBySource(i));
       }
 
-      Pass *p = mPtrMaterial->getTechnique(0)->getPass(0);
-      p->setVertexColourTracking(TVC_AMBIENT);
+      m_ptrMaterial->getTechnique(0)->getPass(0)->setVertexColourTracking(TVC_AMBIENT);
    }
 
 
 
 	//For each queued mesh...
 	size_t indexOffset = 0;
-	for (MeshQueueIterator it = meshQueue.begin(), iend = meshQueue.end(); it != iend; ++it)
+   for (size_t iMesh = 0, meshCnt = m_queueMesh.size(); iMesh < meshCnt; ++iMesh)
    {
-		const QueuedMesh &queuedMesh = *it;
-		//const QueuedMesh queuedMesh =  dynamic_cast<WindBatchedGeometry::WindSubBatch::QueuedMesh>((*it));
+		const QueuedMesh &queuedMesh = m_queueMesh[iMesh];
+      const Ogre::Vector3 &scale = queuedMesh.scale;
 
-		const IndexData *sourceIndexData = queuedMesh.mesh->indexData;
-		const VertexData *sourceVertexData = queuedMesh.mesh->vertexData;
+		const IndexData *sourceIndexData = queuedMesh.subMesh->indexData;
+		const VertexData *sourceVertexData = queuedMesh.subMesh->vertexData;
 		Entity * ent = static_cast<Ogre::Entity*>(queuedMesh.userData);
 
       static const Ogre::String c_windFactorX = "windFactorX", c_windFactorY = "windFactorY";
-		float factorX = static_cast<WindBatchedGeometry*>(mpParentGeom)->mGeom->getCustomParam(ent->getName(), c_windFactorX, 0.f);	// amplitude in X
-		float factorY = static_cast<WindBatchedGeometry*>(mpParentGeom)->mGeom->getCustomParam(ent->getName(), c_windFactorY, 0.f);	// amplitude in Y
+		float factorX = static_cast<WindBatchedGeometry*>(m_pParentGeom)->mGeom->getCustomParam(ent->getName(), c_windFactorX, 0.f);	// amplitude in X
+		float factorY = static_cast<WindBatchedGeometry*>(m_pParentGeom)->mGeom->getCustomParam(ent->getName(), c_windFactorY, 0.f);	// amplitude in Y
 
-
-      float invMaxHeight = Ogre::Real(1.) / ent->getBoundingBox().getMaximum().y;
+      Ogre::Real invMaxHeight = Ogre::Real(1.) / ent->getBoundingBox().getMaximum().y;
 
 		//Copy mesh vertex data into the vertex buffer
 		VertexBufferBinding *sourceBinds = sourceVertexData->vertexBufferBinding;
-		VertexBufferBinding *destBinds = mpVertexData->vertexBufferBinding;
+		VertexBufferBinding *destBinds = m_pVertexData->vertexBufferBinding;
 
       // SVA speed up. Rotate 3d vector by matrix 3x3 instead of quaternion
       Ogre::Matrix3 m3MeshRotation;
@@ -235,22 +236,26 @@ void WindBatchedGeometry::WindSubBatch::build()
 				const HardwareVertexBufferSharedPtr &sourceBuffer = sourceBinds->getBuffer(i);
 				uchar *sourceBase = static_cast<uchar*>(sourceBuffer->lock(HardwareBuffer::HBL_READ_ONLY));
 
+            size_t sourceVertexSize = sourceBuffer->getVertexSize();
+            size_t destVertexSize   = vertDecl->getVertexSize(i);
+
 				//Get the locked output buffer
 				uchar *destBase = vertexBuffers[i];
 
-				//Copy vertices
-				float *sourcePtr = 0, *destPtr = 0;
+            const VertexDeclaration::VertexElementList &elems = vertexBufferElements[i];
+            VertexDeclaration::VertexElementList::const_iterator iBegin = elems.begin(), iEnd = elems.end();
+            // vector to stock the original y value of every vertex because batchCenter doesn't take consider the height of the ground
+            Ogre::Vector3 vertexPos;
+
+            //Copy vertices
+            float *sourcePtr = 0, *destPtr = 0;
 				for (size_t v = 0, vertexCount = sourceVertexData->vertexCount; v < vertexCount; ++v)
 				{
-               // vector to stock the original y value of every vertex because batchCenter doesn't take consider the height of the ground
-               Vector3 vertexPos;
-
-					// Iterate over vertex elements
-					const VertexDeclaration::VertexElementList &elems = vertexBufferElements[i];
-               VertexDeclaration::VertexElementList::const_iterator ei = elems.begin(), iend = elems.end();
-					for ( ; ei != iend; ++ei)
+               VertexDeclaration::VertexElementList::const_iterator itElement = iBegin;
+               // Iterate over vertex elements
+					for ( ; itElement != iEnd; ++itElement)
 					{
-						const VertexElement &elem = *ei;
+						const VertexElement &elem = *itElement;
 						elem.baseVertexPointerToElement(sourceBase, &sourcePtr);
 						elem.baseVertexPointerToElement(destBase, &destPtr);
 
@@ -258,15 +263,15 @@ void WindBatchedGeometry::WindSubBatch::build()
 						{
 						case VES_POSITION:
                      {
-                        Ogre::Vector3 tmp(sourcePtr[0], sourcePtr[1], sourcePtr[2]);
-                        tmp *= queuedMesh.scale;
+                        Ogre::Vector3 tmp(sourcePtr[0] * scale.x, sourcePtr[1] * scale.y, sourcePtr[2] * scale.z);
                         // rotate vector by matrix. Ogre::Matrix3::operator* (const Vector3&) is not fast
                         vertexPos.x = mat[0] * tmp.x + mat[1] * tmp.y + mat[2] * tmp.z;
                         vertexPos.y = mat[3] * tmp.x + mat[4] * tmp.y + mat[5] * tmp.z;
                         vertexPos.z = mat[6] * tmp.x + mat[7] * tmp.y + mat[8] * tmp.z;
-
                         tmp = vertexPos + v3AddBatchCenter;
-                        destPtr[0] = tmp.x; destPtr[1] = tmp.y; destPtr[2] = tmp.z;
+                        destPtr[0] = (float)tmp.x;
+                        destPtr[1] = (float)tmp.y;
+                        destPtr[2] = (float)tmp.z;
                      }
 							break;
 
@@ -275,19 +280,19 @@ void WindBatchedGeometry::WindSubBatch::build()
                   case VES_TANGENT:
                      {
                         // rotate vector by matrix. Ogre::Matrix3::operator* (const Vector3&) is not fast
-                        destPtr[0] = mat[0] * sourcePtr[0] + mat[1] * sourcePtr[1] + mat[2] * sourcePtr[2]; // x
-                        destPtr[1] = mat[3] * sourcePtr[0] + mat[4] * sourcePtr[1] + mat[5] * sourcePtr[2]; // y
-                        destPtr[2] = mat[6] * sourcePtr[0] + mat[6] * sourcePtr[1] + mat[6] * sourcePtr[2]; // z
+                        destPtr[0] = float(mat[0] * sourcePtr[0] + mat[1] * sourcePtr[1] + mat[2] * sourcePtr[2]);   // x
+                        destPtr[1] = float(mat[3] * sourcePtr[0] + mat[4] * sourcePtr[1] + mat[5] * sourcePtr[2]);   // y
+                        destPtr[2] = float(mat[6] * sourcePtr[0] + mat[6] * sourcePtr[1] + mat[6] * sourcePtr[2]);   // z
                      }
                      break;
 
 						case VES_DIFFUSE:
                      {
                         Ogre::uint32 tmpColor = *(reinterpret_cast<uint32*>(sourcePtr));
-                        Ogre::uint8 tmpR = (tmpColor & 0xFF)         * queuedMesh.color.r;
-                        Ogre::uint8 tmpG = ((tmpColor >> 8) & 0xFF)  * queuedMesh.color.g;
-                        Ogre::uint8 tmpB = ((tmpColor >> 16) & 0xFF) * queuedMesh.color.b;
-                        Ogre::uint8 tmpA = ((tmpColor >> 24) & 0xFF) * queuedMesh.color.a;
+                        Ogre::uint8 tmpR = static_cast<uint8>((tmpColor & 0xFF) * queuedMesh.color.r);
+                        Ogre::uint8 tmpG = static_cast<uint8>(((tmpColor >> 8) & 0xFF)  * queuedMesh.color.g);
+                        Ogre::uint8 tmpB = static_cast<uint8>(((tmpColor >> 16) & 0xFF) * queuedMesh.color.b);
+                        Ogre::uint8 tmpA = static_cast<uint8>(((tmpColor >> 24) & 0xFF) * queuedMesh.color.a);
 
                         tmpColor = tmpR | (tmpG << 8) | (tmpB << 16) | (tmpA << 24);
                         *(reinterpret_cast<uint32*>(destPtr)) = tmpColor;
@@ -299,8 +304,8 @@ void WindBatchedGeometry::WindSubBatch::build()
                         if (elem.getIndex() == texCoordCount)
                         {
                            // parameters to be passed to the shader
-                           destPtr[0] = (float)vertexPos.x;                // radius coefficient
-                           destPtr[1] = (float)vertexPos.y * invMaxHeight; // height coefficient
+                           destPtr[0] = float(vertexPos.x);                // radius coefficient
+                           destPtr[1] = float(vertexPos.y * invMaxHeight); // height coefficient
                            destPtr[2] = factorX;
                            destPtr[3] = factorY;
                         }
@@ -313,20 +318,22 @@ void WindBatchedGeometry::WindSubBatch::build()
                            destPtr[3] = 0.f;
                         }
                         else
-                           memcpy(destPtr, sourcePtr, VertexElement::getTypeSize(elem.getType()));
+                           //memcpy(destPtr, sourcePtr, VertexElement::getTypeSize(elem.getType()));
+                           memcpy(destPtr, sourcePtr, s_vertexType2Size[elem.getType()]);
                      }                  
                      break;	
 
 						default:
 							//Raw copy
-							memcpy(destPtr, sourcePtr, VertexElement::getTypeSize(elem.getType()));
+							//memcpy(destPtr, sourcePtr, VertexElement::getTypeSize(elem.getType()));
+                     memcpy(destPtr, sourcePtr, s_vertexType2Size[elem.getType()]);
 							break;
 						};
 					}
 
 					// Increment both pointers
-					destBase += vertDecl->getVertexSize(i);
-					sourceBase += sourceBuffer->getVertexSize();
+					destBase    += destVertexSize;
+					sourceBase  += sourceVertexSize;
 				}
 
 				//Unlock the input buffer
@@ -335,16 +342,16 @@ void WindBatchedGeometry::WindSubBatch::build()
          }
          else
          {
-				assert(mRequireVertexColors);
+				assert(m_RequireVertexColors);
 
 				//Get the locked output buffer
 				uint32 *startPtr = (uint32*)vertexBuffers[vertBinding->getBufferCount()-1];
 				uint32 *endPtr = startPtr + sourceVertexData->vertexCount;
 				
 				//Generate color
-				uint8 tmpR = queuedMesh.color.r * 255;
-				uint8 tmpG = queuedMesh.color.g * 255;
-				uint8 tmpB = queuedMesh.color.b * 255;
+				uint8 tmpR = static_cast<uint8>(queuedMesh.color.r * 255);
+				uint8 tmpG = static_cast<uint8>(queuedMesh.color.g * 255);
+				uint8 tmpB = static_cast<uint8>(queuedMesh.color.b * 255);
 				uint32 tmpColor = tmpR | (tmpG << 8) | (tmpB << 16) | (0xFF << 24);
 
 				//Copy colors
@@ -424,14 +431,10 @@ void WindBatchedGeometry::WindSubBatch::build()
 	}
 
 	//Unlock buffers
-	mpIndexData->indexBuffer->unlock();
+	m_pIndexData->indexBuffer->unlock();
 	for (Ogre::ushort i = 0; i < vertBinding->getBufferCount(); ++i)
 		vertBinding->getBuffer(i)->unlock();
 
-	//Clear mesh queue
-	meshQueue.clear();
-
-	mBuilt = true;
-}
-
+	m_queueMesh.clear();
+	m_Built = true;
 }

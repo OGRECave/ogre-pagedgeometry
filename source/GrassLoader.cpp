@@ -140,7 +140,7 @@ void GrassLoader::loadPage(PageInfo &page)
 		}
 		
 		//Calculate how much grass needs to be added
-		float volume = page.bounds.width() * page.bounds.height();
+		Ogre::Real volume = page.bounds.width() * page.bounds.height();
 		unsigned int grassCount = (unsigned int)(layer->density * densityFactor * volume);
 
 		//The vertex buffer can't be allocated until the exact number of polygons is known,
@@ -194,7 +194,7 @@ void GrassLoader::unloadPage(PageInfo &page)
 	// we unload the page in the page's destructor
 }
 
-Mesh *GrassLoader::generateGrass_QUAD(PageInfo &page, GrassLayer *layer, float *grassPositions, unsigned int grassCount)
+Mesh *GrassLoader::generateGrass_QUAD(PageInfo &page, GrassLayer *layer, const float *grassPositions, unsigned int grassCount)
 {
 	//Calculate the number of quads to be added
 	unsigned int quadCount;
@@ -238,11 +238,11 @@ Mesh *GrassLoader::generateGrass_QUAD(PageInfo &page, GrassLayer *layer, float *
 	float* pReal = static_cast<float*>(vbuf->lock(HardwareBuffer::HBL_DISCARD));
 
 	//Calculate size variance
-	float rndWidth = layer->maxWidth - layer->minWidth;
-	float rndHeight = layer->maxHeight - layer->minHeight;
+	Ogre::Real rndWidth = layer->maxWidth - layer->minWidth;
+	Ogre::Real rndHeight = layer->maxHeight - layer->minHeight;
 
-	float minY = Math::POS_INFINITY, maxY = Math::NEG_INFINITY;
-	float *posPtr = grassPositions;	//Position array "iterator"
+	Ogre::Real minY = Math::POS_INFINITY, maxY = Math::NEG_INFINITY;
+	const float *posPtr = grassPositions;	//Position array "iterator"
 	for (uint16 i = 0; i < grassCount; ++i)
 	{
 		//Get the x and z positions from the position array
@@ -257,21 +257,22 @@ Mesh *GrassLoader::generateGrass_QUAD(PageInfo &page, GrassLayer *layer, float *
 			color = 0xFFFFFFFF;
 
 		//Calculate size
-		float rnd = *posPtr++;	//The same rnd value is used for width and height to maintain aspect ratio
-		float halfScaleX = (layer->minWidth + rndWidth * rnd) * 0.5f;
-		float scaleY = (layer->minHeight + rndHeight * rnd);
+		Ogre::Real rnd = *posPtr++;	//The same rnd value is used for width and height to maintain aspect ratio
+		Ogre::Real halfScaleX = (layer->minWidth + rndWidth * rnd) * 0.5f;
+		Ogre::Real scaleY = (layer->minHeight + rndHeight * rnd);
 
 		//Calculate rotation
-		float angle = *posPtr++;
-		float xTrans = Math::Cos(angle) * halfScaleX;
-		float zTrans = Math::Sin(angle) * halfScaleX;
+		Ogre::Real angle = *posPtr++;
+		Ogre::Real xTrans = Math::Cos(angle) * halfScaleX;
+		Ogre::Real zTrans = Math::Sin(angle) * halfScaleX;
 
 		//Calculate heights and edge positions
-		float x1 = x - xTrans, z1 = z - zTrans;
-		float x2 = x + xTrans, z2 = z + zTrans;
+		Ogre::Real x1 = x - xTrans, z1 = z - zTrans;
+		Ogre::Real x2 = x + xTrans, z2 = z + zTrans;
 
-		float y1, y2;
-		if (heightFunction){
+		Ogre::Real y1 = 0.f, y2 = 0.f;
+		if (heightFunction)
+      {
 			y1 = heightFunction(x1, z1, heightFunctionUserData);
 			y2 = heightFunction(x2, z2, heightFunctionUserData);
 
@@ -281,33 +282,39 @@ Mesh *GrassLoader::generateGrass_QUAD(PageInfo &page, GrassLayer *layer, float *
 				y2 = y1;
 				z2 = z1;
 			}
-		} else {
-			y1 = 0;
-			y2 = 0;
 		}
 
-		//Add vertices
-		*pReal++ = (x1 - page.centerPoint.x); *pReal++ = (y1 + scaleY); *pReal++ = (z1 - page.centerPoint.z);	//pos
-		*((uint32*)pReal++) = color;							//color
-		*pReal++ = 0; *pReal++ = 0;								//uv
+      //Add vertices
+      *pReal++ = float(x1 - page.centerPoint.x);
+      *pReal++ = float(y1 + scaleY);
+      *pReal++ = float(z1 - page.centerPoint.z);   //pos
 
-		*pReal++ = (x2 - page.centerPoint.x); *pReal++ = (y2 + scaleY); *pReal++ = (z2 - page.centerPoint.z);	//pos
-		*((uint32*)pReal++) = color;							//color
-		*pReal++ = 1; *pReal++ = 0;								//uv
+      *((uint32*)pReal++) = color;                 //color
+      *pReal++ = 0.f; *pReal++ = 0.f;              //uv
 
-		*pReal++ = (x1 - page.centerPoint.x); *pReal++ = (y1); *pReal++ = (z1 - page.centerPoint.z);			//pos
-		*((uint32*)pReal++) = color;							//color
-		*pReal++ = 0; *pReal++ = 1;								//uv
+      *pReal++ = float(x2 - page.centerPoint.x);
+      *pReal++ = float(y2 + scaleY);
+      *pReal++ = float(z2 - page.centerPoint.z);   //pos
+      *((uint32*)pReal++) = color;                 //color
+      *pReal++ = 1.f; *pReal++ = 0.f;              //uv
 
-		*pReal++ = (x2 - page.centerPoint.x); *pReal++ = (y2); *pReal++ = (z2 - page.centerPoint.z);			//pos
-		*((uint32*)pReal++) = color;							//color
-		*pReal++ = 1; *pReal++ = 1;								//uv
+      *pReal++ = float(x1 - page.centerPoint.x);
+      *pReal++ = float(y1);
+      *pReal++ = float(z1 - page.centerPoint.z);   //pos
+      *((uint32*)pReal++) = color;                 //color
+      *pReal++ = 0.f; *pReal++ = 1.f;              //uv
 
-		//Update bounds
-		if (y1 < minY) minY = y1;
-		if (y2 < minY) minY = y2;
-		if (y1 + scaleY > maxY) maxY = y1 + scaleY;
-		if (y2 + scaleY > maxY) maxY = y2 + scaleY;
+      *pReal++ = float(x2 - page.centerPoint.x);
+      *pReal++ = float(y2);
+      *pReal++ = float(z2 - page.centerPoint.z);   //pos
+      *((uint32*)pReal++) = color;                 //color
+      *pReal++ = 1.f; *pReal++ = 1.f;              //uv
+
+      //Update bounds
+      if (y1 < minY) minY = y1;
+      if (y2 < minY) minY = y2;
+      if (y1 + scaleY > maxY) maxY = y1 + scaleY;
+      if (y2 + scaleY > maxY) maxY = y2 + scaleY;
 	}
 
 	vbuf->unlock();
@@ -354,7 +361,7 @@ Mesh *GrassLoader::generateGrass_QUAD(PageInfo &page, GrassLayer *layer, float *
 	return mesh.getPointer();
 }
 
-Mesh *GrassLoader::generateGrass_CROSSQUADS(PageInfo &page, GrassLayer *layer, float *grassPositions, unsigned int grassCount)
+Mesh *GrassLoader::generateGrass_CROSSQUADS(PageInfo &page, GrassLayer *layer, const float *grassPositions, unsigned int grassCount)
 {
 	//Calculate the number of quads to be added
 	unsigned int quadCount;
@@ -398,16 +405,16 @@ Mesh *GrassLoader::generateGrass_CROSSQUADS(PageInfo &page, GrassLayer *layer, f
 	float* pReal = static_cast<float*>(vbuf->lock(HardwareBuffer::HBL_DISCARD));
 
 	//Calculate size variance
-	float rndWidth = layer->maxWidth - layer->minWidth;
-	float rndHeight = layer->maxHeight - layer->minHeight;
+	Ogre::Real rndWidth = layer->maxWidth - layer->minWidth;
+	Ogre::Real rndHeight = layer->maxHeight - layer->minHeight;
+	Ogre::Real minY = Math::POS_INFINITY, maxY = Math::NEG_INFINITY;
 
-	float minY = Math::POS_INFINITY, maxY = Math::NEG_INFINITY;
-	float *posPtr = grassPositions;	//Position array "iterator"
+	const float *posPtr = grassPositions;	//Position array "iterator"
 	for (uint16 i = 0; i < grassCount; ++i)
 	{
 		//Get the x and z positions from the position array
-		float x = *posPtr++;
-		float z = *posPtr++;
+		Ogre::Real x = *posPtr++;
+		Ogre::Real z = *posPtr++;
 
 		//Get the color at the grass position
 		uint32 color;
@@ -417,51 +424,58 @@ Mesh *GrassLoader::generateGrass_CROSSQUADS(PageInfo &page, GrassLayer *layer, f
 			color = 0xFFFFFFFF;
 
 		//Calculate size
-		float rnd = *posPtr++;	//The same rnd value is used for width and height to maintain aspect ratio
-		float halfScaleX = (layer->minWidth + rndWidth * rnd) * 0.5f;
-		float scaleY = (layer->minHeight + rndHeight * rnd);
+		Ogre::Real rnd = *posPtr++;	//The same rnd value is used for width and height to maintain aspect ratio
+		Ogre::Real halfScaleX = (layer->minWidth + rndWidth * rnd) * 0.5f;
+		Ogre::Real scaleY = (layer->minHeight + rndHeight * rnd);
 
 		//Calculate rotation
-		float angle = *posPtr++;
-		float xTrans = Math::Cos(angle) * halfScaleX;
-		float zTrans = Math::Sin(angle) * halfScaleX;
+		Ogre::Real angle = *posPtr++;
+		Ogre::Real xTrans = Math::Cos(angle) * halfScaleX;
+		Ogre::Real zTrans = Math::Sin(angle) * halfScaleX;
 
 		//Calculate heights and edge positions
-		float x1 = x - xTrans, z1 = z - zTrans;
-		float x2 = x + xTrans, z2 = z + zTrans;
+		Ogre::Real x1 = x - xTrans, z1 = z - zTrans;
+		Ogre::Real x2 = x + xTrans, z2 = z + zTrans;
 
-		float y1, y2;
-		if (heightFunction){
-			y1 = heightFunction(x1, z1, heightFunctionUserData);
-			y2 = heightFunction(x2, z2, heightFunctionUserData);
+      Ogre::Real y1 = 0.f, y2 = 0.f;
+      if (heightFunction)
+      {
+         y1 = heightFunction(x1, z1, heightFunctionUserData);
+         y2 = heightFunction(x2, z2, heightFunctionUserData);
 
-			if (layer->getMaxSlope() < (Math::Abs(y1 - y2) / (halfScaleX * 2))) {
-				//Degenerate the face
-				x2 = x1;
-				y2 = y1;
-				z2 = z1;
-			}
-		} else {
-			y1 = 0;
-			y2 = 0;
-		}
+         if (layer->getMaxSlope() < (Math::Abs(y1 - y2) / (halfScaleX * 2)))
+         {
+            //Degenerate the face
+            x2 = x1;
+            y2 = y1;
+            z2 = z1;
+         }
+      }
 
 		//Add vertices
-		*pReal++ = (x1 - page.centerPoint.x); *pReal++ = (y1 + scaleY); *pReal++ = (z1 - page.centerPoint.z);	//pos
-		*((uint32*)pReal++) = color;							//color
-		*pReal++ = 0; *pReal++ = 0;								//uv
+		*pReal++ = float(x1 - page.centerPoint.x);
+      *pReal++ = float(y1 + scaleY);
+      *pReal++ = float(z1 - page.centerPoint.z);   //pos
+		*((uint32*)pReal++) = color;                 //color
+		*pReal++ = 0.f; *pReal++ = 0.f;              //uv
 
-		*pReal++ = (x2 - page.centerPoint.x); *pReal++ = (y2 + scaleY); *pReal++ = (z2 - page.centerPoint.z);	//pos
-		*((uint32*)pReal++) = color;							//color
-		*pReal++ = 1; *pReal++ = 0;								//uv
+		*pReal++ = float(x2 - page.centerPoint.x);
+      *pReal++ = float(y2 + scaleY);
+      *pReal++ = float(z2 - page.centerPoint.z);   //pos
+		*((uint32*)pReal++) = color;                 //color
+		*pReal++ = 1.f; *pReal++ = 0.f;              //uv
 
-		*pReal++ = (x1 - page.centerPoint.x); *pReal++ = (y1); *pReal++ = (z1 - page.centerPoint.z);			//pos
-		*((uint32*)pReal++) = color;							//color
-		*pReal++ = 0; *pReal++ = 1;								//uv
+		*pReal++ = float(x1 - page.centerPoint.x);
+      *pReal++ = float(y1);
+      *pReal++ = float(z1 - page.centerPoint.z);   //pos
+		*((uint32*)pReal++) = color;                 //color
+		*pReal++ = 0.f; *pReal++ = 1.f;              //uv
 
-		*pReal++ = (x2 - page.centerPoint.x); *pReal++ = (y2); *pReal++ = (z2 - page.centerPoint.z);			//pos
-		*((uint32*)pReal++) = color;							//color
-		*pReal++ = 1; *pReal++ = 1;								//uv
+		*pReal++ = float(x2 - page.centerPoint.x);
+      *pReal++ = float(y2);
+      *pReal++ = float(z2 - page.centerPoint.z);   //pos
+		*((uint32*)pReal++) = color;                 //color
+		*pReal++ = 1.f; *pReal++ = 1.f;              //uv
 
 		//Update bounds
 		if (y1 < minY) minY = y1;
@@ -470,12 +484,14 @@ Mesh *GrassLoader::generateGrass_CROSSQUADS(PageInfo &page, GrassLayer *layer, f
 		if (y2 + scaleY > maxY) maxY = y2 + scaleY;
 
 		//Calculate heights and edge positions
-		float x3 = x + zTrans, z3 = z - xTrans;
-		float x4 = x - zTrans, z4 = z + xTrans;
+		Ogre::Real x3 = x + zTrans, z3 = z - xTrans;
+		Ogre::Real x4 = x - zTrans, z4 = z + xTrans;
 
-		float y3, y4;
-		if (heightFunction){
-			if (layer->getMaxSlope() < (Math::Abs(y1 - y2) / (halfScaleX * 2))) {
+		Ogre::Real y3 = 0.f, y4 = 0.f;
+		if (heightFunction)
+      {
+			if (layer->getMaxSlope() < (Math::Abs(y1 - y2) / (halfScaleX * 2)))
+         {
 				//Degenerate the face
 				x2 = x1;
 				y2 = y1;
@@ -484,27 +500,32 @@ Mesh *GrassLoader::generateGrass_CROSSQUADS(PageInfo &page, GrassLayer *layer, f
 
 			y3 = heightFunction(x3, z3, heightFunctionUserData);
 			y4 = heightFunction(x4, z4, heightFunctionUserData);
-		} else {
-			y3 = 0;
-			y4 = 0;
 		}
 
 		//Add vertices
-		*pReal++ = (x3 - page.centerPoint.x); *pReal++ = (y3 + scaleY); *pReal++ = (z3 - page.centerPoint.z);	//pos
-		*((uint32*)pReal++) = color;							//color
-		*pReal++ = 0; *pReal++ = 0;								//uv
+		*pReal++ = float(x3 - page.centerPoint.x);
+      *pReal++ = float(y3 + scaleY);
+      *pReal++ = float(z3 - page.centerPoint.z);   //pos
+		*((uint32*)pReal++) = color;                 //color
+		*pReal++ = 0.f; *pReal++ = 0.f;              //uv
 
-		*pReal++ = (x4 - page.centerPoint.x); *pReal++ = (y4 + scaleY); *pReal++ = (z4 - page.centerPoint.z);	//pos
-		*((uint32*)pReal++) = color;							//color
-		*pReal++ = 1; *pReal++ = 0;								//uv
+		*pReal++ = float(x4 - page.centerPoint.x);
+      *pReal++ = float(y4 + scaleY);
+      *pReal++ = float(z4 - page.centerPoint.z);   //pos
+		*((uint32*)pReal++) = color;                 //color
+		*pReal++ = 1.f; *pReal++ = 0.f;              //uv
 
-		*pReal++ = (x3 - page.centerPoint.x); *pReal++ = (y3); *pReal++ = (z3 - page.centerPoint.z);			//pos
-		*((uint32*)pReal++) = color;							//color
-		*pReal++ = 0; *pReal++ = 1;								//uv
+		*pReal++ = float(x3 - page.centerPoint.x);
+      *pReal++ = float(y3); 
+      *pReal++ = float(z3 - page.centerPoint.z);   //pos
+		*((uint32*)pReal++) = color;                 //color
+		*pReal++ = 0.f; *pReal++ = 1.f;              //uv
 
-		*pReal++ = (x4 - page.centerPoint.x); *pReal++ = (y4); *pReal++ = (z4 - page.centerPoint.z);			//pos
-		*((uint32*)pReal++) = color;							//color
-		*pReal++ = 1; *pReal++ = 1;								//uv
+		*pReal++ = float(x4 - page.centerPoint.x);
+      *pReal++ = float(y4);
+      *pReal++ = float(z4 - page.centerPoint.z);   //pos
+		*((uint32*)pReal++) = color;                 //color
+		*pReal++ = 1.f; *pReal++ = 1.f;              //uv
 
 		//Update bounds
 		if (y3 < minY) minY = y1;
@@ -558,7 +579,7 @@ Mesh *GrassLoader::generateGrass_CROSSQUADS(PageInfo &page, GrassLayer *layer, f
 	return mesh.getPointer();
 }
 
-Mesh *GrassLoader::generateGrass_SPRITE(PageInfo &page, GrassLayer *layer, float *grassPositions, unsigned int grassCount)
+Mesh *GrassLoader::generateGrass_SPRITE(PageInfo &page, GrassLayer *layer, const float *grassPositions, unsigned int grassCount)
 {
 	//Calculate the number of quads to be added
 	unsigned int quadCount;
@@ -604,70 +625,57 @@ Mesh *GrassLoader::generateGrass_SPRITE(PageInfo &page, GrassLayer *layer, float
 	float* pReal = static_cast<float*>(vbuf->lock(HardwareBuffer::HBL_DISCARD));
 
 	//Calculate size variance
-	float rndWidth = layer->maxWidth - layer->minWidth;
-	float rndHeight = layer->maxHeight - layer->minHeight;
+	Ogre::Real rndWidth = layer->maxWidth - layer->minWidth;
+	Ogre::Real rndHeight = layer->maxHeight - layer->minHeight;
+	Ogre::Real minY = Math::POS_INFINITY, maxY = Math::NEG_INFINITY;
 
-	float minY = Math::POS_INFINITY, maxY = Math::NEG_INFINITY;
-	float *posPtr = grassPositions;	//Position array "iterator"
+	const float *posPtr = grassPositions;	//Position array "iterator"
 	for (uint16 i = 0; i < grassCount; ++i)
 	{
 		//Get the x and z positions from the position array
 		float x = *posPtr++;
 		float z = *posPtr++;
+      float y = heightFunction ? (float)heightFunction(x, z, heightFunctionUserData) : 0.f;
 
-		//Calculate height
-		float y;
-		if (heightFunction){
-			y = heightFunction(x, z, heightFunctionUserData);
-		} else {
-			y = 0;
-		}
-
-		float x1 = (x - page.centerPoint.x);
-		float z1 = (z - page.centerPoint.z);
+		float x1 = float(x - page.centerPoint.x);
+		float z1 = float(z - page.centerPoint.z);
 
 		//Get the color at the grass position
-		uint32 color;
-		if (layer->colorMap)
-			color = layer->colorMap->getColorAt(x, z, layer->mapBounds);
-		else
-			color = 0xFFFFFFFF;
+      uint32 color = layer->colorMap ? layer->colorMap->getColorAt(x, z, layer->mapBounds) : 0xFFFFFFFF;
 
 		//Calculate size
 		float rnd = *posPtr++;	//The same rnd value is used for width and height to maintain aspect ratio
-		float halfXScale = (layer->minWidth + rndWidth * rnd) * 0.5f;
-		float scaleY = (layer->minHeight + rndHeight * rnd);
+		float halfXScale = float(layer->minWidth + rndWidth * rnd) * 0.5f;
+		float scaleY = float(layer->minHeight + rndHeight * rnd);
 
 		//Randomly mirror grass textures
-		float uvLeft, uvRight;
-		if (*posPtr++ > 0.5f){
-			uvLeft = 0;
-			uvRight = 1;
-		} else {
-			uvLeft = 1;
-			uvRight = 0;
+		float uvLeft = 1.f, uvRight = 0.f;
+		if (*posPtr++ > 0.5f)
+      {
+			uvLeft = 0.f;
+			uvRight = 1.f;
 		}
 
 		//Add vertices
-		*pReal++ = x1; *pReal++ = y; *pReal++ = z1;					//center position
-		*pReal++ = -halfXScale; *pReal++ = scaleY; *pReal++ = 0; *pReal++ = 0;	//normal (used to store relative corner positions)
-		*((uint32*)pReal++) = color;								//color
-		*pReal++ = uvLeft; *pReal++ = 0;							//uv
+      *pReal++ = x1; *pReal++ = y; *pReal++ = z1;                                //center position
+      *pReal++ = -halfXScale; *pReal++ = scaleY; *pReal++ = 0.f; *pReal++ = 0.f; //normal (used to store relative corner positions)
+      *((uint32*)pReal++) = color;                                               //color
+      *pReal++ = uvLeft; *pReal++ = 0.f;                                         //uv
 
-		*pReal++ = x1; *pReal++ = y; *pReal++ = z1;					//center position
-		*pReal++ = +halfXScale; *pReal++ = scaleY; *pReal++ = 0; *pReal++ = 0;	//normal (used to store relative corner positions)
-		*((uint32*)pReal++) = color;								//color
-		*pReal++ = uvRight; *pReal++ = 0;							//uv
+      *pReal++ = x1; *pReal++ = y; *pReal++ = z1;                                //center position
+      *pReal++ = +halfXScale; *pReal++ = scaleY; *pReal++ = 0.f; *pReal++ = 0.f; //normal (used to store relative corner positions)
+      *((uint32*)pReal++) = color;                                               //color
+      *pReal++ = uvRight; *pReal++ = 0.f;                                        //uv
 
-		*pReal++ = x1; *pReal++ = y; *pReal++ = z1;					//center position
-		*pReal++ = -halfXScale; *pReal++ = 0.0f; *pReal++ = 0; *pReal++ = 0;		//normal (used to store relative corner positions)
-		*((uint32*)pReal++) = color;								//color
-		*pReal++ = uvLeft; *pReal++ = 1;							//uv
+		*pReal++ = x1; *pReal++ = y; *pReal++ = z1;                                //center position
+		*pReal++ = -halfXScale; *pReal++ = 0.f; *pReal++ = 0.f; *pReal++ = 0.f;    //normal (used to store relative corner positions)
+		*((uint32*)pReal++) = color;                                               //color
+		*pReal++ = uvLeft; *pReal++ = 1.f;                                         //uv
 
-		*pReal++ = x1; *pReal++ = y; *pReal++ = z1;					//center position
-		*pReal++ = +halfXScale; *pReal++ = 0.0f; *pReal++ = 0; *pReal++ = 0;		//normal (used to store relative corner positions)
-		*((uint32*)pReal++) = color;								//color
-		*pReal++ = uvRight; *pReal++ = 1;							//uv
+		*pReal++ = x1; *pReal++ = y; *pReal++ = z1;                                //center position
+		*pReal++ = +halfXScale; *pReal++ = 0.f; *pReal++ = 0.f; *pReal++ = 0.f;    //normal (used to store relative corner positions)
+		*((uint32*)pReal++) = color;                                               //color
+		*pReal++ = uvRight; *pReal++ = 1.f;                                        //uv
 
 		//Update bounds
 		if (y < minY) minY = y;
@@ -846,25 +854,32 @@ unsigned int GrassLayer::_populateGrassList_Uniform(PageInfo page, float *posBuf
 	parent->rTable->resetRandomIndex();
 
 	//No density map
-	if (!minY && !maxY){
+	if (!minY && !maxY)
+   {
 		//No height range
-		for (unsigned int i = 0; i < grassCount; ++i){
+		for (unsigned int i = 0; i < grassCount; ++i)
+      {
 			//Pick a random position
-			float x = parent->rTable->getRangeRandom(page.bounds.left, page.bounds.right);
-			float z = parent->rTable->getRangeRandom(page.bounds.top, page.bounds.bottom);
+			float x = parent->rTable->getRangeRandom((float)page.bounds.left, (float)page.bounds.right);
+			float z = parent->rTable->getRangeRandom((float)page.bounds.top, (float)page.bounds.bottom);
 
 			//Add to list in within bounds
-			if (!colorMap){
+			if (!colorMap)
+         {
 				*posPtr++ = x;
 				*posPtr++ = z;
-			} else if (x >= mapBounds.left && x <= mapBounds.right && z >= mapBounds.top && z <= mapBounds.bottom){
+			}
+         else if (x >= mapBounds.left && x <= mapBounds.right && z >= mapBounds.top && z <= mapBounds.bottom)
+         {
 				*posPtr++ = x;
 				*posPtr++ = z;
 			}
 			*posPtr++ = parent->rTable->getUnitRandom();
-			*posPtr++ = parent->rTable->getRangeRandom(0, Math::TWO_PI);
+			*posPtr++ = parent->rTable->getRangeRandom(0, (float)Math::TWO_PI);
 		}
-	} else {
+	}
+   else
+   {
 		//Height range
 		Real min, max;
 		if (minY) min = minY; else min = Math::NEG_INFINITY;
@@ -872,11 +887,11 @@ unsigned int GrassLayer::_populateGrassList_Uniform(PageInfo page, float *posBuf
 
 		for (unsigned int i = 0; i < grassCount; ++i){
 			//Pick a random position
-			float x = parent->rTable->getRangeRandom(page.bounds.left, page.bounds.right);
-			float z = parent->rTable->getRangeRandom(page.bounds.top, page.bounds.bottom);
+			float x = parent->rTable->getRangeRandom((float)page.bounds.left, (float)page.bounds.right);
+			float z = parent->rTable->getRangeRandom((float)page.bounds.top, (float)page.bounds.bottom);
 
 			//Calculate height
-			float y = parent->heightFunction(x, z, parent->heightFunctionUserData);
+			float y = (float)parent->heightFunction(x, z, parent->heightFunctionUserData);
 
 			//Add to list if in range
 			if (y >= min && y <= max){
@@ -885,12 +900,12 @@ unsigned int GrassLayer::_populateGrassList_Uniform(PageInfo page, float *posBuf
 					*posPtr++ = x;
 					*posPtr++ = z;
 					*posPtr++ = parent->rTable->getUnitRandom();
-					*posPtr++ = parent->rTable->getRangeRandom(0, Math::PI);
+					*posPtr++ = parent->rTable->getRangeRandom(0, (float)Math::PI);
 				} else if (x >= mapBounds.left && x <= mapBounds.right && z >= mapBounds.top && z <= mapBounds.bottom){
 					*posPtr++ = x;
 					*posPtr++ = z;
 					*posPtr++ = parent->rTable->getUnitRandom();
-					*posPtr++ = parent->rTable->getRangeRandom(0, Math::PI);
+					*posPtr++ = parent->rTable->getRangeRandom(0, (float)Math::PI);
 				}
 			}
 		}
@@ -911,8 +926,8 @@ unsigned int GrassLayer::_populateGrassList_UnfilteredDM(PageInfo page, float *p
 		//No height range
 		for (unsigned int i = 0; i < grassCount; ++i){
 			//Pick a random position
-			float x = parent->rTable->getRangeRandom(page.bounds.left, page.bounds.right);
-			float z = parent->rTable->getRangeRandom(page.bounds.top, page.bounds.bottom);
+			float x = parent->rTable->getRangeRandom((float)page.bounds.left, (float)page.bounds.right);
+			float z = parent->rTable->getRangeRandom((float)page.bounds.top, (float)page.bounds.bottom);
 
 			//Determine whether this grass will be added based on the local density.
 			//For example, if localDensity is .32, grasses will be added 32% of the time.
@@ -921,7 +936,7 @@ unsigned int GrassLayer::_populateGrassList_UnfilteredDM(PageInfo page, float *p
 				*posPtr++ = x;
 				*posPtr++ = z;
 				*posPtr++ = parent->rTable->getUnitRandom();
-				*posPtr++ = parent->rTable->getRangeRandom(0, Math::TWO_PI);
+				*posPtr++ = parent->rTable->getRangeRandom(0, (float)Math::TWO_PI);
 			}
 			else
 			{
@@ -938,14 +953,14 @@ unsigned int GrassLayer::_populateGrassList_UnfilteredDM(PageInfo page, float *p
 
 		for (unsigned int i = 0; i < grassCount; ++i){
 			//Pick a random position
-			float x = parent->rTable->getRangeRandom(page.bounds.left, page.bounds.right);
-			float z = parent->rTable->getRangeRandom(page.bounds.top, page.bounds.bottom);
+			float x = parent->rTable->getRangeRandom((float)page.bounds.left, (float)page.bounds.right);
+			float z = parent->rTable->getRangeRandom((float)page.bounds.top, (float)page.bounds.bottom);
 
 			//Determine whether this grass will be added based on the local density.
 			//For example, if localDensity is .32, grasses will be added 32% of the time.
 			if (parent->rTable->getUnitRandom() < densityMap->_getDensityAt_Unfiltered(x, z, mapBounds)){
 				//Calculate height
-				float y = parent->heightFunction(x, z, parent->heightFunctionUserData);
+				float y = (float)parent->heightFunction(x, z, parent->heightFunctionUserData);
 
 				//Add to list if in range
 				if (y >= min && y <= max){
@@ -953,7 +968,7 @@ unsigned int GrassLayer::_populateGrassList_UnfilteredDM(PageInfo page, float *p
 					*posPtr++ = x;
 					*posPtr++ = z;
 					*posPtr++ = parent->rTable->getUnitRandom();
-					*posPtr++ = parent->rTable->getRangeRandom(0, Math::TWO_PI);
+					*posPtr++ = parent->rTable->getRangeRandom(0, (float)Math::TWO_PI);
 				}
 				else
 				{
@@ -983,8 +998,8 @@ unsigned int GrassLayer::_populateGrassList_BilinearDM(PageInfo page, float *pos
 		//No height range
 		for (unsigned int i = 0; i < grassCount; ++i){
 			//Pick a random position
-			float x = parent->rTable->getRangeRandom(page.bounds.left, page.bounds.right);
-			float z = parent->rTable->getRangeRandom(page.bounds.top, page.bounds.bottom);
+			float x = parent->rTable->getRangeRandom((float)page.bounds.left, (float)page.bounds.right);
+			float z = parent->rTable->getRangeRandom((float)page.bounds.top, (float)page.bounds.bottom);
 
 			//Determine whether this grass will be added based on the local density.
 			//For example, if localDensity is .32, grasses will be added 32% of the time.
@@ -993,10 +1008,11 @@ unsigned int GrassLayer::_populateGrassList_BilinearDM(PageInfo page, float *pos
 				*posPtr++ = x;
 				*posPtr++ = z;
 				*posPtr++ = parent->rTable->getUnitRandom();
-				*posPtr++ = parent->rTable->getRangeRandom(0, Math::TWO_PI);
+				*posPtr++ = parent->rTable->getRangeRandom(0, (float)Math::TWO_PI);
 			}
 			else
 			{
+            // why???????????????????????????????????
 				parent->rTable->getUnitRandom();
 				parent->rTable->getUnitRandom();
 			}
@@ -1009,14 +1025,14 @@ unsigned int GrassLayer::_populateGrassList_BilinearDM(PageInfo page, float *pos
 
 		for (unsigned int i = 0; i < grassCount; ++i){
 			//Pick a random position
-			float x = parent->rTable->getRangeRandom(page.bounds.left, page.bounds.right);
-			float z = parent->rTable->getRangeRandom(page.bounds.top, page.bounds.bottom);
+			float x = parent->rTable->getRangeRandom((float)page.bounds.left, (float)page.bounds.right);
+			float z = parent->rTable->getRangeRandom((float)page.bounds.top, (float)page.bounds.bottom);
 
 			//Determine whether this grass will be added based on the local density.
 			//For example, if localDensity is .32, grasses will be added 32% of the time.
 			if (parent->rTable->getUnitRandom() < densityMap->_getDensityAt_Bilinear(x, z, mapBounds)){
 				//Calculate height
-				float y = parent->heightFunction(x, z, parent->heightFunctionUserData);
+				float y = (float)parent->heightFunction(x, z, parent->heightFunctionUserData);
 
 				//Add to list if in range
 				if (y >= min && y <= max){
@@ -1024,7 +1040,7 @@ unsigned int GrassLayer::_populateGrassList_BilinearDM(PageInfo page, float *pos
 					*posPtr++ = x;
 					*posPtr++ = z;
 					*posPtr++ = parent->rTable->getUnitRandom();
-					*posPtr++ = parent->rTable->getRangeRandom(0, Math::TWO_PI);
+					*posPtr++ = parent->rTable->getRangeRandom(0, (float)Math::TWO_PI);
 				}
 				else
 				{
@@ -1085,7 +1101,7 @@ void GrassLayer::_updateShaders()
 		if (caps->hasCapability(RSC_VERTEX_PROGRAM) && geom->getShadersEnabled())
 		{
 			//Calculate fade range
-			float farViewDist = geom->getDetailLevels().front()->getFarRange();
+			float farViewDist = (float)geom->getDetailLevels().front()->getFarRange();
 			float fadeRange = farViewDist / 1.2247449f;
 			//Note: 1.2247449 ~= sqrt(1.5), which is necessary since the far view distance is measured from the centers
 			//of pages, while the vertex shader needs to fade grass completely out (including the closest corner)

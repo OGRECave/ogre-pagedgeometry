@@ -27,7 +27,7 @@ namespace Forests {
 
 //-------------------------------------------------------------------------------------
 PagedGeometry::PagedGeometry(Camera* cam, const Real pageSize, Ogre::RenderQueueGroupID queue) :
-mRenderQueue(queue)
+m_nRenderQueue(queue)
 {
 	//Setup camera, scene manager, and scene node
 	if (cam)
@@ -373,31 +373,36 @@ void PagedGeometry::_addDetailLevel(GeometryPageManager *mgr, Real maxRange, Rea
 	managerList.push_back(mgr);
 }
 
-void  PagedGeometry::setCustomParam(const string &entity, const string &paramName, float paramValue)
+//-----------------------------------------------------------------------------
+///
+void PagedGeometry::setCustomParam(const Ogre::String &entity, const Ogre::String &paramName, float paramValue)
 {
 	setCustomParam(entity + "." + paramName, paramValue);
 }
 
-void  PagedGeometry::setCustomParam(const string &paramName, float paramValue)
+//-----------------------------------------------------------------------------
+///
+void PagedGeometry::setCustomParam(const Ogre::String &paramName, float paramValue)
 {
-	customParam[paramName] = paramValue;
+	m_mapCustomParam[paramName] = paramValue;
 }
 
-float PagedGeometry::getCustomParam(const string &entity, const string &paramName, float defaultParamValue) const
+//-----------------------------------------------------------------------------
+///
+float PagedGeometry::getCustomParam(const Ogre::String &entity, const Ogre::String &paramName, float defaultParamValue) const
 {
 	return getCustomParam(entity + "." + paramName, defaultParamValue);
 }
 
-float PagedGeometry::getCustomParam(const string &paramName, float defaultParamValue) const
+//-----------------------------------------------------------------------------
+///
+float PagedGeometry::getCustomParam(const Ogre::String &paramName, float defaultParamValue) const
 {
-	std::map<string, float>::const_iterator it = customParam.find(paramName);
-   return it != customParam.end() ? it->second : defaultParamValue;
+	TStr2FloatMap::const_iterator it = m_mapCustomParam.find(paramName);
+   return it != m_mapCustomParam.end() ? it->second : defaultParamValue;
 }
 
-Ogre::RenderQueueGroupID PagedGeometry::getRenderQueue() const
-{
-	return mRenderQueue;
-}
+
 
 //-------------------------------------------------------------------------------------
 
@@ -440,10 +445,10 @@ void GeometryPageManager::update(unsigned long deltaTime, Vector3 &camPos, Vecto
 	
 	//First calculate the general area where the pages will be processed
 	// 0,0 is the left top corner of the bounding box
-	int x1 = Math::Floor(((camPos.x - cacheDist) - gridBounds.left) / mainGeom->getPageSize());
-	int x2 = Math::Floor(((camPos.x + cacheDist) - gridBounds.left) / mainGeom->getPageSize());
-	int z1 = Math::Floor(((camPos.z - cacheDist) - gridBounds.top) / mainGeom->getPageSize());
-	int z2 = Math::Floor(((camPos.z + cacheDist) - gridBounds.top) / mainGeom->getPageSize());
+	int x1 = (int)Math::Floor(((camPos.x - cacheDist) - gridBounds.left) / mainGeom->getPageSize());
+	int x2 = (int)Math::Floor(((camPos.x + cacheDist) - gridBounds.left) / mainGeom->getPageSize());
+	int z1 = (int)Math::Floor(((camPos.z - cacheDist) - gridBounds.top) / mainGeom->getPageSize());
+	int z2 = (int)Math::Floor(((camPos.z + cacheDist) - gridBounds.top) / mainGeom->getPageSize());
 
 	if (scrollBuffer)
 	{
@@ -534,11 +539,11 @@ void GeometryPageManager::update(unsigned long deltaTime, Vector3 &camPos, Vecto
 	//200 milliseconds.
 	Real speed = Math::Sqrt(camSpeed.x * camSpeed.x + camSpeed.z * camSpeed.z);
 	
-	unsigned long cacheInterval;
+	unsigned long cacheInterval = 0;
 	if (speed == 0)
 		cacheInterval = maxCacheInterval;
 	else {
-		cacheInterval = (mainGeom->getPageSize() * 0.8f) / (speed * pendingList.size());
+		cacheInterval = unsigned long((mainGeom->getPageSize() * 0.8f) / (speed * pendingList.size()));
 		if (cacheInterval > maxCacheInterval)
 			cacheInterval = maxCacheInterval;
 	}
@@ -700,8 +705,8 @@ void GeometryPageManager::reloadGeometry()
 void GeometryPageManager::reloadGeometryPage(const Vector3 &point)
 {
 	//Determine which grid block contains the given points
-	const int x = Math::Floor(geomGridX * (point.x - gridBounds.left) / gridBounds.width());
-	const int z = Math::Floor(geomGridZ * (point.z - gridBounds.top) / gridBounds.height());
+	int x = (int)Math::Floor(geomGridX * (point.x - gridBounds.left) / gridBounds.width());
+	int z = (int)Math::Floor(geomGridZ * (point.z - gridBounds.top) / gridBounds.height());
 	
 	//Unload the grid block if it's in the grid area, and is loaded
 	if (x >= 0 && z >= 0 && x < geomGridX && z < geomGridZ){
@@ -720,13 +725,13 @@ void GeometryPageManager::reloadGeometryPages(const Vector3 &center, Real radius
 	TBounds area(center.x - radius, center.z - radius, center.x + radius, center.z + radius);
 
 	//Determine which grid block contains the top-left corner
-	int x1 = Math::Floor(geomGridX * (area.left - gridBounds.left) / gridBounds.width());
-	int z1 = Math::Floor(geomGridZ * (area.top - gridBounds.top) / gridBounds.height());
+	int x1 = (int)Math::Floor(geomGridX * (area.left - gridBounds.left) / gridBounds.width());
+	int z1 = (int)Math::Floor(geomGridZ * (area.top - gridBounds.top) / gridBounds.height());
 	if (x1 < 0) x1 = 0; else if (x1 > geomGridX-1) x1 = geomGridX-1;
 	if (z1 < 0) z1 = 0; else if (z1 > geomGridZ-1) z1 = geomGridZ-1;
 	//...and the bottom right
-	int x2 = Math::Floor(geomGridX * (area.right - gridBounds.left) / gridBounds.width());
-	int z2 = Math::Floor(geomGridZ * (area.bottom - gridBounds.top) / gridBounds.height());
+	int x2 = (int)Math::Floor(geomGridX * (area.right - gridBounds.left) / gridBounds.width());
+	int z2 = (int)Math::Floor(geomGridZ * (area.bottom - gridBounds.top) / gridBounds.height());
 	if (x2 < 0) x2 = 0; else if (x2 > geomGridX-1) x2 = geomGridX-1;
 	if (z2 < 0) z2 = 0; else if (z2 > geomGridZ-1) z2 = geomGridZ-1;
 
@@ -753,21 +758,24 @@ void GeometryPageManager::reloadGeometryPages(const Vector3 &center, Real radius
 void GeometryPageManager::reloadGeometryPages(const TBounds & area)
 {
 	//Determine which grid block contains the top-left corner
-	int x1 = Math::Floor(geomGridX * (area.left - gridBounds.left) / gridBounds.width());
-	int z1 = Math::Floor(geomGridZ * (area.top - gridBounds.top) / gridBounds.height());
+	int x1 = (int)Math::Floor(geomGridX * (area.left - gridBounds.left) / gridBounds.width());
+	int z1 = (int)Math::Floor(geomGridZ * (area.top - gridBounds.top) / gridBounds.height());
 	if (x1 < 0) x1 = 0; else if (x1 > geomGridX-1) x1 = geomGridX-1;
 	if (z1 < 0) z1 = 0; else if (z1 > geomGridZ-1) z1 = geomGridZ-1;
 	//...and the bottom right
-	int x2 = Math::Floor(geomGridX * (area.right - gridBounds.left) / gridBounds.width());
-	int z2 = Math::Floor(geomGridZ * (area.bottom - gridBounds.top) / gridBounds.height());
+	int x2 = (int)Math::Floor(geomGridX * (area.right - gridBounds.left) / gridBounds.width());
+	int z2 = (int)Math::Floor(geomGridZ * (area.bottom - gridBounds.top) / gridBounds.height());
 	if (x2 < 0) x2 = 0; else if (x2 > geomGridX-1) x2 = geomGridX-1;
 	if (z2 < 0) z2 = 0; else if (z2 > geomGridZ-1) z2 = geomGridZ-1;
 
 	//Unload the grid blocks
-	for (int x = x1; x <= x2; ++x) {
-		for (int z = z1; z <= z2; ++z) {
+	for (int x = x1; x <= x2; ++x)
+   {
+		for (int z = z1; z <= z2; ++z)
+      {
 			GeometryPage *page = _getGridPage(x, z);
-			if (page->_loaded){
+			if (page->_loaded)
+         {
 				_unloadPage(page);
 				loadedList.erase(page->_iter);
 			}
@@ -785,13 +793,13 @@ void GeometryPageManager::preloadGeometry(const TBounds & area)
 	loadarea.bottom = area.bottom + farDist;
 
 	//Determine which grid block contains the top-left corner
-	int x1 = Math::Floor(geomGridX * (loadarea.left - gridBounds.left) / gridBounds.width());
-	int z1 = Math::Floor(geomGridZ * (loadarea.top - gridBounds.top) / gridBounds.height());
+	int x1 = (int)Math::Floor(geomGridX * (loadarea.left - gridBounds.left) / gridBounds.width());
+	int z1 = (int)Math::Floor(geomGridZ * (loadarea.top - gridBounds.top) / gridBounds.height());
 	if (x1 < 0) x1 = 0; else if (x1 > geomGridX-1) x1 = geomGridX-1;
 	if (z1 < 0) z1 = 0; else if (z1 > geomGridZ-1) z1 = geomGridZ-1;
 	//...and the bottom right
-	int x2 = Math::Floor(geomGridX * (loadarea.right - gridBounds.left) / gridBounds.width());
-	int z2 = Math::Floor(geomGridZ * (loadarea.bottom - gridBounds.top) / gridBounds.height());
+	int x2 = (int)Math::Floor(geomGridX * (loadarea.right - gridBounds.left) / gridBounds.width());
+	int z2 = (int)Math::Floor(geomGridZ * (loadarea.bottom - gridBounds.top) / gridBounds.height());
 	if (x2 < 0) x2 = 0; else if (x2 > geomGridX-1) x2 = geomGridX-1;
 	if (z2 < 0) z2 = 0; else if (z2 > geomGridZ-1) z2 = geomGridZ-1;
 
