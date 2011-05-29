@@ -32,11 +32,11 @@ namespace Forests
          // SubMesh is not specified since that can be determined by which MeshQueue this belongs to.
          struct QueuedMesh
          {
-            QueuedMesh(Ogre::SubMesh* sm, const Ogre::Vector3 &pos, const Ogre::Quaternion &or,
+            QueuedMesh(Ogre::SubMesh* sm, const Ogre::Vector3 &pos, const Ogre::Quaternion &ori,
                const Ogre::Vector3 &scl, const Ogre::ColourValue &clr, void *userData_ = 0) :
             subMesh     (sm),
                position    (pos),
-               orientation (or),
+               orientation (ori),
                scale       (scl),
                color       (clr),
                userData    (userData_)
