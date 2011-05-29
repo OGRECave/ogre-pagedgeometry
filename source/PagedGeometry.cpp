@@ -543,7 +543,7 @@ void GeometryPageManager::update(unsigned long deltaTime, Vector3 &camPos, Vecto
 	if (speed == 0)
 		cacheInterval = maxCacheInterval;
 	else {
-		cacheInterval = unsigned long((mainGeom->getPageSize() * 0.8f) / (speed * pendingList.size()));
+		cacheInterval = (unsigned long)((mainGeom->getPageSize() * 0.8f) / (speed * pendingList.size()));
 		if (cacheInterval > maxCacheInterval)
 			cacheInterval = maxCacheInterval;
 	}
