@@ -177,7 +177,7 @@ if (DOXYGEN_FOUND)
 		add_custom_target(doc)
 	endif()
 	add_dependencies(doc doxygen)
-	install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/docs/html/ DESTINATION doc/api)
+	#install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/docs/html/ DESTINATION doc/api)
 	# install man pages into packages, scope is now project root..
 	#install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/api-doc/man/man3 DESTINATION share/man/man3/ )
 endif (DOXYGEN_FOUND)
