@@ -606,11 +606,11 @@ void ImpostorTexture::renderTextures(bool force)
 	needsRegen = force;
 	if (!needsRegen){
 		try{
-			texture = TextureManager::getSingleton().load(fileNameDDS, "BinFolder", TEX_TYPE_2D, MIP_UNLIMITED);
+			texture = TextureManager::getSingleton().load(fileNameDDS, Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, MIP_UNLIMITED);
 		}
 		catch (...){
 			try{
-				texture = TextureManager::getSingleton().load(fileNamePNG, "BinFolder", TEX_TYPE_2D, MIP_UNLIMITED);
+				texture = TextureManager::getSingleton().load(fileNamePNG, Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, MIP_UNLIMITED);
 			}
 			catch (...){
 				needsRegen = true;
@@ -649,7 +649,7 @@ void ImpostorTexture::renderTextures(bool force)
 		renderTarget->writeContentsToFile(tempdir + fileNamePNG);
 
 		//Load the render into the appropriate texture view
-		texture = TextureManager::getSingleton().load(fileNamePNG, "BinFolder", TEX_TYPE_2D, MIP_UNLIMITED);
+		texture = TextureManager::getSingleton().load(fileNamePNG, Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, MIP_UNLIMITED);
 #else
 		texture = renderTexture;
 #endif
