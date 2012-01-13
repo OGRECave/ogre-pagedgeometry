@@ -50,7 +50,7 @@ namespace Forests
       /** Unlike BB_METHOD_ACCELERATED, this does not use vertex shaders to align
       billboards to the camera. This is more compatible with old video cards,
       although it can result in poor performance with high amounts of billboards.*/
-      BB_METHOD_COMPATIBLE = 0,
+      BB_METHOD_COMPATIBLE = 0
    };
 
 

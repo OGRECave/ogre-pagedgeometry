@@ -794,7 +794,6 @@ void StaticBillboardSet::updateAll(const Vector3 &cameraDirection)
       *pGPU_ConstDef_uScroll = 0, *pGPU_ConstDef_vScroll = 0;
 
    // For each material in use by the billboard system..
-   bool firstIteraion = true;
    SBMaterialRefList::iterator i1 = SBMaterialRef::getList().begin(), iend = SBMaterialRef::getList().end();
    while (i1 != iend)
    {
