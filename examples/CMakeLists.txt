@@ -5,6 +5,8 @@ include_directories(${PagedGeometry_BINARY_DIR}/include)
 
 # external includes
 include_directories(${Ogre_INCLUDE_DIRS})
+include_directories(${Ogre-Terrain_INCLUDE_DIRS})
+include_directories(${Ogre-Paging_INCLUDE_DIRS})
 link_directories   (${Ogre_LIBRARY_DIRS})
 include_directories(${Ois_INCLUDE_DIRS})
 link_directories   (${Ois_LIBRARY_DIRS})
@@ -64,7 +66,7 @@ macro(example_app NAME)
 	include_directories(${DirectX_INCLUDE_DIRS})
 	link_directories   (${DirectX_LIBRARY_DIRS})
 	add_executable(${NAME} WIN32 ${NAME}.cpp)
-	target_link_libraries(${NAME} PagedGeometry ${OS_LIBS} ${Ogre_LIBRARIES} ${Ois_LIBRARIES} ${DirectX_LIBRARIES})
+	target_link_libraries(${NAME} PagedGeometry ${OS_LIBS} ${Ogre_LIBRARIES} ${Ogre-Terrain_LIBRARIES} ${Ogre-Paging_LIBRARIES} ${Ois_LIBRARIES} ${DirectX_LIBRARIES})
 endmacro(example_app)
 
 
