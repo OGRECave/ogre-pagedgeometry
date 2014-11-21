@@ -1,0 +1,17 @@
+This is an unofficial repository of Paged Geometry, a plugin for OGRE 3D Graphics Engine. 
+It contains a few fixes that didn't make it into the main repo yet.
+
+Original Author: John 'JohnJ' Judnich
+License: zlib/libpng
+Supported Platforms: Windows, Linux, (Mac)
+Supported Ogre Releases (Mercurial version): 1.6 and newer
+Documentation: API Documentation, Tutorials, Examples
+
+Sources:
+For the official repo see
+https://code.google.com/p/ogre-paged/
+
+For this unofficial repo see
+https://sourceforge.net/u/hiradur/pgunofficial/ref/default/
+
+
