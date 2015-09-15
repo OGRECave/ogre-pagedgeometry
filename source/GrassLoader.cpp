@@ -765,7 +765,7 @@ GrassLayer::~GrassLayer()
 void GrassLayer::setMaterialName(const String &matName)
 {
 	if (material.isNull() || matName != material->getName()){
-		material = MaterialManager::getSingleton().getByName(matName);
+		material = MaterialManager::getSingleton().getByName(matName).staticCast<Material>();
 		if (material.isNull())
 			OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "The specified grass material does not exist", "GrassLayer::setMaterialName()");
 		shaderNeedsUpdate = true;
@@ -1128,7 +1128,7 @@ void GrassLayer::_updateShaders()
 			const String matName = material->getName() + "_" + vsName;
 
 			//Check if the desired material already exists (if not, create it)
-			MaterialPtr tmpMat = MaterialManager::getSingleton().getByName(matName);
+			MaterialPtr tmpMat = MaterialManager::getSingleton().getByName(matName).staticCast<Material>();
 			if (tmpMat.isNull())
 			{
 				//Clone the original material
@@ -1140,7 +1140,7 @@ void GrassLayer::_updateShaders()
 
 				//Check if the desired shader already exists (if not, compile it)
 				String shaderLanguage;
-				HighLevelGpuProgramPtr vertexShader = HighLevelGpuProgramManager::getSingleton().getByName(vsName);
+				HighLevelGpuProgramPtr vertexShader = HighLevelGpuProgramManager::getSingleton().getByName(vsName).staticCast<HighLevelGpuProgram>();
 				if (vertexShader.isNull())
 				{
 					if (Root::getSingleton().getRenderSystem()->getName() == "Direct3D9 Rendering Subsystem")

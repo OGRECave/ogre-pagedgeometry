@@ -44,6 +44,7 @@ D:        Step right
 #include "OgreStringConverter.h"
 #include "OgreException.h"
 //#include "HeightFunction.h"
+#include "OgreOverlaySystem.h"
 
 #include "PagedGeometryConfig.h"
 

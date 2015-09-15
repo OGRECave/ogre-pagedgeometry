@@ -479,7 +479,7 @@ m_pParentGeom           (parent)
    // that the user may be using somewhere else).
    {
       Ogre::String newName = parentMaterial->getName() + "_Batched";
-      m_ptrMaterial = MaterialManager::getSingleton().getByName(newName, parentMaterial->getGroup());
+      m_ptrMaterial = MaterialManager::getSingleton().getByName(newName, parentMaterial->getGroup()).staticCast<Material>();
       if (m_ptrMaterial.isNull())
          m_ptrMaterial = parentMaterial->clone(newName);
    }
@@ -547,7 +547,7 @@ void BatchedGeometry::SubBatch::addSubEntity(SubEntity *ent, const Vector3 &posi
       case VET_COLOUR_ABGR:
          break;
       default:
-         OGRE_EXCEPT(0, "Unknown RenderSystem color format", "BatchedGeometry::SubBatch::addSubMesh()");
+         OGRE_EXCEPT(Ogre::Exception::ERR_RENDERINGAPI_ERROR, "Unknown RenderSystem color format", "BatchedGeometry::SubBatch::addSubMesh()");
          break;
       }
    }

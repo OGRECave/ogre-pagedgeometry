@@ -301,10 +301,10 @@ MaterialPtr PGSampleApp::buildDepthShadowMaterial(const String& textureName)
 {
 	String matName = "DepthShadows/" + textureName;
 
-	MaterialPtr ret = MaterialManager::getSingleton().getByName(matName);
+	MaterialPtr ret = MaterialManager::getSingleton().getByName(matName).staticCast<Material>();
 	if (ret.isNull())
 	{
-		MaterialPtr baseMat = MaterialManager::getSingleton().getByName("Ogre/shadow/depth/integrated/pssm");
+		MaterialPtr baseMat = MaterialManager::getSingleton().getByName("Ogre/shadow/depth/integrated/pssm").staticCast<Material>();
 		ret = baseMat->clone(matName);
 		Pass* p = ret->getTechnique(0)->getPass(0);
 		p->getTextureUnitState("diffuse")->setTextureName(textureName);

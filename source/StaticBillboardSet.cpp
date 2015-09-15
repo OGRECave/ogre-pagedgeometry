@@ -149,7 +149,7 @@ mFadeInvisibleDist      (0.f)
                "}";
          }
 
-         HighLevelGpuProgramPtr vertexShader = HighLevelGpuProgramManager::getSingleton().getByName("Sprite_vp");
+		 HighLevelGpuProgramPtr vertexShader = HighLevelGpuProgramManager::getSingleton().getByName("Sprite_vp").staticCast<HighLevelGpuProgram>();
          assert(vertexShader.isNull() && "Sprite_vp already exist");
 
          vertexShader = HighLevelGpuProgramManager::getSingleton().createProgram(
@@ -257,7 +257,7 @@ mFadeInvisibleDist      (0.f)
                "}";
          }
 
-         HighLevelGpuProgramPtr vertexShader2 = HighLevelGpuProgramManager::getSingleton().getByName("SpriteFade_vp");
+		 HighLevelGpuProgramPtr vertexShader2 = HighLevelGpuProgramManager::getSingleton().getByName("SpriteFade_vp").staticCast<HighLevelGpuProgram>();
          assert(vertexShader2.isNull() && "SpriteFade_vp already exist");
          vertexShader2 = HighLevelGpuProgramManager::getSingleton().createProgram("SpriteFade_vp",
             ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, shaderLanguage, GPT_VERTEX_PROGRAM);
@@ -574,7 +574,7 @@ void StaticBillboardSet::setMaterial(const String &materialName, const Ogre::Str
       else if (!mPtrMaterial.isNull())
          SBMaterialRef::removeMaterialRef(mPtrMaterial);
 
-      mPtrMaterial = MaterialManager::getSingleton().getByName(materialName, resourceGroup);
+	  mPtrMaterial = MaterialManager::getSingleton().getByName(materialName, resourceGroup).staticCast<Material>();
 
       if (mFadeEnabled)
       {
@@ -590,7 +590,7 @@ void StaticBillboardSet::setMaterial(const String &materialName, const Ogre::Str
    }
    else  // old GPU compatibility
    {
-      mPtrMaterial = MaterialManager::getSingleton().getByName(materialName, resourceGroup);
+      mPtrMaterial = MaterialManager::getSingleton().getByName(materialName, resourceGroup).staticCast<Material>();
       mpFallbackBillboardSet->setMaterialName(mPtrMaterial->getName(), mPtrMaterial->getGroup());
       // SVA. Since Ogre 1.7.3 Ogre::BillboardSet have setMaterial(const MaterialPtr&) method
    }
