@@ -4,7 +4,7 @@ It contains a few fixes that didn't make it into the main repo yet.
 Original Author: John 'JohnJ' Judnich
 License: zlib/libpng
 Supported Platforms: Windows, Linux, (Mac)
-Supported Ogre Releases (Mercurial version): 1.6 and newer
+Supported Ogre Releases (Mercurial version): 1.9 and newer
 Documentation: API Documentation, Tutorials, Examples
 
 Sources:
@@ -12,4 +12,4 @@ For the official repo see
 https://code.google.com/p/ogre-paged/
 
 For this unofficial repo see
-https://github.com/Hiradur/ogre-paged
+https://github.com/RigsOfRods/ogre-paged
