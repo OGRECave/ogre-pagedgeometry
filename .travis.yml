@@ -1,0 +1,9 @@
+language: c
+sudo: required
+
+before_install:
+  - sudo apt-get install -y cmake pkg-config libogre-1.9-dev libois-dev
+
+script:
+  - cmake .
+  - make -j2
