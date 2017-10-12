@@ -4,14 +4,10 @@
 # This is the main file where we prepare the general build environment
 # and provide build configuration options.
 ######################################################################
-# cmake system for PagedGeometry updated on the 5th of April by thomas{at}thomasfischer{DOT}biz
+# cmake system for PagedGeometry updated on 6-10-2017 by Edgar{at}AnotherFoxGuy{DOT}com
 
-cmake_minimum_required(VERSION 2.4)
-# loose if - else constructs
-SET(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS TRUE)
-if(COMMAND cmake_policy)
-  cmake_policy(SET CMP0003 NEW)
-endif(COMMAND cmake_policy)
+cmake_minimum_required( VERSION 3.0.2 )
+set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake )
 
 
 # add some functions we use that are shipped with cmake
@@ -21,15 +17,22 @@ INCLUDE(CheckIncludeFileCXX)
 INCLUDE(CheckCCompilerFlag)
 INCLUDE(CheckCSourceCompiles)
 
+# some versioning things
+SET(LIB_MAJOR_VERSION "1")
+SET(LIB_MINOR_VERSION "2")
+SET(LIB_BUILD_VERSION "0")
+SET(LIB_VERSION "${LIB_MAJOR_VERSION}.${LIB_MINOR_VERSION}.${LIB_BUILD_VERSION}")
+IF(NOT DEFINED LIB_INSTALL_DIR)
+  SET(LIB_INSTALL_DIR "lib${LIB_SUFFIX}")
+ENDIF(NOT DEFINED LIB_INSTALL_DIR)
 
 # define the project
-project(PagedGeometry)
-
-# find all dependencies
-include(CMakeDependenciesConfig.txt)
+project(PagedGeometry VERSION ${LIB_VERSION})
 
 # build static libs by default
 SET(BUILD_SHARED_LIBS OFF)
+
+SET(CMAKE_USE_RELATIVE_PATHS OFF)
 
 # setup paths
 SET(RUNTIME_OUTPUT_DIRECTORY "${PagedGeometry_SOURCE_DIR}/bin/")
@@ -66,19 +69,11 @@ ELSEIF(UNIX)
 endif(WIN32)
 
 # some PG build options
-set(PAGEDGEOMETRY_BUILD_SAMPLES         "TRUE"  CACHE BOOL "build the examples")
+set(PAGEDGEOMETRY_BUILD_SAMPLES         "FALSE" CACHE BOOL "build the examples")
 set(PAGEDGEOMETRY_ALTERNATE_COORDSYSTEM "FALSE" CACHE BOOL "alternate coordinate system, do not use unless you are very sure about it")
 set(PAGEDGEOMETRY_USE_OGRE_RANDOM       "FALSE" CACHE BOOL "fallback to Ogre's PRNG instead of using our own (not recommended)")
 set(PAGEDGEOMETRY_USER_DATA             "FALSE" CACHE BOOL "ability to attach user data to entities")
 
-# some versioning things
-SET(LIB_MAJOR_VERSION "1")
-SET(LIB_MINOR_VERSION "2")
-SET(LIB_BUILD_VERSION "0")
-SET(LIB_VERSION "${LIB_MAJOR_VERSION}.${LIB_MINOR_VERSION}.${LIB_BUILD_VERSION}")
-IF(NOT DEFINED LIB_INSTALL_DIR)
-  SET(LIB_INSTALL_DIR "lib${LIB_SUFFIX}")
-ENDIF(NOT DEFINED LIB_INSTALL_DIR)
 
 # Needed for PagedGeometry.pc.in
 SET(prefix ${CMAKE_INSTALL_PREFIX})
@@ -102,26 +97,26 @@ INSTALL(FILES "${PagedGeometry_BINARY_DIR}/PagedGeometry.pc" DESTINATION "${LIB_
 
 # some additional compiler flags
 IF(NOT WIN32)
-	ADD_DEFINITIONS(-Wall)
-	CHECK_C_COMPILER_FLAG(-Wextra HAVE_W_EXTRA)
-	IF(HAVE_W_EXTRA)
-		ADD_DEFINITIONS(-Wextra)
-	ENDIF()
+  ADD_DEFINITIONS(-Wall)
+  CHECK_C_COMPILER_FLAG(-Wextra HAVE_W_EXTRA)
+  IF(HAVE_W_EXTRA)
+  ADD_DEFINITIONS(-Wextra)
+  ENDIF()
 endif()
 
 # Set visibility options if available
 IF(NOT WIN32)
-	CHECK_C_SOURCE_COMPILES("int foo() __attribute__((destructor));
-								int main() {return 0;}" HAVE_GCC_DESTRUCTOR)
+  CHECK_C_SOURCE_COMPILES("int foo() __attribute__((destructor));
+  int main() {return 0;}" HAVE_GCC_DESTRUCTOR)
 
-	CHECK_C_COMPILER_FLAG(-fvisibility=hidden HAVE_VISIBILITY_SWITCH)
-	IF(HAVE_VISIBILITY_SWITCH)
-		CHECK_C_SOURCE_COMPILES("int foo() __attribute__((visibility(\"default\")));
-									int main() {return 0;}" HAVE_GCC_VISIBILITY)
-		IF(HAVE_GCC_VISIBILITY)
-			ADD_DEFINITIONS(-fvisibility=hidden -DHAVE_GCC_VISIBILITY)
-		ENDIF()
-	ENDIF()
+  CHECK_C_COMPILER_FLAG(-fvisibility=hidden HAVE_VISIBILITY_SWITCH)
+  IF(HAVE_VISIBILITY_SWITCH)
+  CHECK_C_SOURCE_COMPILES("int foo() __attribute__((visibility(\"default\")));
+  int main() {return 0;}" HAVE_GCC_VISIBILITY)
+  IF(HAVE_GCC_VISIBILITY)
+  ADD_DEFINITIONS(-fvisibility=hidden -DHAVE_GCC_VISIBILITY)
+  ENDIF()
+  ENDIF()
 ENDIF()
 
 
@@ -129,7 +124,7 @@ ENDIF()
 add_subdirectory(source)
 
 if(PAGEDGEOMETRY_BUILD_SAMPLES)
-	add_subdirectory(examples)
+  add_subdirectory(examples)
 endif(PAGEDGEOMETRY_BUILD_SAMPLES)
 
 
@@ -138,17 +133,22 @@ endif(PAGEDGEOMETRY_BUILD_SAMPLES)
 set(CPACK_PACKAGE_DESCRIPTION "PagedGeometry")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "The PagedGeometry engine is an add-on to Ogre which provides highly optimized methods for rendering massive amounts of small meshes, covering a possibly infinite area.")
 set(CPACK_PACKAGE_NAME "pagedgeometry")
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "pagedgeometry")
-set(CPACK_PACKAGE_CONTACT "support@rigsofrods.com")
-set(CPACK_PACKAGE_VENDOR "support@rigsofrods.com")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libogre-1.9-dev, libois-dev")
+set(CPACK_PACKAGE_CONTACT "Edgar@AnotherFoxGuy.com")
+set(CPACK_PACKAGE_VENDOR "Edgar@AnotherFoxGuy.com")
+SET(CPACK_PACKAGE_VERSION ${LIB_VERSION})
+SET(CPACK_PACKAGE_VERSION_MAJOR ${LIB_MAJOR_VERSION})
+SET(CPACK_PACKAGE_VERSION_MINOR ${LIB_MINOR_VERSION})
+SET(CPACK_PACKAGE_VERSION_PATCH ${LIB_BUILD_VERSION})
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/zlib.txt")
+set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README")
 
 SET(CPACK_GENERATOR ZIP)
 IF(UNIX)
-  SET(CPACK_GENERATOR ${CPACK_GENERATOR};STGZ;TGZ)
+  SET(CPACK_GENERATOR ${CPACK_GENERATOR};STGZ;TGZ;DEB;RPM)
 ENDIF(UNIX)
 IF(LINUX)
-SET(CPACK_GENERATOR ${CPACK_GENERATOR};DEB;RPM)
+  SET(CPACK_GENERATOR ${CPACK_GENERATOR};DEB;RPM)
 ENDIF(LINUX)
 IF(MSVC)
   SET(CPACK_GENERATOR ${CPACK_GENERATOR};NSIS)
@@ -162,26 +162,25 @@ include(CPack)
 # doxygen stuff
 find_package(Doxygen)
 if (DOXYGEN_FOUND)
-	message("found doxygen, generating documentation")
-	# prepare doxygen configuration file
-	configure_file(${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/docs/Doxyfile)
-	# add doxygen as target
-	add_custom_target(doxygen ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/docs/Doxyfile)
+  message("found doxygen, generating documentation")
+  # prepare doxygen configuration file
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
 
-	# cleanup $build/api-doc on "make clean"
-	set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES api-doc)
+  add_custom_target( doc-doxygen
+    COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    COMMENT "Generating documentation with Doxygen."
+    VERBATIM
+  )
 
-	# add doxygen as dependency to doc-target
-	get_target_property(DOC_TARGET doc TYPE)
-	if(NOT DOC_TARGET)
-		add_custom_target(doc)
-	endif()
-	add_dependencies(doc doxygen)
-	#install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/docs/html/ DESTINATION doc/api)
-	# install man pages into packages, scope is now project root..
-	#install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/api-doc/man/man3 DESTINATION share/man/man3/ )
+  # cleanup $build/api-doc on "make clean"
+  set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES api-doc)
+
+  #install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/docs/html/ DESTINATION doc/pagedgeometry/api)
+  # install man pages into packages, scope is now project root..
+  #install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/api-doc/man/man3 DESTINATION share/man/man3/ )
 endif (DOXYGEN_FOUND)
 
 # other doc files
-set(DOC_FILES Contributors.txt zlib.txt GettingStarted.txt Todo.txt)
-install(FILES ${DOC_FILES} DESTINATION doc/)
+set(DOC_FILES Contributors.txt zlib.txt GettingStarted.txt Todo.txt docs/Tutorial-1.odt docs/Tutorial-2.odt docs/Tutorial-3.odt docs/Tutorial-4.odt)
+install(FILES ${DOC_FILES} DESTINATION doc/pagedgeometry/)
