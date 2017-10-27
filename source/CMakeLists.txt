@@ -44,9 +44,3 @@ if( OGRE_VERSION VERSION_GREATER 1.8 )
   target_link_libraries( ${LIBNAME} PRIVATE ${OGRE_Overlay_LIBRARIES} )
   target_include_directories( ${LIBNAME} PRIVATE ${OGRE_Overlay_INCLUDE_DIRS} )
 endif()
-
-
-# --- Object Oriented Input System ---
-find_package( OIS REQUIRED )
-target_link_libraries( ${LIBNAME} PRIVATE ${OIS_LIBRARIES} )
-target_include_directories( ${LIBNAME} PRIVATE ${OIS_INCLUDE_DIRS} )
