@@ -369,7 +369,7 @@ void BatchedGeometry::clear()
    {
       m_pSceneNode->removeAllChildren();
       if (m_pSceneNode->getParent())
-         m_pSceneNode->getParentSceneNode()->removeAndDestroyChild(m_pSceneNode->getName());
+         m_pSceneNode->getParentSceneNode()->removeAndDestroyChild(m_pSceneNode);
       else
          m_pSceneMgr->destroySceneNode(m_pSceneNode);
 
