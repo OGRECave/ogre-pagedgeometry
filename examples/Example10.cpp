@@ -1,7 +1,6 @@
 #include "HeightFunction.h"
 
 #include "PGExampleApplication.h"
-#include "PGExampleFrameListener.h"
 
 #include "PagedGeometry.h"
 #include "BatchPage.h"
@@ -41,7 +40,7 @@ void PGSampleApp::createScene(void)
 	mSceneMgr->setWorldGeometry("terrain3.cfg");
 
 	//Start off with the camera at the center of the terrain
-	mCamera->setPosition(700, 100, 700);
+	mCameraNode->setPosition(700, 100, 700);
 
 	//Setup a skybox
 	mSceneMgr->setSkyBox(true, "3D-Diggers/SkyBox", 2000);
@@ -57,8 +56,8 @@ void PGSampleApp::createScene(void)
 	light->setDirection(Ogre::Vector3(0.0f, -0.5f, 1.0f));
 	mSceneMgr->setAmbientLight(Ogre::ColourValue(1, 1, 1));
 
-	mCamera->setPosition(Vector3(100, 50, 1000));
-	mCamera->lookAt(Vector3(150, 50, 1000));
+	mCameraNode->setPosition(Vector3(100, 50, 1000));
+	mCameraNode->lookAt(Vector3(150, 50, 1000), Node::TS_WORLD);
 	mCamera->setNearClipDistance(0.1);
 	mCamera->setFarClipDistance(50000);
 

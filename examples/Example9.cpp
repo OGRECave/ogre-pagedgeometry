@@ -1,7 +1,6 @@
 #include "HeightFunction.h"
 
 #include "PGExampleApplication.h"
-#include "PGExampleFrameListener.h"
 
 #include "PagedGeometry.h"
 #include "BatchPage.h"

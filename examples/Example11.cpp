@@ -1,6 +1,5 @@
 
 #include "PGExampleApplication.h"
-#include "PGExampleFrameListener.h"
 
 #include "PagedGeometry.h"
 #include "BatchPage.h"
@@ -201,8 +200,8 @@ void PGSampleApp::createScene(void)
 
 	configureShadows(true, false);
 
-	mCamera->setPosition(mTerrainPos + Vector3(1683, 50, 2116));
-	mCamera->lookAt(Vector3(1963, 50, 1660));
+	mCameraNode->setPosition(mTerrainPos + Vector3(1683, 50, 2116));
+	mCameraNode->lookAt(Vector3(1963, 50, 1660), Node::TS_WORLD);
 	mCamera->setNearClipDistance(0.1);
 	mCamera->setFarClipDistance(50000);
 
