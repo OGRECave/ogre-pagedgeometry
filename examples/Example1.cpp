@@ -10,14 +10,12 @@
 //Include windows/Ogre/OIS headers
 #include "PagedGeometryConfig.h"
 #include <Ogre.h>
-#ifdef OIS_USING_DIR
-# include "OIS/OIS.h"
-#else
-# include "OIS.h"
-#endif //OIS_USING_DIR
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 #include <windows.h>
 #endif
+
+#include <OgreApplicationContext.h>
+
 using namespace Ogre;
 
 
@@ -44,7 +42,7 @@ using namespace Forests;
 class World
 {
 public:
-	World();
+	World(RenderWindow* win);
 	~World();
 
 	void load();	//Loads the 3D scene
@@ -63,11 +61,7 @@ private:
 	Viewport *viewport;
 	SceneManager *sceneMgr;
 	Camera *camera;
-
-	//OIS input objects
-	OIS::InputManager *inputManager;
-	OIS::Keyboard *keyboard;
-	OIS::Mouse *mouse;
+	SceneNode* cameraNode;
 
 	//Variables used to keep track of the camera's rotation/etc.
 	Radian camPitch, camYaw;
@@ -83,50 +77,29 @@ int main(int argc, char *argv[])
 #endif
 {
 	//Initialize Ogre
-	Root *root = new Ogre::Root("");
+    OgreBites::ApplicationContext ctx;
+    ctx.initApp();
 
 	//Load appropriate plugins
 	//[NOTE] PagedGeometry needs the CgProgramManager plugin to compile shaders
-	#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	#ifdef _DEBUG
-	root->loadPlugin("Plugin_CgProgramManager_d");
-	root->loadPlugin("Plugin_OctreeSceneManager_d");
-	root->loadPlugin("RenderSystem_Direct3D9_d");
-	root->loadPlugin("RenderSystem_GL_d");
-	#else
-	root->loadPlugin("Plugin_CgProgramManager");
-	root->loadPlugin("Plugin_OctreeSceneManager");
-	root->loadPlugin("RenderSystem_Direct3D9");
-	root->loadPlugin("RenderSystem_GL");
-	#endif
-	#else
-	root->loadPlugin("Plugin_CgProgramManager");
-	root->loadPlugin("Plugin_OctreeSceneManager");
-	root->loadPlugin("RenderSystem_GL");
-	#endif
 
-	//Show Ogre's default config dialog to let the user setup resolution, etc.
-	bool result = root->showConfigDialog();
+    World myWorld(ctx.getRenderWindow());
+    myWorld.load();		//Load world
+    myWorld.run();		//Display world
 
-	//If the user clicks OK, continue
-	if (result)	{
-		World myWorld;
-		myWorld.load();		//Load world
-		myWorld.run();		//Display world
-	}
 
 	//Shut down Ogre
-	delete root;
+	ctx.closeApp();
 
 	return 0;
 }
 
-World::World()
+World::World(RenderWindow* win)
 {
 	//Setup Ogre::Root and the scene manager
 	root = Root::getSingletonPtr();
-	window = root->initialise(true, AppTitle);
-	sceneMgr = root->createSceneManager(ST_EXTERIOR_CLOSE);
+	window = win;
+	sceneMgr = root->createSceneManager();
 
 	//Initialize the camera and viewport
 	camera = sceneMgr->createCamera("MainCamera");
@@ -149,13 +122,7 @@ World::World()
 	ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
 
 	//Initialize OIS
-	using namespace OIS;
-	size_t windowHnd;
-	window->getCustomAttribute("WINDOW", &windowHnd);
-	inputManager = InputManager::createInputSystem(windowHnd);
 
-	keyboard = (Keyboard*)inputManager->createInputObject(OISKeyboard, false);
-	mouse = (Mouse*)inputManager->createInputObject(OISMouse, false);
 
 	//Reset camera orientation
 	camPitch = 0;
@@ -164,11 +131,6 @@ World::World()
 
 World::~World()
 {
-	//Shut down OIS
-	inputManager->destroyInputObject(keyboard);
-	inputManager->destroyInputObject(mouse);
-	OIS::InputManager::destroyInputSystem(inputManager);
-
 	unload();
 }
 
@@ -242,9 +204,6 @@ void World::run()
 	running = true;
 	while(running)
 	{
-		//Handle windows events
-		WindowEventUtilities::messagePump();
-
 		//Update frame
 		processInput();
 		render();
@@ -264,8 +223,10 @@ void World::render()
 	root->renderOneFrame();
 }
 
+
 void World::processInput()
 {
+#if 0
 	using namespace OIS;
 	static Ogre::Timer timer;
 	static unsigned long lastTime = 0;
@@ -335,4 +296,5 @@ void World::processInput()
 		camPos.y = terrY + 2;
 		camera->setPosition(camPos);
 	}
+#endif
 }
