@@ -74,7 +74,6 @@ set(PAGEDGEOMETRY_ALTERNATE_COORDSYSTEM "FALSE" CACHE BOOL "alternate coordinate
 set(PAGEDGEOMETRY_USE_OGRE_RANDOM       "FALSE" CACHE BOOL "fallback to Ogre's PRNG instead of using our own (not recommended)")
 set(PAGEDGEOMETRY_USER_DATA             "FALSE" CACHE BOOL "ability to attach user data to entities")
 
-
 # Needed for PagedGeometry.pc.in
 SET(prefix ${CMAKE_INSTALL_PREFIX})
 SET(exec_prefix "\${prefix}")
@@ -97,7 +96,7 @@ INSTALL(FILES "${PagedGeometry_BINARY_DIR}/PagedGeometry.pc" DESTINATION "${LIB_
 
 # some additional compiler flags
 IF(NOT WIN32)
-  ADD_DEFINITIONS(-Wall)
+  ADD_DEFINITIONS(-Wall -Wno-unused-parameter)
   CHECK_C_COMPILER_FLAG(-Wextra HAVE_W_EXTRA)
   IF(HAVE_W_EXTRA)
   ADD_DEFINITIONS(-Wextra)
@@ -119,6 +118,8 @@ IF(NOT WIN32)
   ENDIF()
 ENDIF()
 
+# --- Ogre 3D graphics engine ---
+find_package( OGRE 1.10 REQUIRED )
 
 # now add the directories
 add_subdirectory(source)
@@ -133,7 +134,7 @@ endif(PAGEDGEOMETRY_BUILD_SAMPLES)
 set(CPACK_PACKAGE_DESCRIPTION "PagedGeometry")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "The PagedGeometry engine is an add-on to Ogre which provides highly optimized methods for rendering massive amounts of small meshes, covering a possibly infinite area.")
 set(CPACK_PACKAGE_NAME "pagedgeometry")
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libogre-1.9-dev, libois-dev")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libogre-1.9-dev")
 set(CPACK_PACKAGE_CONTACT "Edgar@AnotherFoxGuy.com")
 set(CPACK_PACKAGE_VENDOR "Edgar@AnotherFoxGuy.com")
 SET(CPACK_PACKAGE_VERSION ${LIB_VERSION})
