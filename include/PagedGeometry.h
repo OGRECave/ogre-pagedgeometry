@@ -16,7 +16,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 
 //-------- The following is the main API documentation page (parsed by doxygen) --------
 /**
-\page Main PagedGeometry API Documentation
+\mainpage PagedGeometry API Documentation
 
 \section A Introduction
 Although the PagedGeometry engine is fairly simple and easy to use, there are some
