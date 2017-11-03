@@ -536,7 +536,8 @@ WARN_LOGFILE           =
 
 INPUT                  = ${PagedGeometry_SOURCE_DIR}/source/ \
                          ${PagedGeometry_SOURCE_DIR}/include/ \
-                         ${PagedGeometry_BINARY_DIR}/include/
+                         ${PagedGeometry_BINARY_DIR}/include/ \
+                         ${CMAKE_SOURCE_DIR}/docs/
 
 # This tag can be used to specify the character encoding of the source files 
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding, which is 
