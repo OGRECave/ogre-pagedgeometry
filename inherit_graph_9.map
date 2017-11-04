@@ -1,0 +1,6 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" href="$classForests_1_1PageLoader.html" title="A class which you extend to provide a callback function for loading entities." alt="" coords="5,56,159,83"/>
+<area shape="rect" id="node2" href="$classForests_1_1GrassLoader.html" title="A PageLoader&#45;derived object you can use with PagedGeometry to produce realistic grass." alt="" coords="211,5,369,32"/>
+<area shape="rect" id="node3" href="$classForests_1_1TreeLoader2D.html" title="A PageLoader&#45;derived object you can use with PagedGeometry to easily place trees on your terrain." alt="" coords="207,56,373,83"/>
+<area shape="rect" id="node4" href="$classForests_1_1TreeLoader3D.html" title="A PageLoader&#45;derived object you can use with PagedGeometry to easily place trees on your terrain." alt="" coords="207,107,373,133"/>
+</map>

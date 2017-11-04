@@ -1,0 +1,7 @@
+<map id="Forests::WindBatchedGeometry" name="Forests::WindBatchedGeometry">
+<area shape="rect" id="node1" title="A variation of BatchedGeometry designed for WindBatchPage." alt="" coords="61,229,289,256"/>
+<area shape="rect" id="node2" href="$classForests_1_1BatchedGeometry.html" title="A &quot;lightweight&quot; version of Ogre::StaticGeometry, which gives you a little more control over the batch..." alt="" coords="77,155,272,181"/>
+<area shape="rect" id="node3" href="/usr/local/share/doc/OGRE/api/Ogre.tag$class_ogre_1_1_movable_object.html" title=" " alt="" coords="95,80,254,107"/>
+<area shape="rect" id="node4" href="/usr/local/share/doc/OGRE/api/Ogre.tag$class_ogre_1_1_shadow_caster.html" title=" " alt="" coords="5,5,160,32"/>
+<area shape="rect" id="node5" href="/usr/local/share/doc/OGRE/api/Ogre.tag$class_ogre_1_1_animable_object.html" title=" " alt="" coords="184,5,349,32"/>
+</map>

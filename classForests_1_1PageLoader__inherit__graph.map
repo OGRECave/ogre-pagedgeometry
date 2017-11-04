@@ -1,0 +1,6 @@
+<map id="Forests::PageLoader" name="Forests::PageLoader">
+<area shape="rect" id="node1" title="A class which you extend to provide a callback function for loading entities." alt="" coords="195,5,348,32"/>
+<area shape="rect" id="node2" href="$classForests_1_1GrassLoader.html" title="A PageLoader&#45;derived object you can use with PagedGeometry to produce realistic grass." alt="" coords="5,80,164,107"/>
+<area shape="rect" id="node3" href="$classForests_1_1TreeLoader2D.html" title="A PageLoader&#45;derived object you can use with PagedGeometry to easily place trees on your terrain." alt="" coords="188,80,355,107"/>
+<area shape="rect" id="node4" href="$classForests_1_1TreeLoader3D.html" title="A PageLoader&#45;derived object you can use with PagedGeometry to easily place trees on your terrain." alt="" coords="379,80,545,107"/>
+</map>

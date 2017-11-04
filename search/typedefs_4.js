@@ -1,0 +1,22 @@
+var searchData=
+[
+  ['d3d11hardwarebuffermanagerbase_22122',['D3D11HardwareBufferManagerBase',['https://ogrecave.github.io/ogre/api/latest/namespace_ogre.html#a69f3f17c1aea3451497859cd626c2334',1,'Ogre']]],
+  ['d3d11hlslprogramptr_22123',['D3D11HLSLProgramPtr',['https://ogrecave.github.io/ogre/api/latest/namespace_ogre.html#a4fdfbb7af58cbdd237866fe276917b0e',1,'Ogre']]],
+  ['d3d11shaderparameters_22124',['D3d11ShaderParameters',['https://ogrecave.github.io/ogre/api/latest/class_ogre_1_1_d3_d11_h_l_s_l_program.html#a559c468d1ee0ceac09ed924a1c6d04e8',1,'Ogre::D3D11HLSLProgram']]],
+  ['d3d11textureptr_22125',['D3D11TexturePtr',['https://ogrecave.github.io/ogre/api/latest/namespace_ogre.html#a57d00154758020454d2cc4619d127a6b',1,'Ogre']]],
+  ['d3d9gpufragmentprogram_22126',['D3D9GpuFragmentProgram',['https://ogrecave.github.io/ogre/api/latest/namespace_ogre.html#ac37c8449f131b18e0e2c3fe48df46056',1,'Ogre']]],
+  ['d3d9gpuprogramptr_22127',['D3D9GpuProgramPtr',['https://ogrecave.github.io/ogre/api/latest/namespace_ogre.html#af9e827385d9ac1435afae63e5c65f7d6',1,'Ogre']]],
+  ['d3d9gpuvertexprogram_22128',['D3D9GpuVertexProgram',['https://ogrecave.github.io/ogre/api/latest/namespace_ogre.html#a3734c41cbf5acaba95ae4418237c4ae3',1,'Ogre']]],
+  ['d3d9hlslprogramptr_22129',['D3D9HLSLProgramPtr',['https://ogrecave.github.io/ogre/api/latest/namespace_ogre.html#aa95ff4dffe399be9c3467d1e5f0032e2',1,'Ogre']]],
+  ['d3d9textureptr_22130',['D3D9TexturePtr',['https://ogrecave.github.io/ogre/api/latest/namespace_ogre.html#a6988e5e5e5357fa0cfe879b9930fbb6a',1,'Ogre']]],
+  ['datastreamlist_22131',['DataStreamList',['https://ogrecave.github.io/ogre/api/latest/group___resources.html#ga346c957ca4b71d80a4124c63542a9cd6',1,'Ogre::DataStreamList()'],['https://ogrecave.github.io/ogre/api/latest/group___resources.html#ga346c957ca4b71d80a4124c63542a9cd6',1,'DataStreamList()(Global Namespace)']]],
+  ['datastreamptr_22132',['DataStreamPtr',['https://ogrecave.github.io/ogre/api/latest/namespace_ogre.html#a8a2a961b4205aacff9c01e81e08d7781',1,'Ogre']]],
+  ['decryptembeddedzipfilefunc_22133',['DecryptEmbeddedZipFileFunc',['https://ogrecave.github.io/ogre/api/latest/class_ogre_1_1_embedded_zip_archive_factory.html#a9ef899ac1ebf7ab54f115c8ced9ff433',1,'Ogre::EmbeddedZipArchiveFactory']]],
+  ['defaulthardwareuniformbuffer_22134',['DefaultHardwareUniformBuffer',['https://ogrecave.github.io/ogre/api/latest/group___render_system.html#gae48abb71a1e46f4cc3a188a603fa537d',1,'Ogre::DefaultHardwareUniformBuffer()'],['https://ogrecave.github.io/ogre/api/latest/group___render_system.html#gae48abb71a1e46f4cc3a188a603fa537d',1,'DefaultHardwareUniformBuffer()(Global Namespace)']]],
+  ['depthbuffermap_22135',['DepthBufferMap',['https://ogrecave.github.io/ogre/api/latest/group___render_system.html#ga3398714c41b8c70059d8488a7b42ad3e',1,'Ogre::DepthBufferMap()'],['https://ogrecave.github.io/ogre/api/latest/group___render_system.html#ga3398714c41b8c70059d8488a7b42ad3e',1,'DepthBufferMap()(Global Namespace)']]],
+  ['depthbuffervec_22136',['DepthBufferVec',['https://ogrecave.github.io/ogre/api/latest/group___render_system.html#ga439edbcaf99f14e7c60bd389b0411d2c',1,'Ogre::DepthBufferVec()'],['https://ogrecave.github.io/ogre/api/latest/group___render_system.html#ga439edbcaf99f14e7c60bd389b0411d2c',1,'DepthBufferVec()(Global Namespace)']]],
+  ['difference_5ftype_22137',['difference_type',['https://ogrecave.github.io/ogre/api/latest/class_ogre_1_1_small_vector_template_common.html#a60eb6558693ab2020fba03c8ea5038c5',1,'Ogre::SmallVectorTemplateCommon']]],
+  ['displaystring_22138',['DisplayString',['https://ogrecave.github.io/ogre/api/latest/group___overlays.html#ga12ec415f18ba8932c5e0bfa49036fc5b',1,'Ogre::DisplayString()'],['https://ogrecave.github.io/ogre/api/latest/group___overlays.html#ga12ec415f18ba8932c5e0bfa49036fc5b',1,'DisplayString()(Global Namespace)']]],
+  ['dualcell_22139',['DualCell',['https://ogrecave.github.io/ogre/api/latest/group___volume.html#gaab8452656c1c65500c497e7fe0cc712c',1,'Ogre::Volume::DualCell()'],['https://ogrecave.github.io/ogre/api/latest/group___volume.html#gaab8452656c1c65500c497e7fe0cc712c',1,'DualCell()(Global Namespace)']]],
+  ['dynlib_5fhandle_22140',['DYNLIB_HANDLE',['https://ogrecave.github.io/ogre/api/latest/group___general.html#ga296be3af46168570d9f4bc5f3ef1e246',1,'Ogre::DYNLIB_HANDLE()'],['https://ogrecave.github.io/ogre/api/latest/group___general.html#ga296be3af46168570d9f4bc5f3ef1e246',1,'DYNLIB_HANDLE()(Global Namespace)']]]
+];

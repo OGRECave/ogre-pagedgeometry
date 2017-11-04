@@ -1,0 +1,26 @@
+var classForests_1_1BatchPage =
+[
+    [ "BatchPage", "classForests_1_1BatchPage.html#a5b223a6015ec09d0e167f7331e1a4a7c", null ],
+    [ "~BatchPage", "classForests_1_1BatchPage.html#a3f8ed6fd1d2a2c36ea9567273d93f5d6", null ],
+    [ "init", "classForests_1_1BatchPage.html#a1dbafe36789213f53b334bbe9e29172e", null ],
+    [ "addEntity", "classForests_1_1BatchPage.html#a2ce827d71d2ff826cce6379f5c241327", null ],
+    [ "removeEntities", "classForests_1_1BatchPage.html#a5692ad73d57ab863d920f3dc0d273d65", null ],
+    [ "build", "classForests_1_1BatchPage.html#a9f6f4ad7b067feccf99d460ed41e5aa0", null ],
+    [ "setVisible", "classForests_1_1BatchPage.html#ad899e8e34470a366bc3bae78d66547b9", null ],
+    [ "setFade", "classForests_1_1BatchPage.html#ad1db48c90e014a238725e69fd6844ed3", null ],
+    [ "addEntityToBoundingBox", "classForests_1_1BatchPage.html#a82b34a53d170a59bf1bde79439186fb8", null ],
+    [ "clearBoundingBox", "classForests_1_1BatchPage.html#ad4b44abe1c9c3656574cbd80b405b211", null ],
+    [ "getBoundingBox", "classForests_1_1BatchPage.html#a779d93257c3a9bf2b8e259f0c20f23da", null ],
+    [ "_updateShaders", "classForests_1_1BatchPage.html#a13d9aea99796c3648bf83448849b4d1e", null ],
+    [ "m_pPagedGeom", "classForests_1_1BatchPage.html#a29335fee83239871e7ca31843c7d28a6", null ],
+    [ "m_pSceneMgr", "classForests_1_1BatchPage.html#a993eb2586ad612638f4034a74193bc1d", null ],
+    [ "m_pBatchGeom", "classForests_1_1BatchPage.html#a8aa2265fb6a88df2a190d564e5b1fbe3", null ],
+    [ "m_nLODLevel", "classForests_1_1BatchPage.html#ae003e69223e74745318a8331353ff8e2", null ],
+    [ "m_bFadeEnabled", "classForests_1_1BatchPage.html#a1a19462397ca74da70a2f56fa63acf0b", null ],
+    [ "m_bShadersSupported", "classForests_1_1BatchPage.html#a022c458812c336cea02c90c4b03ec846", null ],
+    [ "m_fVisibleDist", "classForests_1_1BatchPage.html#a4f5d92c4d8119a4f2202c346742bd6cf", null ],
+    [ "m_fInvisibleDist", "classForests_1_1BatchPage.html#ac23e3e87a537417507ba000bc223afff", null ],
+    [ "m_vecUnfadedMaterials", "classForests_1_1BatchPage.html#a9684e446d1db604d98c1035928f32eb0", null ],
+    [ "s_nRefCount", "classForests_1_1BatchPage.html#aa765c586ceda71fcbc842f9b428c6c70", null ],
+    [ "s_nGUID", "classForests_1_1BatchPage.html#a2854ee6a50eccb03359ad9022bea18cb", null ]
+];

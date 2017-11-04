@@ -1,0 +1,27 @@
+var classForests_1_1ImpostorTexture =
+[
+    [ "~ImpostorTexture", "classForests_1_1ImpostorTexture.html#a6d36d9546a58a8083fe694d15cc74046", null ],
+    [ "ImpostorTexture", "classForests_1_1ImpostorTexture.html#aa88e7f35a1e8fffe128016dd8b63e860", null ],
+    [ "getTexture", "classForests_1_1ImpostorTexture.html#a84e2aaf969267377cbf28e4cfc9227d8", null ],
+    [ "removeTexture", "classForests_1_1ImpostorTexture.html#ab6ae409b5485f960c0a6ab4733eacc18", null ],
+    [ "regenerate", "classForests_1_1ImpostorTexture.html#ab1cfbcd330151cafcccdb11f24cb777a", null ],
+    [ "regenerateAll", "classForests_1_1ImpostorTexture.html#a4e32cfd4ebb6b8e42c3e1ce8a7f3c83e", null ],
+    [ "renderTextures", "classForests_1_1ImpostorTexture.html#ad9994989e058ded43cb9ed3f2255be91", null ],
+    [ "updateMaterials", "classForests_1_1ImpostorTexture.html#acbe08b7937c9da626ff537e7784a38bc", null ],
+    [ "getUniqueID", "classForests_1_1ImpostorTexture.html#a6e3329637d91f92c5370e3cb2a2e2ec3", null ],
+    [ "ImpostorBatch", "classForests_1_1ImpostorTexture.html#a81fdf943ad976361bdd9a941cd2ba232", null ],
+    [ "ImpostorTextureResourceLoader", "classForests_1_1ImpostorTexture.html#ad966228aadd8c1518b877db7b8aefb74", null ],
+    [ "selfList", "classForests_1_1ImpostorTexture.html#aa39719b0f17f8d1396e3c13978e74b50", null ],
+    [ "sceneMgr", "classForests_1_1ImpostorTexture.html#ad1a025d5740ab5e0806c285ba6fc8d1a", null ],
+    [ "entity", "classForests_1_1ImpostorTexture.html#a13818e9455d46bdc7c995de1719ad4ac", null ],
+    [ "entityKey", "classForests_1_1ImpostorTexture.html#ab6183b249759825d667a49a140b22c86", null ],
+    [ "group", "classForests_1_1ImpostorTexture.html#a9bd485112aa4f3950b210e5fead1737e", null ],
+    [ "material", "classForests_1_1ImpostorTexture.html#a3dc8fece2d96179a052c16c62fc8a52a", null ],
+    [ "texture", "classForests_1_1ImpostorTexture.html#abed113fa86e260ad3de40dcc381355b0", null ],
+    [ "sourceMesh", "classForests_1_1ImpostorTexture.html#a397621422afe42606e79029f78899d27", null ],
+    [ "boundingBox", "classForests_1_1ImpostorTexture.html#afe410a616938612fa9f78c9ed0179b97", null ],
+    [ "entityDiameter", "classForests_1_1ImpostorTexture.html#a5af5fc2c68382014544b98ea11d595d2", null ],
+    [ "entityRadius", "classForests_1_1ImpostorTexture.html#a970f7138467511cf7e771dd760b47cd1", null ],
+    [ "entityCenter", "classForests_1_1ImpostorTexture.html#afeb4663a4e15f2048cf50640e972594c", null ],
+    [ "GUID", "classForests_1_1ImpostorTexture.html#a88f3fc571b7fcdfda59012e0e85be1dc", null ]
+];

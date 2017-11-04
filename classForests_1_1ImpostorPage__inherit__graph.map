@@ -1,0 +1,4 @@
+<map id="Forests::ImpostorPage" name="Forests::ImpostorPage">
+<area shape="rect" id="node1" title="The ImpostorPage class renders entities as impostors (billboard images that look just like the real e..." alt="" coords="9,80,176,107"/>
+<area shape="rect" id="node2" href="$classForests_1_1GeometryPage.html" title="This base&#45;class can be extended to provide different ways of representing entities." alt="" coords="5,5,180,32"/>
+</map>

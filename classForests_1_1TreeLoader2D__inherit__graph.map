@@ -1,0 +1,4 @@
+<map id="Forests::TreeLoader2D" name="Forests::TreeLoader2D">
+<area shape="rect" id="node1" title="A PageLoader&#45;derived object you can use with PagedGeometry to easily place trees on your terrain." alt="" coords="5,80,172,107"/>
+<area shape="rect" id="node2" href="$classForests_1_1PageLoader.html" title="A class which you extend to provide a callback function for loading entities." alt="" coords="12,5,165,32"/>
+</map>

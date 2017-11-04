@@ -1,0 +1,7 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" href="/usr/local/share/doc/OGRE/api/Ogre.tag$class_ogre_1_1_animable_object.html" title=" " alt="" coords="5,5,171,32"/>
+<area shape="rect" id="node2" href="/usr/local/share/doc/OGRE/api/Ogre.tag$class_ogre_1_1_movable_object.html" title=" " alt="" coords="219,31,377,57"/>
+<area shape="rect" id="node3" href="$classForests_1_1BatchedGeometry.html" title="A &quot;lightweight&quot; version of Ogre::StaticGeometry, which gives you a little more control over the batch..." alt="" coords="425,31,620,57"/>
+<area shape="rect" id="node4" href="$classForests_1_1WindBatchedGeometry.html" title="A variation of BatchedGeometry designed for WindBatchPage." alt="" coords="668,31,896,57"/>
+<area shape="rect" id="node5" href="/usr/local/share/doc/OGRE/api/Ogre.tag$class_ogre_1_1_shadow_caster.html" title=" " alt="" coords="11,56,165,83"/>
+</map>

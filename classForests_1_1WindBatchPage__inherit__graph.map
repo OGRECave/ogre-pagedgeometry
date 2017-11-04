@@ -1,0 +1,5 @@
+<map id="Forests::WindBatchPage" name="Forests::WindBatchPage">
+<area shape="rect" id="node1" title="The WindBatchPage class renders entities as StaticGeometry with hardware accelerated wind animation c..." alt="" coords="5,155,184,181"/>
+<area shape="rect" id="node2" href="$classForests_1_1BatchPage.html" title="The BatchPage class renders entities as StaticGeometry." alt="" coords="21,80,168,107"/>
+<area shape="rect" id="node3" href="$classForests_1_1GeometryPage.html" title="This base&#45;class can be extended to provide different ways of representing entities." alt="" coords="7,5,182,32"/>
+</map>
