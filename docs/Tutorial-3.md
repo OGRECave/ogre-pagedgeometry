@@ -11,7 +11,7 @@ graphical realism.
 
 ## Tutorial Requirements
 
--   Tutorial 1 (\#2 also recommended)
+-   @ref tut1 (\#2 also recommended)
 -   A basic understanding of Ogre
 -   Some experience using C++
 

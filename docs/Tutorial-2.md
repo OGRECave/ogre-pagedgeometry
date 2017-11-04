@@ -10,7 +10,7 @@ and explains the fastest way to add trees and bushes to your scene.
 
 ## Tutorial Requirements
 
--   Tutorial 1
+-   @ref tut1
 -   A basic understanding of Ogre
 -   Some experience using C++
 
