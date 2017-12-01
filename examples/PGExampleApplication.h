@@ -63,7 +63,7 @@ public:
     virtual void go(void)
     {
         initApp();
-
+        setWindowGrab();
         mRoot->startRendering();
 
         // clean up
