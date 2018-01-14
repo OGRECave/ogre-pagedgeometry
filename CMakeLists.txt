@@ -183,5 +183,5 @@ if (DOXYGEN_FOUND)
 endif (DOXYGEN_FOUND)
 
 # other doc files
-set(DOC_FILES Contributors.txt zlib.txt GettingStarted.txt Todo.txt docs/Tutorial-1.odt docs/Tutorial-2.odt docs/Tutorial-3.odt docs/Tutorial-4.odt)
+set(DOC_FILES Contributors.txt zlib.txt README.md Todo.txt)
 install(FILES ${DOC_FILES} DESTINATION doc/pagedgeometry/)
