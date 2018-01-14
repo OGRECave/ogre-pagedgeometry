@@ -438,6 +438,18 @@ public:
 	don't, the grass you see will remain unchanged. */
 	ColorMap* getColorMap() const { return colorMap; }
 
+    /** \brief Gives back the value of blending. */
+    bool getBlendValue() const { return blend;};
+
+    /** \brief Gets the parent grassLoader of this layer */
+    GrassLoader* getParentGrassLoader() const { return parent; }
+
+    /** \brief Gives back if lighting is enabled for grass. */
+    bool getLightingEnabled() const { return lighting; }
+
+    /** \brief Gets the map bounds */
+    const TBounds& getMapBounds() const { return mapBounds; }
+
 	/** \brief Sets the technique used to render this grass layer
 	\param style The GrassTechnique style used to display grass.
 	\param blendBase Whether or not grass base blending is enabled.
