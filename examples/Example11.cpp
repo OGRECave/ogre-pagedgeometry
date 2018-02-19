@@ -261,7 +261,9 @@ void PGSampleApp::configureShadows(bool enabled, bool depthShadows)
 			mSceneMgr->setShadowTextureConfig(2, 1024, 1024, PF_FLOAT32_R);
 			mSceneMgr->setShadowTextureSelfShadow(true);
 			mSceneMgr->setShadowCasterRenderBackFaces(true);
-			mSceneMgr->setShadowTextureCasterMaterial("PSSM/shadow_caster");
+
+			MaterialPtr casterMat = MaterialManager::getSingleton().getByName("PSSM/shadow_caster");
+			mSceneMgr->setShadowTextureCasterMaterial(casterMat);
 
 			MaterialPtr houseMat = buildDepthShadowMaterial("fw12b.jpg");
 			for (EntityList::iterator i = mHouseList.begin(); i != mHouseList.end(); ++i)
@@ -278,7 +280,7 @@ void PGSampleApp::configureShadows(bool enabled, bool depthShadows)
 			mSceneMgr->setShadowTextureConfig(2, 1024, 1024, PF_X8B8G8R8);
 			mSceneMgr->setShadowTextureSelfShadow(false);
 			mSceneMgr->setShadowCasterRenderBackFaces(false);
-			mSceneMgr->setShadowTextureCasterMaterial(StringUtil::BLANK);
+			mSceneMgr->setShadowTextureCasterMaterial(MaterialPtr());
 		}
 
 		matProfile->setReceiveDynamicShadowsDepth(depthShadows);
