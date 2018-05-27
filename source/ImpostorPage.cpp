@@ -599,7 +599,7 @@ void ImpostorTexture::renderTextures(bool force)
 		key[i] = (key[i] % 26) + 'A';
 
 	String tempdir = this->group->getParentPagedGeometry()->getTempdir();
-	ResourceGroupManager::getSingleton().addResourceLocation(tempdir, "FileSystem", "BinFolder");
+	ResourceGroupManager::getSingleton().addResourceLocation(tempdir, "FileSystem", "Impostors");
 
 	String fileNamePNG = "Impostor." + String(key, sizeof(key)) + '.' + StringConverter::toString(textureSize) + ".png";
 	String fileNameDDS = "Impostor." + String(key, sizeof(key)) + '.' + StringConverter::toString(textureSize) + ".dds";
@@ -608,11 +608,11 @@ void ImpostorTexture::renderTextures(bool force)
 	needsRegen = force;
 	if (!needsRegen){
 		try{
-			texture = TextureManager::getSingleton().load(fileNameDDS, Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, MIP_UNLIMITED);
+			texture = TextureManager::getSingleton().load(fileNameDDS, "Impostors", TEX_TYPE_2D, MIP_UNLIMITED);
 		}
 		catch (...){
 			try{
-				texture = TextureManager::getSingleton().load(fileNamePNG, Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, MIP_UNLIMITED);
+				texture = TextureManager::getSingleton().load(fileNamePNG, "Impostors", TEX_TYPE_2D, MIP_UNLIMITED);
 			}
 			catch (...){
 				needsRegen = true;
@@ -651,7 +651,7 @@ void ImpostorTexture::renderTextures(bool force)
 		renderTarget->writeContentsToFile(tempdir + fileNamePNG);
 
 		//Load the render into the appropriate texture view
-		texture = TextureManager::getSingleton().load(fileNamePNG, Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, MIP_UNLIMITED);
+		texture = TextureManager::getSingleton().load(fileNamePNG, "Impostors", TEX_TYPE_2D, MIP_UNLIMITED);
 #else
 		texture = renderTexture;
 #endif
@@ -690,11 +690,9 @@ void ImpostorTexture::renderTextures(bool force)
 #ifdef IMPOSTOR_FILE_SAVE
 	//Delete RTT texture
 	assert(!renderTexture.isNull());
-	String texName2(renderTexture->getName());
 
-	renderTexture.setNull();
 	if (TextureManager::getSingletonPtr())
-		TextureManager::getSingleton().remove(texName2);
+		TextureManager::getSingleton().remove(renderTexture);
 #endif
 }
 
