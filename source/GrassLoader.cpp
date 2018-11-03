@@ -1145,9 +1145,10 @@ void GrassLayer::_updateShaders()
 				HighLevelGpuProgramPtr vertexShader = HighLevelGpuProgramManager::getSingleton().getByName(vsName).staticCast<HighLevelGpuProgram>();
 				if (vertexShader.isNull())
 				{
-					if (Root::getSingleton().getRenderSystem()->getName() == "Direct3D9 Rendering Subsystem")
+					HighLevelGpuProgramManager& mgr = HighLevelGpuProgramManager::getSingleton();
+					if (mgr.isLanguageSupported("hlsl"))
 						shaderLanguage = "hlsl";
-					else if(Root::getSingleton().getRenderSystem()->getName() == "OpenGL Rendering Subsystem")
+					else if(mgr.isLanguageSupported("glsl"))
 						shaderLanguage = "glsl";
 					else
 						shaderLanguage = "cg";

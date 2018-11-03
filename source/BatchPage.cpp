@@ -261,10 +261,12 @@ void BatchPage::_updateShaders()
 
 		const String vertexProgName = tmpName.str();
 
+        HighLevelGpuProgramManager& mgr = HighLevelGpuProgramManager::getSingleton();
+
 		String shaderLanguage;
-		if (Root::getSingleton().getRenderSystem()->getName() == "Direct3D9 Rendering Subsystem")
+		if (mgr.isLanguageSupported("hlsl"))
 			shaderLanguage = "hlsl";
-		else if(Root::getSingleton().getRenderSystem()->getName() == "OpenGL Rendering Subsystem")
+		else if(mgr.isLanguageSupported("glsl"))
 			shaderLanguage = "glsl";
 		else
 			shaderLanguage = "cg";
