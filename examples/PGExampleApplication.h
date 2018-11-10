@@ -178,7 +178,12 @@ protected:
 		}
 	}
 
-    virtual void destroyScene(void){}    // Optional to override this
+    virtual void destroyScene(void){
+        for(std::vector<Forests::PagedGeometry *>::iterator it=pgs.begin(); it!=pgs.end(); it++)
+        {
+            (*it)->removeDetailLevels();
+        }
+    }
 
     virtual void createViewports(void)
     {
