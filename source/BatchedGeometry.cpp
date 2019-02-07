@@ -212,16 +212,16 @@ uint32 CountUsedVertices(IndexData *id, std::map<uint32, uint32> &ibmap)
 ///
 void BatchedGeometry::extractVertexDataFromShared(const Ogre::MeshPtr &mesh)
 {
-   if (mesh.isNull() || !mesh->sharedVertexData)
-      return;
+	if (!mesh || !mesh->sharedVertexData)
+		return;
 
-   Mesh::SubMeshIterator subMeshIterator = mesh->getSubMeshIterator();
+   Mesh::SubMeshList subMeshList = mesh->getSubMeshes();
 
    // Get shared vertex data
    VertexData *oldVertexData = mesh->sharedVertexData;
 
-   while (subMeshIterator.hasMoreElements()) {
-      SubMesh *subMesh = subMeshIterator.getNext();
+   for (auto subMeshIter = subMeshList.begin(); subMeshIter != subMeshList.end(); ++subMeshIter) {
+	   SubMesh *subMesh = subMeshList.front();
 
       // Get index data
       IndexData *indexData = subMesh->indexData;
@@ -365,16 +365,16 @@ void BatchedGeometry::build()
 void BatchedGeometry::clear()
 {
    //Remove the batch from the scene
-   if (m_pSceneNode)
-   {
-      m_pSceneNode->removeAllChildren();
-      if (m_pSceneNode->getParent())
-         m_pSceneNode->getParentSceneNode()->removeAndDestroyChild(m_pSceneNode);
-      else
-         m_pSceneMgr->destroySceneNode(m_pSceneNode);
+	if (m_pSceneNode)
+	{
+		m_pSceneNode->removeAllChildren();
+		if (m_pSceneNode->getParent())
+			m_pSceneNode->getParentSceneNode()->removeAndDestroyChild(m_pSceneNode);
+		else
+			m_pSceneMgr->destroySceneNode(m_pSceneNode);
 
-      m_pSceneNode = 0;
-   }
+		m_pSceneNode = 0;
+	}
 
    //Reset bounds information
    m_BoundsUndefined = true;
@@ -471,7 +471,7 @@ m_pParentGeom           (parent)
    m_pSubMesh = ent->getSubMesh();
 
    const Ogre::MaterialPtr &parentMaterial = ent->getMaterial();
-   if (parentMaterial.isNull())
+   if (!parentMaterial)
       OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "BatchedGeometry. Empty parent material", "BatchedGeometry::SubBatch::SubBatch");
 
    // SVA clone material
@@ -480,8 +480,8 @@ m_pParentGeom           (parent)
    // that the user may be using somewhere else).
    {
       Ogre::String newName = parentMaterial->getName() + "_Batched";
-      m_ptrMaterial = MaterialManager::getSingleton().getByName(newName, parentMaterial->getGroup()).staticCast<Material>();
-      if (m_ptrMaterial.isNull())
+      m_ptrMaterial = Ogre::static_pointer_cast<Material>(MaterialManager::getSingleton().getByName(newName, parentMaterial->getGroup()));
+      if (!m_ptrMaterial)
          m_ptrMaterial = parentMaterial->clone(newName);
    }
 
@@ -577,8 +577,8 @@ void BatchedGeometry::SubBatch::build()
       destIndexType, m_pIndexData->indexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY);
 
    //Lock the index buffer
-   uint32 *indexBuffer32;
-   uint16 *indexBuffer16;
+   uint32 *indexBuffer32 = NULL;
+   uint16 *indexBuffer16 = NULL;
    if (destIndexType == HardwareIndexBuffer::IT_32BIT)
       indexBuffer32 = static_cast<uint32*>(m_pIndexData->indexBuffer->lock(HardwareBuffer::HBL_DISCARD));
    else
@@ -644,7 +644,7 @@ void BatchedGeometry::SubBatch::build()
 
          //And copy it to the output buffer
          while (source != sourceEnd)
-            *indexBuffer32++ = static_cast<uint32>(*source++ + indexOffset);
+			 *indexBuffer32++ = static_cast<uint32>(*source++ + indexOffset);
 
          sourceIndexData->indexBuffer->unlock();                     // Unlock the input buffer
          indexOffset += queuedMesh.subMesh->vertexData->vertexCount; // Increment the index offset
@@ -663,7 +663,7 @@ void BatchedGeometry::SubBatch::build()
             while (source != sourceEnd)
             {
                uint32 indx = *source++;
-               *indexBuffer32++ = (indx + indexOffset);
+			   *indexBuffer32++ = (indx + indexOffset);
             }
 
             sourceIndexData->indexBuffer->unlock();                  // Unlock the input buffer
@@ -678,7 +678,7 @@ void BatchedGeometry::SubBatch::build()
 
             //And copy it to the output buffer
             while (source != sourceEnd)
-               *indexBuffer16++ = static_cast<uint16>(*source++ + indexOffset);
+				*indexBuffer16++ = static_cast<uint16>(*source++ + indexOffset);
 
             sourceIndexData->indexBuffer->unlock();                  // Unlock the input buffer
             indexOffset += queuedMesh.subMesh->vertexData->vertexCount; // Increment the index offset
@@ -958,7 +958,7 @@ void BatchedGeometry::SubBatch::clear()
       m_Built = false;
 
       //Delete buffers
-      m_pIndexData->indexBuffer.setNull();
+      m_pIndexData->indexBuffer.reset();
       m_pVertexData->vertexBufferBinding->unsetAllBindings();
 
       //Reset vertex/index count
