@@ -85,11 +85,11 @@ namespace Forests
 
          ///
          void setMaterial(Ogre::MaterialPtr &mat)                 { m_ptrMaterial = mat; }
-         void setMaterialName(const Ogre::String &mat, const Ogre::String &rg =
-            Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME)
-         {
-			 m_ptrMaterial = Ogre::MaterialManager::getSingleton().getByName(mat, rg).staticCast<Ogre::Material>();
-         }
+		 void setMaterialName(const Ogre::String &mat, const Ogre::String &rg =
+			 Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME)
+		 {
+			 m_ptrMaterial = Ogre::static_pointer_cast<Ogre::Material>(Ogre::MaterialManager::getSingleton().getByName(mat, rg));
+		 }
 
          /// Get material name. Be careful, resource group name missing
          const Ogre::String& getMaterialName() const              { return m_ptrMaterial->getName(); }
