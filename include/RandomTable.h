@@ -16,6 +16,10 @@ Permission is granted to anyone to use this software for any purpose, including 
 
 #include <time.h> // for time
 #include "MersenneTwister.h"
+#ifdef _WIN32
+#define _WIN32_WINNT 0x0600
+#include <windows.h>
+#endif
 
 // random table class that speeds up PG a bit
 class RandomTable
