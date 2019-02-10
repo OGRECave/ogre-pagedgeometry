@@ -88,7 +88,7 @@ namespace Forests
          void setMaterialName(const Ogre::String &mat, const Ogre::String &rg =
             Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME)
          {
-			 m_ptrMaterial = Ogre::MaterialManager::getSingleton().getByName(mat, rg).staticCast<Ogre::Material>();
+			 m_ptrMaterial = Ogre::MaterialManager::getSingleton().getByName(mat, rg);
          }
 
          /// Get material name. Be careful, resource group name missing
