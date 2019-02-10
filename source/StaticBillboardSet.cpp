@@ -150,7 +150,7 @@ mFadeInvisibleDist      (0.f)
                "}";
          }
 
-		 HighLevelGpuProgramPtr vertexShader = HighLevelGpuProgramManager::getSingleton().getByName("Sprite_vp").staticCast<HighLevelGpuProgram>();
+		 HighLevelGpuProgramPtr vertexShader = HighLevelGpuProgramManager::getSingleton().getByName("Sprite_vp");
          OgreAssert(!vertexShader, "Sprite_vp already exist");
 
          vertexShader = HighLevelGpuProgramManager::getSingleton().createProgram(
@@ -258,7 +258,7 @@ mFadeInvisibleDist      (0.f)
                "}";
          }
 
-		 HighLevelGpuProgramPtr vertexShader2 = HighLevelGpuProgramManager::getSingleton().getByName("SpriteFade_vp").staticCast<HighLevelGpuProgram>();
+		 HighLevelGpuProgramPtr vertexShader2 = HighLevelGpuProgramManager::getSingleton().getByName("SpriteFade_vp");
          OgreAssert(!vertexShader2, "SpriteFade_vp already exist");
          vertexShader2 = HighLevelGpuProgramManager::getSingleton().createProgram("SpriteFade_vp",
             ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, shaderLanguage, GPT_VERTEX_PROGRAM);
@@ -305,9 +305,9 @@ StaticBillboardSet::~StaticBillboardSet()
       clear(); // Delete mesh data
 
       //Update material reference list
-      if (!mPtrMaterial.isNull())
+      if (mPtrMaterial)
          SBMaterialRef::removeMaterialRef(mPtrMaterial);
-      if (!mPtrFadeMaterial.isNull())
+      if (mPtrFadeMaterial)
          SBMaterialRef::removeMaterialRef(mPtrFadeMaterial);
 
       //Delete vertex shaders and materials if no longer in use
@@ -346,7 +346,7 @@ void StaticBillboardSet::clear()
 
          //Delete mesh
          String meshName(mPtrMesh->getName());
-         mPtrMesh.setNull();
+         mPtrMesh.reset();
          MeshManager::getSingleton().remove(meshName);
       }
 
@@ -378,9 +378,9 @@ void StaticBillboardSet::build()
          mpEntity = NULL;
 
          //Delete mesh
-         assert(!mPtrMesh.isNull());
+         assert(mPtrMesh);
          String meshName(mPtrMesh->getName());
-         mPtrMesh.setNull();
+         mPtrMesh.reset();
          MeshManager::getSingleton().remove(meshName);
       }
 
@@ -564,7 +564,7 @@ void StaticBillboardSet::build()
 ///
 void StaticBillboardSet::setMaterial(const String &materialName, const Ogre::String &resourceGroup)
 {
-   bool needUpdateMat = mPtrMaterial.isNull() || mPtrMaterial->getName() != materialName || mPtrMaterial->getGroup() != resourceGroup;
+   bool needUpdateMat = !mPtrMaterial || mPtrMaterial->getName() != materialName || mPtrMaterial->getGroup() != resourceGroup;
    if (!needUpdateMat)
       return;
 
@@ -573,13 +573,13 @@ void StaticBillboardSet::setMaterial(const String &materialName, const Ogre::Str
       //Update material reference list
       if (mFadeEnabled)
       {
-         assert(!mPtrFadeMaterial.isNull());
+         assert(mPtrFadeMaterial);
          SBMaterialRef::removeMaterialRef(mPtrFadeMaterial);
       }
-      else if (!mPtrMaterial.isNull())
+      else if (mPtrMaterial)
          SBMaterialRef::removeMaterialRef(mPtrMaterial);
 
-	  mPtrMaterial = MaterialManager::getSingleton().getByName(materialName, resourceGroup).staticCast<Material>();
+	  mPtrMaterial = MaterialManager::getSingleton().getByName(materialName, resourceGroup);
 
       if (mFadeEnabled)
       {
@@ -595,7 +595,7 @@ void StaticBillboardSet::setMaterial(const String &materialName, const Ogre::Str
    }
    else  // old GPU compatibility
    {
-      mPtrMaterial = MaterialManager::getSingleton().getByName(materialName, resourceGroup).staticCast<Material>();
+      mPtrMaterial = Ogre::static_pointer_cast<Material>(MaterialManager::getSingleton().getByName(materialName, resourceGroup));
       mpFallbackBillboardSet->setMaterialName(mPtrMaterial->getName(), mPtrMaterial->getGroup());
       // SVA. Since Ogre 1.7.3 Ogre::BillboardSet have setMaterial(const MaterialPtr&) method
    }
@@ -610,18 +610,18 @@ void StaticBillboardSet::setFade(bool enabled, Real visibleDist, Real invisibleD
    {
       if (enabled)
       {
-         if (mPtrMaterial.isNull())
+         if (!mPtrMaterial)
             OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND, "Billboard fading cannot be enabled without a material applied first", "StaticBillboardSet::setFade()");
 
          //Update material reference list
          if (mFadeEnabled)
          {
-            assert(!mPtrFadeMaterial.isNull());
+            assert(mPtrFadeMaterial);
             SBMaterialRef::removeMaterialRef(mPtrFadeMaterial);
          }
          else
          {
-            assert(!mPtrMaterial.isNull());
+            assert(mPtrMaterial);
             SBMaterialRef::removeMaterialRef(mPtrMaterial);
          }
 
@@ -641,8 +641,8 @@ void StaticBillboardSet::setFade(bool enabled, Real visibleDist, Real invisibleD
          if (mFadeEnabled)
          {
             //Update material reference list
-            assert(!mPtrFadeMaterial.isNull());
-            assert(!mPtrMaterial.isNull());
+            assert(mPtrFadeMaterial);
+            assert(mPtrMaterial);
             SBMaterialRef::removeMaterialRef(mPtrFadeMaterial);
             SBMaterialRef::addMaterialRef(mPtrMaterial, mBBOrigin);
 
@@ -674,9 +674,9 @@ void StaticBillboardSet::setTextureStacksAndSlices(Ogre::uint16 stacks, Ogre::ui
 MaterialPtr StaticBillboardSet::getFadeMaterial(const Ogre::MaterialPtr &protoMaterial,
                                                 Real visibleDist_, Real invisibleDist_)
 {
-   assert(!protoMaterial.isNull());
+   assert(protoMaterial);
 
-   StringUtil::StrStreamType materialSignature;
+   Ogre::StringStream materialSignature;
    materialSignature << mEntityName << "|";
    materialSignature << visibleDist_ << "|";
    materialSignature << invisibleDist_ << "|";
@@ -705,8 +705,11 @@ MaterialPtr StaticBillboardSet::getFadeMaterial(const Ogre::MaterialPtr &protoMa
             GpuProgramParametersSharedPtr params = pass->getVertexProgramParameters();
 
             //glsl can use the built in gl_ModelViewProjectionMatrix
-            if (!isglsl)
-               params->setNamedAutoConstant("worldViewProj", GpuProgramParameters::ACT_WORLDVIEWPROJ_MATRIX);
+			if (!isglsl)
+			{
+				static const Ogre::String worldViewProj = "worldViewProj";
+				params->setNamedAutoConstant(worldViewProj, GpuProgramParameters::ACT_WORLDVIEWPROJ_MATRIX);
+			}
 
             static const Ogre::String uScroll = "uScroll", vScroll = "vScroll",
                preRotatedQuad0 = "preRotatedQuad[0]", preRotatedQuad1 = "preRotatedQuad[1]",
@@ -875,7 +878,7 @@ SBMaterialRefList SBMaterialRef::selfList;
 
 void SBMaterialRef::addMaterialRef(const MaterialPtr &matP, Ogre::BillboardOrigin o)
 {
-   Material *mat = matP.getPointer();
+   Material *mat = matP.get();
 
    SBMaterialRef *matRef;
    SBMaterialRefList::iterator it;
@@ -896,7 +899,7 @@ void SBMaterialRef::addMaterialRef(const MaterialPtr &matP, Ogre::BillboardOrigi
 
 void SBMaterialRef::removeMaterialRef(const MaterialPtr &matP)
 {
-   Material *mat = matP.getPointer();
+   Material *mat = matP.get();
 
    SBMaterialRef *matRef;
    SBMaterialRefList::iterator it;
