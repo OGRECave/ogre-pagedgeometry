@@ -12,10 +12,10 @@ macro(example_app NAME)
 	target_link_libraries(${NAME} PagedGeometry ${OGRE_LIBRARIES})
 endmacro(example_app)
 
+example_app(Example1)
 if(OFF)
 # these are still using the TerrainSceneManager from Ogre 1.7
 # need porting for Ogre 1.8+
-example_app(Example1)
 example_app(Example2)
 example_app(Example3)
 example_app(Example4)
