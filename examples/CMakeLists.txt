@@ -13,15 +13,16 @@ macro(example_app NAME)
 endmacro(example_app)
 
 example_app(Example1)
-if(OFF)
-# these are still using the TerrainSceneManager from Ogre 1.7
-# need porting for Ogre 1.8+
 example_app(Example2)
 example_app(Example3)
 example_app(Example4)
 example_app(Example5)
 example_app(Example6)
 example_app(Example7)
+
+if(OFF)
+# these are still using the TerrainSceneManager from Ogre 1.7
+# need porting for Ogre 1.8+
 example_app(Example8)
 example_app(Example9)
 example_app(Example10)
