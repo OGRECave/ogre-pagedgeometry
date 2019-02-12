@@ -38,7 +38,7 @@ using namespace Forests;
 ///
 void WindBatchPage::init(PagedGeometry *geom, const Any &data)
 {
-   int datacast = !data.isEmpty() ? Ogre::any_cast<int>(data) : 0;
+   int datacast = data.has_value() ? Ogre::any_cast<int>(data) : 0;
 #ifdef _DEBUG
 	if (datacast < 0)
    {
@@ -93,7 +93,7 @@ void WindBatchPage::_updateShaders()
 		}
 
 		//Compile the shader script based on various material / fade options
-		StringUtil::StrStreamType tmpName;
+		Ogre::StringStream tmpName;
 		tmpName << "BatchPage_";
 		if (m_bFadeEnabled)
 			tmpName << "fade_";
@@ -134,7 +134,7 @@ void WindBatchPage::_updateShaders()
 			shaderLanguage = "cg";
 
 		//If the shader hasn't been created yet, create it
-		if (HighLevelGpuProgramManager::getSingleton().getByName(vertexProgName).isNull())
+		if (!HighLevelGpuProgramManager::getSingleton().getByName(vertexProgName))
 		{
 			Pass *pass = ptrMat->getTechnique(0)->getPass(0);
 			String vertexProgSource;
@@ -460,7 +460,7 @@ void WindBatchPage::_updateShaders()
 		}
 
 		//Now that the shader is ready to be applied, apply it
-		StringUtil::StrStreamType materialSignature;
+		Ogre::StringStream materialSignature;
 		materialSignature << "BatchMat|";
 		materialSignature << ptrMat->getName() << "|";
 		if (m_bFadeEnabled)
@@ -470,8 +470,8 @@ void WindBatchPage::_updateShaders()
 		}
 
 		//Search for the desired material
-		MaterialPtr generatedMaterial = MaterialManager::getSingleton().getByName(materialSignature.str()).staticCast<Material>();
-		if (generatedMaterial.isNull())
+		MaterialPtr generatedMaterial = MaterialManager::getSingleton().getByName(materialSignature.str());
+		if (!generatedMaterial)
       {
 			//Clone the material
 			generatedMaterial = ptrMat->clone(materialSignature.str());

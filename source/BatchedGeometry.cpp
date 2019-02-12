@@ -212,8 +212,8 @@ uint32 CountUsedVertices(IndexData *id, std::map<uint32, uint32> &ibmap)
 ///
 void BatchedGeometry::extractVertexDataFromShared(const Ogre::MeshPtr &mesh)
 {
-   if (mesh.isNull() || !mesh->sharedVertexData)
-      return;
+	if (!mesh || !mesh->sharedVertexData)
+		return;
 
    Mesh::SubMeshIterator subMeshIterator = mesh->getSubMeshIterator();
 
@@ -471,7 +471,7 @@ m_pParentGeom           (parent)
    m_pSubMesh = ent->getSubMesh();
 
    const Ogre::MaterialPtr &parentMaterial = ent->getMaterial();
-   if (parentMaterial.isNull())
+   if (!parentMaterial)
       OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "BatchedGeometry. Empty parent material", "BatchedGeometry::SubBatch::SubBatch");
 
    // SVA clone material
@@ -480,8 +480,8 @@ m_pParentGeom           (parent)
    // that the user may be using somewhere else).
    {
       Ogre::String newName = parentMaterial->getName() + "_Batched";
-      m_ptrMaterial = MaterialManager::getSingleton().getByName(newName, parentMaterial->getGroup()).staticCast<Material>();
-      if (m_ptrMaterial.isNull())
+      m_ptrMaterial = Ogre::static_pointer_cast<Material>(MaterialManager::getSingleton().getByName(newName, parentMaterial->getGroup()));
+      if (!m_ptrMaterial)
          m_ptrMaterial = parentMaterial->clone(newName);
    }
 
@@ -958,7 +958,7 @@ void BatchedGeometry::SubBatch::clear()
       m_Built = false;
 
       //Delete buffers
-      m_pIndexData->indexBuffer.setNull();
+      m_pIndexData->indexBuffer.reset();
       m_pVertexData->vertexBufferBinding->unsetAllBindings();
 
       //Reset vertex/index count

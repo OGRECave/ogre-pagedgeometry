@@ -59,7 +59,7 @@ void BatchPage::init(PagedGeometry *geom_, const Any &data)
 {
    assert(geom_ && "Can any code set null pointer?");
 
-   int datacast = !data.isEmpty() ? Ogre::any_cast<int>(data) : 0;
+   int datacast = data.has_value() ? Ogre::any_cast<int>(data) : 0;
 #ifdef _DEBUG
 	if (datacast < 0)
 		OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS,"Data of BatchPage must be a positive integer. It representing the LOD level this detail level stores.","BatchPage::BatchPage");
@@ -231,7 +231,7 @@ void BatchPage::_updateShaders()
 		}
 
 		//Compile the CG shader script based on various material / fade options
-		StringUtil::StrStreamType tmpName;
+		Ogre::StringStream tmpName;
 		tmpName << "BatchPage_";
 		if (m_bFadeEnabled)
 			tmpName << "fade_";
@@ -272,7 +272,7 @@ void BatchPage::_updateShaders()
 			shaderLanguage = "cg";
 
 		//If the shader hasn't been created yet, create it
-		if (HighLevelGpuProgramManager::getSingleton().getByName(vertexProgName).isNull())
+		if (!HighLevelGpuProgramManager::getSingleton().getByName(vertexProgName))
 		{
 			Pass *pass = ptrMat->getTechnique(0)->getPass(0);
 			String vertexProgSource;
@@ -465,7 +465,7 @@ void BatchPage::_updateShaders()
 		}
 
 		//Now that the shader is ready to be applied, apply it
-		StringUtil::StrStreamType materialSignature;
+		Ogre::StringStream materialSignature;
 		materialSignature << "BatchMat|";
 		materialSignature << ptrMat->getName() << "|";
 		if (m_bFadeEnabled)
@@ -475,8 +475,8 @@ void BatchPage::_updateShaders()
 		}
 
 		//Search for the desired material
-		MaterialPtr generatedMaterial = MaterialManager::getSingleton().getByName(materialSignature.str()).staticCast<Ogre::Material>();
-		if (generatedMaterial.isNull())
+		MaterialPtr generatedMaterial = MaterialManager::getSingleton().getByName(materialSignature.str());
+		if (!generatedMaterial)
       {
 			//Clone the material
 			generatedMaterial = ptrMat->clone(materialSignature.str());

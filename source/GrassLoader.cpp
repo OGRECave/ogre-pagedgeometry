@@ -360,7 +360,7 @@ Mesh *GrassLoader::generateGrass_QUAD(PageInfo &page, GrassLayer *layer, const f
 	subMesh->setMaterialName(layer->material->getName());
 
 	//Return the mesh
-	return mesh.getPointer();
+	return mesh.get();
 }
 
 Mesh *GrassLoader::generateGrass_CROSSQUADS(PageInfo &page, GrassLayer *layer, const float *grassPositions, unsigned int grassCount)
@@ -578,7 +578,7 @@ Mesh *GrassLoader::generateGrass_CROSSQUADS(PageInfo &page, GrassLayer *layer, c
 	subMesh->setMaterialName(layer->material->getName());
 
 	//Return the mesh
-	return mesh.getPointer();
+	return mesh.get();
 }
 
 Mesh *GrassLoader::generateGrass_SPRITE(PageInfo &page, GrassLayer *layer, const float *grassPositions, unsigned int grassCount)
@@ -726,7 +726,7 @@ Mesh *GrassLoader::generateGrass_SPRITE(PageInfo &page, GrassLayer *layer, const
 	subMesh->setMaterialName(layer->material->getName());
 
 	//Return the mesh
-	return mesh.getPointer();
+	return mesh.get();
 }
 
 GrassLayer::GrassLayer(PagedGeometry *geom, GrassLoader *ldr)
@@ -766,9 +766,9 @@ GrassLayer::~GrassLayer()
 
 void GrassLayer::setMaterialName(const String &matName)
 {
-	if (material.isNull() || matName != material->getName()){
-		material = MaterialManager::getSingleton().getByName(matName).staticCast<Material>();
-		if (material.isNull())
+	if (!material || matName != material->getName()){
+		material = Ogre::static_pointer_cast<Material>(MaterialManager::getSingleton().getByName(matName));
+		if (!material)
 			OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "The specified grass material does not exist", "GrassLayer::setMaterialName()");
 		shaderNeedsUpdate = true;
 	}
@@ -836,7 +836,7 @@ void GrassLayer::setDensityMap(TexturePtr map, MapChannel channel)
 		densityMap->unload();
 		densityMap = NULL;
 	}
-	if (map.isNull() == false){
+	if (map){
 		densityMap = DensityMap::load(map, channel);
 		densityMap->setFilter(densityMapFilter);
 	}
@@ -1080,7 +1080,7 @@ void GrassLayer::setColorMap(TexturePtr map, MapChannel channel)
 		colorMap->unload();
 		colorMap = NULL;
 	}
-	if (map.isNull() == false){
+	if (map){
 		colorMap = ColorMap::load(map, channel);
 		colorMap->setFilter(colorMapFilter);
 	}
@@ -1110,7 +1110,7 @@ void GrassLayer::_updateShaders()
 			//before the page center is out of range.
 
 			//Generate a string ID that identifies the current set of vertex shader options
-			StringUtil::StrStreamType tmpName;
+			Ogre::StringStream tmpName;
 			tmpName << "GrassVS_";
 			if (animate)
 				tmpName << "anim_";
@@ -1130,8 +1130,8 @@ void GrassLayer::_updateShaders()
 			const String matName = material->getName() + "_" + vsName;
 
 			//Check if the desired material already exists (if not, create it)
-			MaterialPtr tmpMat = MaterialManager::getSingleton().getByName(matName).staticCast<Material>();
-			if (tmpMat.isNull())
+			MaterialPtr tmpMat = MaterialManager::getSingleton().getByName(matName);
+			if (!tmpMat)
 			{
 				//Clone the original material
 				tmpMat = material->clone(matName);
@@ -1142,8 +1142,8 @@ void GrassLayer::_updateShaders()
 
 				//Check if the desired shader already exists (if not, compile it)
 				String shaderLanguage;
-				HighLevelGpuProgramPtr vertexShader = HighLevelGpuProgramManager::getSingleton().getByName(vsName).staticCast<HighLevelGpuProgram>();
-				if (vertexShader.isNull())
+				HighLevelGpuProgramPtr vertexShader = Ogre::static_pointer_cast<HighLevelGpuProgram>(HighLevelGpuProgramManager::getSingleton().getByName(vsName));
+				if (!vertexShader)
 				{
 					HighLevelGpuProgramManager& mgr = HighLevelGpuProgramManager::getSingleton();
 					if (mgr.isLanguageSupported("hlsl"))
