@@ -345,9 +345,8 @@ void StaticBillboardSet::clear()
          mpEntity = NULL;
 
          //Delete mesh
-         String meshName(mPtrMesh->getName());
+         MeshManager::getSingleton().remove(mPtrMesh);
          mPtrMesh.reset();
-         MeshManager::getSingleton().remove(meshName);
       }
 
       if (!mBillboardBuffer.empty())
@@ -378,10 +377,8 @@ void StaticBillboardSet::build()
          mpEntity = NULL;
 
          //Delete mesh
-         assert(mPtrMesh);
-         String meshName(mPtrMesh->getName());
+         MeshManager::getSingleton().remove(mPtrMesh);
          mPtrMesh.reset();
-         MeshManager::getSingleton().remove(meshName);
       }
 
       //If there are no billboards to create, exit

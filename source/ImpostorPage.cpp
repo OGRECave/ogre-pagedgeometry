@@ -445,22 +445,16 @@ void ImpostorTexture::updateMaterials()
 ImpostorTexture::~ImpostorTexture()
 {
 	//Delete textures
-	assert(texture);
-	String texName(texture->getName());
-		
-	texture.reset();
 	if (TextureManager::getSingletonPtr())
-		TextureManager::getSingleton().remove(texName, RGN_AUTODETECT);
-	
+		TextureManager::getSingleton().remove(texture);
+	texture.reset();
+
 	//Delete materials
 	for (int o = 0; o < IMPOSTOR_YAW_ANGLES; ++o){
 	for (int i = 0; i < IMPOSTOR_PITCH_ANGLES; ++i){
-		assert (material[i][o]);
-		String matName(material[i][o]->getName());
-
-		material[i][o].reset();
 		if (MaterialManager::getSingletonPtr())
-			MaterialManager::getSingleton().remove(matName, RGN_AUTODETECT);
+			MaterialManager::getSingleton().remove(material[i][o]);
+        material[i][o].reset();
 	}
 	}
 	
@@ -470,12 +464,9 @@ ImpostorTexture::~ImpostorTexture()
 
 void ImpostorTexture::regenerate()
 {
-	assert(texture);
-	String texName(texture->getName());
-	texture.reset();
 	if (TextureManager::getSingletonPtr())
-		TextureManager::getSingleton().remove(texName);
-
+		TextureManager::getSingleton().remove(texture);
+	texture.reset();
 	renderTextures(true);
 	updateMaterials();
 }
