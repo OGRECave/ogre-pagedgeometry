@@ -640,6 +640,9 @@ void ImpostorTexture::renderTextures(bool force)
 #ifdef IMPOSTOR_FILE_SAVE
 		//Save RTT to file with respecting the temp dir
 		renderTarget->writeContentsToFile(tempdir + fileNamePNG);
+        // force re-index
+        ResourceGroupManager::getSingleton().removeResourceLocation(tempdir, "Impostors");
+        ResourceGroupManager::getSingleton().addResourceLocation(tempdir, "FileSystem", "Impostors");
 
 		//Load the render into the appropriate texture view
 		texture = TextureManager::getSingleton().load(fileNamePNG, "Impostors", TEX_TYPE_2D, MIP_UNLIMITED);
