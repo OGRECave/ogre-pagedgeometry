@@ -27,19 +27,20 @@ inline Ogre::TerrainGroup* loadLegacyTerrain(const Ogre::String& cfgFileName, Og
 
     float worldSize;
     uint32 terrainSize;
-    StringConverter::parse(cfg.getSettings().find("PageSize")->second, terrainSize);
-    StringConverter::parse(cfg.getSettings().find("PageWorldX")->second, worldSize);
+    StringConverter::parse(cfg.getSetting("PageSize"), terrainSize);
+    StringConverter::parse(cfg.getSetting("PageWorldX"), worldSize);
 
     auto terrainGlobals = TerrainGlobalOptions::getSingletonPtr();
     if(!terrainGlobals)
         terrainGlobals = new TerrainGlobalOptions();
 
-    terrainGlobals->setMaxPixelError(StringConverter::parseReal(cfg.getSettings().find("MaxPixelError")->second));
+    terrainGlobals->setMaxPixelError(StringConverter::parseReal(cfg.getSetting("MaxPixelError")));
 
     auto profile = static_cast<TerrainMaterialGeneratorA::SM2Profile *>(
             terrainGlobals->getDefaultMaterialGenerator()->getActiveProfile());
     profile->setLayerSpecularMappingEnabled(false);
     profile->setLayerNormalMappingEnabled(false);
+    profile->setLightmapEnabled(false); // baked into diffusemap
 
     auto terrainGroup = new TerrainGroup(sceneMgr, Terrain::ALIGN_X_Z, terrainSize, worldSize);
     terrainGroup->setOrigin(Vector3(worldSize/2, 0, worldSize/2));
@@ -47,11 +48,11 @@ inline Ogre::TerrainGroup* loadLegacyTerrain(const Ogre::String& cfgFileName, Og
     auto &defaultimp = terrainGroup->getDefaultImportSettings();
     defaultimp.terrainSize = terrainSize;
 
-    StringConverter::parse(cfg.getSettings().find("MaxHeight")->second, defaultimp.inputScale);
-    defaultimp.maxBatchSize = StringConverter::parseInt(cfg.getSettings().find("TileSize")->second);
+    StringConverter::parse(cfg.getSetting("MaxHeight"), defaultimp.inputScale);
+    defaultimp.maxBatchSize = StringConverter::parseInt(cfg.getSetting("TileSize"));
     defaultimp.minBatchSize = defaultimp.maxBatchSize;
 
-    const String& worldTexName = cfg.getSettings().find("WorldTexture")->second;
+    const String& worldTexName = cfg.getSetting("WorldTexture");
     defaultimp.layerList.resize(1);
     defaultimp.layerList[0].worldSize = worldSize; // covers whole terrain
     defaultimp.layerList[0].textureNames.push_back(worldTexName);
@@ -60,13 +61,11 @@ inline Ogre::TerrainGroup* loadLegacyTerrain(const Ogre::String& cfgFileName, Og
 
     // Load terrain from heightmap
     Image img;
-    img.load(cfg.getSettings().find("Heightmap.image")->second, RGN_DEFAULT);
+    img.load(cfg.getSetting("Heightmap.image"), terrainGlobals->getDefaultResourceGroup());
     terrainGroup->defineTerrain(0, 0, &img);
 
     // sync load since we want everything in place when we start
     terrainGroup->loadTerrain(0, 0, true);
-    img.load("terrain_lightmap.jpg", RGN_DEFAULT);
-    terrainGroup->getTerrain(0, 0)->getLightmap()->loadImage(img);
 
     terrainGroup->freeTemporaryResources();
 
