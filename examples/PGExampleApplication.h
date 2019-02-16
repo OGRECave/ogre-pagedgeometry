@@ -30,6 +30,8 @@ Description: Base class for all the OGRE examples
 #include <OgreCameraMan.h>
 #include <OgreAdvancedRenderControls.h>
 
+#include "LegacyTerrainLoader.h"
+
 using namespace Ogre;
 
 /** Base class which manages the standard startup of an Ogre application.
@@ -78,8 +80,8 @@ protected:
     OgreBites::CameraMan* mCameraMan;
     OgreBites::AdvancedRenderControls* mRenderControls;
 
-	Ogre::String mResourcePath;
-	Ogre::String mConfigPath;
+    TerrainGroup* mTerrainGroup;
+
 	std::vector<Forests::PagedGeometry *> pgs;
 
 
@@ -148,7 +150,7 @@ protected:
 		mSceneMgr->setFog(FOG_LINEAR, getRenderWindow()->getViewport(0)->getBackgroundColour(), 0, 100, 900);
 
 		//Load the terrain
-		mSceneMgr->setWorldGeometry("terrain2.cfg");
+        mTerrainGroup = loadLegacyTerrain("terrain2.cfg", mSceneMgr);
 
 		//Start off with the camera at the center of the terrain
 		mCameraNode->setPosition(700, 100, 700);
@@ -167,8 +169,8 @@ protected:
 		light->setDirection(Ogre::Vector3(0.0f, -0.5f, 1.0f));
 		mSceneMgr->setAmbientLight(Ogre::ColourValue(1, 1, 1));
 
-		mCamera->setPosition(Vector3(100, 50, 1000));
-		mCamera->lookAt(Vector3(150, 50, 1000));
+		mCameraNode->setPosition(Vector3(100, 50, 1000));
+		mCameraNode->lookAt(Vector3(150, 50, 1000), Node::TS_WORLD);
 		mCamera->setNearClipDistance(0.1);
 		mCamera->setFarClipDistance(50000);
 

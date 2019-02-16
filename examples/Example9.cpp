@@ -1,5 +1,3 @@
-#include "HeightFunction.h"
-
 #include "PGExampleApplication.h"
 
 #include "PagedGeometry.h"
@@ -9,6 +7,8 @@
 #include "TreeLoader2D.h"
 #include "ImpostorPage.h"
 #include "GrassLoader.h"
+
+#include "HeightFunction.h"
 
 using namespace Forests;
 
@@ -41,7 +41,7 @@ void PGSampleApp::createPGDemo(void)
 	grass->setPageLoader(grassLoader);	//Assign the "treeLoader" to be used to load geometry for the PagedGeometry instance
 
 	//Supply a height function to GrassLoader so it can calculate grass Y values
-	HeightFunction::initialize(mSceneMgr);
+	HeightFunction::initialize(mTerrainGroup);
 	grassLoader->setHeightFunction(&HeightFunction::getTerrainHeight);
 
 	//Add some grass to the scene with GrassLoader::addLayer()
@@ -94,7 +94,6 @@ void PGSampleApp::createPGDemo(void)
 	trees->setPageLoader(treeLoader);	//Assign the "treeLoader" to be used to load geometry for the PagedGeometry instance
 
 	//Supply a height function to TreeLoader2D so it can calculate tree Y values
-	HeightFunction::initialize(mSceneMgr);
 	treeLoader->setHeightFunction(&HeightFunction::getTerrainHeight);
 
 	//[NOTE] This sets the color map, or lightmap to be used for trees. All trees will be colored according
@@ -153,7 +152,6 @@ void PGSampleApp::createPGDemo(void)
 	bushes->setPageLoader(bushLoader);
 
 	//Supply the height function to TreeLoader2D so it can calculate tree Y values
-	HeightFunction::initialize(mSceneMgr);
 	bushLoader->setHeightFunction(&HeightFunction::getTerrainHeight);
 
 	bushLoader->setColorMap("terrain_lightmap.jpg");

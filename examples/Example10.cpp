@@ -1,5 +1,3 @@
-#include "HeightFunction.h"
-
 #include "PGExampleApplication.h"
 
 #include "PagedGeometry.h"
@@ -9,6 +7,8 @@
 #include "TreeLoader2D.h"
 #include "ImpostorPage.h"
 #include "GrassLoader.h"
+
+#include "HeightFunction.h"
 
 using namespace Forests;
 
@@ -37,7 +37,7 @@ void PGSampleApp::createScene(void)
 	mSceneMgr->setFog(FOG_NONE);
 
 	//Load the terrain
-	mSceneMgr->setWorldGeometry("terrain3.cfg");
+	mTerrainGroup = loadLegacyTerrain("terrain3.cfg", mSceneMgr);
 
 	//Start off with the camera at the center of the terrain
 	mCameraNode->setPosition(700, 100, 700);
@@ -88,7 +88,7 @@ void PGSampleApp::createPGDemo(void)
 	trees->setPageLoader(treeLoader);	//Assign the "treeLoader" to be used to load geometry for the PagedGeometry instance
 
 	//Supply a height function to TreeLoader2D so it can calculate tree Y values
-	HeightFunction::initialize(mSceneMgr);
+	HeightFunction::initialize(mTerrainGroup);
 	treeLoader->setHeightFunction(&HeightFunction::getTerrainHeight);
 
 	//[NOTE] This sets the color map, or lightmap to be used for trees. All trees will be colored according

@@ -50,7 +50,7 @@ inline Ogre::TerrainGroup* loadLegacyTerrain(const Ogre::String& cfgFileName, Og
 
     StringConverter::parse(cfg.getSetting("MaxHeight"), defaultimp.inputScale);
     defaultimp.maxBatchSize = StringConverter::parseInt(cfg.getSetting("TileSize"));
-    defaultimp.minBatchSize = defaultimp.maxBatchSize;
+    defaultimp.minBatchSize = (defaultimp.maxBatchSize - 1)/2 + 1;
 
     const String& worldTexName = cfg.getSetting("WorldTexture");
     defaultimp.layerList.resize(1);

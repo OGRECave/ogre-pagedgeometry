@@ -3,8 +3,7 @@
 
 //This file is used by the PagedGeometry examples to place trees on the terrain.
 
-#include "Ogre.h"
-using namespace Ogre;
+#include "OgreTerrainGroup.h"
 
 namespace HeightFunction
 {

@@ -5,17 +5,16 @@
 //===============================================================================================================
 #define AppTitle "PagedGeometry Example 8 - Forest Demo"
 
-//Include windows/Ogre/OIS headers
 #include "PagedGeometryConfig.h"
 #include <Ogre.h>
-#ifdef OIS_USING_DIR
-# include "OIS/OIS.h"
-#else
-# include "OIS.h"
-#endif //OIS_USING_DIR
+
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 #include <windows.h>
 #endif
+
+#include <OgreApplicationContext.h>
+#include <OgreCameraMan.h>
+
 using namespace Ogre;
 
 
@@ -28,6 +27,9 @@ using namespace Ogre;
 #include "TreeLoader2D.h"
 
 #define WIND
+
+//Include "LegacyTerrainLoader.h", a header that allows loading Ogre 1.7 style terrain
+#include "LegacyTerrainLoader.h"
 
 //Include "HeightFunction.h", a header that provides some useful functions for quickly and easily
 //getting the height of the terrain at a given point.
@@ -46,18 +48,13 @@ using namespace Forests;
 class World
 {
 public:
-	World();
-	~World();
+	World(RenderWindow* win);
 
 	void load();	//Loads the 3D scene
 	void unload();	//Unloads the 3D scene cleanly
 	void run();		//Runs the simulation
 
-private:
 	void render();			//Renders a single frame, updating PagedGeometry and Ogre
-	void processInput();	//Accepts keyboard and mouse input, allowing you to move around in the world
-
-	bool running;	//A flag which, when set to false, will terminate a simulation started with run()
 
 	//Various pointers to Ogre objects are stored here:
 	Root *root;
@@ -65,14 +62,7 @@ private:
 	Viewport *viewport;
 	SceneManager *sceneMgr;
 	Camera *camera;
-
-	//OIS input objects
-	OIS::InputManager *inputManager;
-	OIS::Keyboard *keyboard;
-	OIS::Mouse *mouse;
-
-	//Variables used to keep track of the camera's rotation/etc.
-	Radian camPitch, camYaw;
+	SceneNode* cameraNode;
 
 	//Pointers to PagedGeometry class instances:
 	PagedGeometry *trees, *grass, *bushes;
@@ -85,57 +75,33 @@ INT WINAPI WinMain( HINSTANCE hInst, HINSTANCE hPrevInstance, LPSTR strCmdLine, 
 int main(int argc, char *argv[])
 #endif
 {
-	//Initialize Ogre
-	Root *root = new Ogre::Root("");
+    //Initialize Ogre
+    OgreBites::ApplicationContext ctx;
+    ctx.initApp();
+    ctx.setWindowGrab(true);
 
-	//Load appropriate plugins
-	//[NOTE] PagedGeometry needs the CgProgramManager plugin to compile shaders
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-#ifdef _DEBUG
-	root->loadPlugin("Plugin_CgProgramManager_d");
-	root->loadPlugin("Plugin_OctreeSceneManager_d");
-	root->loadPlugin("RenderSystem_Direct3D9_d");
-	root->loadPlugin("RenderSystem_GL_d");
-#else
-	root->loadPlugin("Plugin_CgProgramManager");
-	root->loadPlugin("Plugin_OctreeSceneManager");
-	root->loadPlugin("RenderSystem_Direct3D9");
-	root->loadPlugin("RenderSystem_GL");
-#endif
-#else
-	root->loadPlugin("Plugin_CgProgramManager");
-	root->loadPlugin("Plugin_OctreeSceneManager");
-	root->loadPlugin("RenderSystem_GL");
-#endif
+    World myWorld(ctx.getRenderWindow());
+    myWorld.load();     //Load world
 
-	//Show Ogre's default config dialog to let the user setup resolution, etc.
-	bool result = root->showConfigDialog();
+    OgreBites::CameraMan camman(myWorld.cameraNode);
+    ctx.addInputListener(&camman);
 
-	//If the user clicks OK, continue
-	try
-	{
-		if (result)
-		{
-			World myWorld;
-			myWorld.load();		//Load world
-			myWorld.run();		//Display world
-		}
-	} catch(Ogre::Exception& e)
-	{
-		LogManager::getSingleton().logMessage("Ogre Exception caught: " + e.getFullDescription());
-	}
-	//Shut down Ogre
-	delete root;
+    myWorld.run();      //Display world
 
-	return 0;
+    myWorld.unload();
+
+    //Shut down Ogre
+    ctx.closeApp();
+
+    return 0;
 }
 
-World::World() : grass(0), trees(0), bushes(0)
+World::World(RenderWindow* win)
 {
-	//Setup Ogre::Root and the scene manager
-	root = Root::getSingletonPtr();
-	window = root->initialise(true, AppTitle);
-	sceneMgr = root->createSceneManager(ST_EXTERIOR_CLOSE);
+    //Setup Ogre::Root and the scene manager
+    root = Root::getSingletonPtr();
+    window = win;
+    sceneMgr = root->createSceneManager();
 
 	//Initialize the camera and viewport
 	camera = sceneMgr->createCamera("MainCamera");
@@ -151,35 +117,9 @@ World::World() : grass(0), trees(0), bushes(0)
 	light->setDirection(Ogre::Vector3(0.0f, -0.5f, 1.0f));
 	sceneMgr->setAmbientLight(Ogre::ColourValue(1, 1, 1));
 
-	//Load media (trees, grass, etc.)
-	ResourceGroupManager::getSingleton().addResourceLocation("media/trees2", "FileSystem");
-	ResourceGroupManager::getSingleton().addResourceLocation("media/terrain2", "FileSystem");
-	ResourceGroupManager::getSingleton().addResourceLocation("media/grass", "FileSystem");
-	ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
-
-	//Initialize OIS
-	size_t windowHnd;
-	window->getCustomAttribute("WINDOW", &windowHnd);
-	inputManager = OIS::InputManager::createInputSystem(windowHnd);
-
-	keyboard = (OIS::Keyboard*)inputManager->createInputObject(OIS::OISKeyboard, false);
-	mouse = (OIS::Mouse*)inputManager->createInputObject(OIS::OISMouse, false);
-
-	//Reset camera orientation
-	camPitch = 0;
-	camYaw = 0;
+    cameraNode = sceneMgr->getRootSceneNode()->createChildSceneNode();
+    cameraNode->attachObject(camera);
 }
-
-World::~World()
-{
-	//Shut down OIS
-	inputManager->destroyInputObject(keyboard);
-	inputManager->destroyInputObject(mouse);
-	OIS::InputManager::destroyInputSystem(inputManager);
-
-	unload();
-}
-
 
 //[NOTE] In addition to some Ogre setup, this function configures PagedGeometry in the scene.
 void World::load()
@@ -189,10 +129,10 @@ void World::load()
 	sceneMgr->setFog(FOG_LINEAR, viewport->getBackgroundColour(), 0, 100, 900);
 
 	//Load the terrain
-	sceneMgr->setWorldGeometry("terrain2.cfg");
+	auto terrain = loadLegacyTerrain("terrain2.cfg", sceneMgr);
 
 	//Start off with the camera at the center of the terrain
-	camera->setPosition(700, 100, 700);
+	cameraNode->setPosition(700, 100, 700);
 
 	//Setup a skybox
 	sceneMgr->setSkyBox(true, "3D-Diggers/SkyBox", 2000);
@@ -207,7 +147,7 @@ void World::load()
 	grass->setPageLoader(grassLoader);	//Assign the "treeLoader" to be used to load geometry for the PagedGeometry instance
 
 	//Supply a height function to GrassLoader so it can calculate grass Y values
-	HeightFunction::initialize(sceneMgr);
+	HeightFunction::initialize(terrain);
 	grassLoader->setHeightFunction(&HeightFunction::getTerrainHeight);
 
 	//Add some grass to the scene with GrassLoader::addLayer()
@@ -259,7 +199,6 @@ void World::load()
 	trees->setPageLoader(treeLoader);	//Assign the "treeLoader" to be used to load geometry for the PagedGeometry instance
 
 	//Supply a height function to TreeLoader2D so it can calculate tree Y values
-	HeightFunction::initialize(sceneMgr);
 	treeLoader->setHeightFunction(&HeightFunction::getTerrainHeight);
 
 	//[NOTE] This sets the color map, or lightmap to be used for trees. All trees will be colored according
@@ -323,7 +262,6 @@ void World::load()
 	bushes->setPageLoader(bushLoader);
 
 	//Supply the height function to TreeLoader2D so it can calculate tree Y values
-	HeightFunction::initialize(sceneMgr);
 	bushLoader->setHeightFunction(&HeightFunction::getTerrainHeight);
 
 	bushLoader->setColorMap("terrain_lightmap.jpg");
@@ -383,21 +321,12 @@ void World::unload()
 
 void World::run()
 {
-	//Render loop
-	running = true;
-	while(running)
-	{
-		//Handle windows events
-		WindowEventUtilities::messagePump();
-
-		//Update frame
-		processInput();
-		render();
-
-		//Exit immediately if the window is closed
-		if (window->isClosed())
-			break;
-	}
+    //Render loop
+    while(!Root::getSingleton().endRenderingQueued())
+    {
+        //Update frame
+        render();
+    }
 }
 
 void World::render()
@@ -409,79 +338,4 @@ void World::render()
 
 	//Render the scene with Ogre
 	root->renderOneFrame();
-}
-
-void World::processInput()
-{
-	using namespace OIS;
-	static Ogre::Timer timer;
-	static unsigned long lastTime = 0;
-	unsigned long currentTime = timer.getMilliseconds();
-
-	//Calculate the amount of time passed since the last frame
-	Real timeScale = (currentTime - lastTime) * 0.001f;
-	if (timeScale < 0.001f)
-		timeScale = 0.001f;
-	lastTime = currentTime;
-
-	//Get the current state of the keyboard and mouse
-	keyboard->capture();
-	mouse->capture();
-
-	//Always exit if ESC is pressed
-	if (keyboard->isKeyDown(OIS::KC_ESCAPE))
-		running = false;
-
-	//Reload the scene if R is pressed
-	static bool reloadedLast = false;
-	if (keyboard->isKeyDown(OIS::KC_R) && !reloadedLast){
-		unload();
-		load();
-		reloadedLast = true;
-	}
-	else {
-		reloadedLast = false;
-	}
-
-	//Get mouse movement
-	const OIS::MouseState &ms = mouse->getMouseState();
-
-	//Update camera rotation based on the mouse
-	camYaw += Radian(-ms.X.rel / 200.0f);
-	camPitch += Radian(-ms.Y.rel / 200.0f);
-	camera->setOrientation(Quaternion::IDENTITY);
-	camera->pitch(camPitch);
-	camera->yaw(camYaw);
-
-	//Allow the camera to move around with the arrow/WASD keys
-	Ogre::Vector3 trans(0, 0, 0);
-	if (keyboard->isKeyDown(KC_UP) || keyboard->isKeyDown(KC_W))
-		trans.z = -1;
-	if (keyboard->isKeyDown(KC_DOWN) || keyboard->isKeyDown(KC_S))
-		trans.z = 1;
-	if (keyboard->isKeyDown(KC_RIGHT) || keyboard->isKeyDown(KC_D))
-		trans.x = 1;
-	if (keyboard->isKeyDown(KC_LEFT) || keyboard->isKeyDown(KC_A))
-		trans.x = -1;
-	if (keyboard->isKeyDown(KC_PGUP) || keyboard->isKeyDown(KC_E))
-		trans.y = 1;
-	if (keyboard->isKeyDown(KC_PGDOWN) || keyboard->isKeyDown(KC_Q))
-		trans.y = -1;
-
-	//Shift = speed boost
-	if (keyboard->isKeyDown(KC_LSHIFT) || keyboard->isKeyDown(KC_RSHIFT))
-		trans *= 4;
-	else
-		trans *= 0.5f;
-
-	trans *= 30;
-	camera->moveRelative(trans * timeScale);
-
-	//Make sure the camera doesn't go under the terrain
-	Ogre::Vector3 camPos = camera->getPosition();
-	float terrY = HeightFunction::getTerrainHeight(camPos.x, camPos.z);
-	if (camPos.y < terrY + 1.5 || !keyboard->isKeyDown(KC_SPACE)){		//Space = walk
-		camPos.y = terrY + 1.5;
-		camera->setPosition(camPos);
-	}
 }
