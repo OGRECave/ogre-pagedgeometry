@@ -115,7 +115,8 @@ World::World(RenderWindow* win)
     //Set up lighting
     Light *light = sceneMgr->createLight("Sun");
     light->setType(Light::LT_DIRECTIONAL);
-    light->setDirection(Vector3(0.0f, -0.5f, 1.0f));
+    sceneMgr->getRootSceneNode()->createChildSceneNode()->attachObject(light);
+    light->getParentSceneNode()->setDirection(Vector3(0.0f, -0.5f, 1.0f));
     sceneMgr->setAmbientLight(ColourValue(1, 1, 1));
 }
 

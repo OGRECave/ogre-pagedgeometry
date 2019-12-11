@@ -52,8 +52,9 @@ void PGSampleApp::createScene(void)
 	LogManager::getSingleton().setLogDetail(LL_BOREME);
 
 	Light *light = mSceneMgr->createLight("Sun");
+    mSceneMgr->getRootSceneNode()->createChildSceneNode()->attachObject(light);
 	light->setType(Light::LT_DIRECTIONAL);
-	light->setDirection(Ogre::Vector3(0.0f, -0.5f, 1.0f));
+	light->getParentSceneNode()->setDirection(Ogre::Vector3(0.0f, -0.5f, 1.0f));
 	mSceneMgr->setAmbientLight(Ogre::ColourValue(1, 1, 1));
 
 	mCameraNode->setPosition(Vector3(100, 50, 1000));

@@ -166,7 +166,8 @@ protected:
 
 		Light *light = mSceneMgr->createLight("Sun");
 		light->setType(Light::LT_DIRECTIONAL);
-		light->setDirection(Ogre::Vector3(0.0f, -0.5f, 1.0f));
+        mSceneMgr->getRootSceneNode()->createChildSceneNode()->attachObject(light);
+        light->getParentSceneNode()->setDirection(Vector3(0.0f, -0.5f, 1.0f));
 		mSceneMgr->setAmbientLight(Ogre::ColourValue(1, 1, 1));
 
 		mCameraNode->setPosition(Vector3(100, 50, 1000));

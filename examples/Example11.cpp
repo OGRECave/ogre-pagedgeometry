@@ -119,8 +119,9 @@ void PGSampleApp::createScene(void)
 
 
 	Light* l = mSceneMgr->createLight("tstLight");
+    mSceneMgr->getRootSceneNode()->createChildSceneNode()->attachObject(l);
 	l->setType(Light::LT_DIRECTIONAL);
-	l->setDirection(lightdir);
+	l->getParentSceneNode()->setDirection(lightdir);
 	l->setDiffuseColour(ColourValue::White);
 	l->setSpecularColour(ColourValue(0.4, 0.4, 0.4));
 
