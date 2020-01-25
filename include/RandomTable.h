@@ -14,8 +14,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 #include <OgrePrerequisites.h>
 #include <OgreMath.h>
 
-#include <time.h> // for time
-#include "MersenneTwister.h"
+#include <random>
 #ifdef _WIN32
 #define _WIN32_WINNT 0x0600
 #include <windows.h>
@@ -77,26 +76,10 @@ inline float RandomTable::getRangeRandom(float start, float end)
 
 inline void RandomTable::generateRandomNumbers()
 {
-#ifdef USE_OGRE_RANDOM
-	// using ogre's Random
-	//srand(0xFACE);
-#ifdef WIN32
-	srand(GetTickCount());
-#else
-	srand(time(NULL));
-#endif
-	for(unsigned long i = 0; i < tableSize; i++)
-		table[i] = Ogre::Math::UnitRandom();
-#else
 	// using our Mersenne Twister (preferred way)
-#ifdef WIN32
-	MTRand mtrand(GetTickCount());
-#else
-	MTRand mtrand(time(NULL));
-#endif
+    std::mt19937 rng;
 	for(unsigned long i = 0; i < tableSize; i++)
-		table[i] = (float)mtrand.rand();
-#endif //USE_OGRE_RANDOM
+		table[i] = float(rng())/rng.max();
 }
 
 #endif // __RandomTable_H__

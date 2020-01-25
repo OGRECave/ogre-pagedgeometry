@@ -71,7 +71,6 @@ endif()
 # some PG build options
 set(PAGEDGEOMETRY_BUILD_SAMPLES         "FALSE" CACHE BOOL "build the examples")
 set(PAGEDGEOMETRY_ALTERNATE_COORDSYSTEM "FALSE" CACHE BOOL "alternate coordinate system, do not use unless you are very sure about it")
-set(PAGEDGEOMETRY_USE_OGRE_RANDOM       "FALSE" CACHE BOOL "fallback to Ogre's PRNG instead of using our own (not recommended)")
 set(PAGEDGEOMETRY_USER_DATA             "FALSE" CACHE BOOL "ability to attach user data to entities")
 
 # Needed for PagedGeometry.pc.in
