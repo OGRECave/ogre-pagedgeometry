@@ -375,6 +375,7 @@ void BatchPage::_updateShaders()
 			if(!shaderLanguage.compare("glsl"))
 			{
 				vertexProgSource =
+                    "uniform mat4 worldViewProj;\n"
 					"uniform float fadeGap;        \n"
 					"uniform float invisibleDist;   \n";
 
@@ -438,7 +439,7 @@ void BatchPage::_updateShaders()
 				}
 
 				vertexProgSource +=
-					"   gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;  \n"
+					"   gl_Position = worldViewProj * gl_Vertex;  \n"
 					"   gl_FogFragCoord = gl_Position.z; \n"
 					"}";
 			}
@@ -507,11 +508,7 @@ void BatchPage::_updateShaders()
 							//params->setNamedAutoConstant("matAmbient", GpuProgramParameters::ACT_SURFACE_AMBIENT_COLOUR);
 						}
 
-						if(shaderLanguage.compare("glsl"))
-						{
-							//glsl can use the built in gl_ModelViewProjectionMatrix
-							params->setNamedAutoConstant("worldViewProj", GpuProgramParameters::ACT_WORLDVIEWPROJ_MATRIX);
-						}
+                        params->setNamedAutoConstant("worldViewProj", GpuProgramParameters::ACT_WORLDVIEWPROJ_MATRIX);
 
 						if (m_bFadeEnabled)
 						{

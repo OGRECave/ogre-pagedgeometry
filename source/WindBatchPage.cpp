@@ -330,6 +330,7 @@ void WindBatchPage::_updateShaders()
 				}
 
 				vertexProgSource +=
+                    "uniform mat4 worldViewProj; \n"
 					"uniform float time; \n"
 					"void main() \n"
 					"{ \n";
@@ -424,7 +425,7 @@ void WindBatchPage::_updateShaders()
 					"	tmpPos.y += sinval * radiusCoeff * radiusCoeff * factorY; \n"
 					"	tmpPos.x += sinval * heightCoeff * heightCoeff * factorX; \n"
 	#endif
-					"	gl_Position = gl_ModelViewProjectionMatrix * tmpPos; \n"
+					"	gl_Position = worldViewProj * tmpPos; \n"
 					"	gl_FogFragCoord = gl_Position.z; \n"
 					"}";
 			}
@@ -497,12 +498,7 @@ void WindBatchPage::_updateShaders()
 						}
 
 						params->setNamedConstantFromTime("time", 1);
-
-						if(shaderLanguage.compare("glsl"))
-						{
-							//glsl can use the built in gl_ModelViewProjectionMatrix
-							params->setNamedAutoConstant("worldViewProj", GpuProgramParameters::ACT_WORLDVIEWPROJ_MATRIX);
-						}
+                        params->setNamedAutoConstant("worldViewProj", GpuProgramParameters::ACT_WORLDVIEWPROJ_MATRIX);
 
 						if (m_bFadeEnabled)
                   {

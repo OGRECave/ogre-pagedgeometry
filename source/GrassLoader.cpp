@@ -1275,6 +1275,7 @@ void GrassLayer::_updateShaders()
 						}
 
 						vertexProgSource +=
+                            "uniform mat4 worldViewProj; \n"
 							"uniform vec3 camPos; \n"
 							"uniform float fadeRange; \n"
 							"\n"
@@ -1356,7 +1357,7 @@ void GrassLayer::_updateShaders()
 						}
 
 						vertexProgSource +=
-						"    gl_Position = gl_ModelViewProjectionMatrix * position; \n"
+						"    gl_Position = worldViewProj * position; \n"
 						"    gl_FrontColor = color; \n"
 						"    gl_TexCoord[0] = gl_MultiTexCoord0; \n"
 						"    gl_FogFragCoord = gl_Position.z; \n"
@@ -1395,10 +1396,7 @@ void GrassLayer::_updateShaders()
 				Pass *pass = tmpMat->getTechnique(0)->getPass(0);
 				pass->setVertexProgram(vsName);
 				GpuProgramParametersSharedPtr params = pass->getVertexProgramParameters();
-
-				if(shaderLanguage.compare("glsl"))
-					//glsl can use the built in gl_ModelViewProjectionMatrix
-					params->setNamedAutoConstant("worldViewProj", GpuProgramParameters::ACT_WORLDVIEWPROJ_MATRIX);
+                params->setNamedAutoConstant("worldViewProj", GpuProgramParameters::ACT_WORLDVIEWPROJ_MATRIX);
 				params->setNamedAutoConstant("camPos", GpuProgramParameters::ACT_CAMERA_POSITION_OBJECT_SPACE);
 				params->setNamedAutoConstant("fadeRange", GpuProgramParameters::ACT_CUSTOM, 1);
 

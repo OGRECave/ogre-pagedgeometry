@@ -127,6 +127,7 @@ mFadeInvisibleDist      (0.f)
          else     // OpenGL GLSL
          {
             vertexProg =
+               "uniform mat4 worldViewProj;\n"
                "uniform float uScroll; \n"
                "uniform float vScroll; \n"
                "uniform vec4  preRotatedQuad[4]; \n"
@@ -135,7 +136,7 @@ mFadeInvisibleDist      (0.f)
                //Face the camera
                "	vec4 vCenter = vec4( gl_Vertex.x, gl_Vertex.y, gl_Vertex.z, 1.0 ); \n"
                "	vec4 vScale = vec4( gl_Normal.x, gl_Normal.y, gl_Normal.x , 1.0 ); \n"
-               "	gl_Position = gl_ModelViewProjectionMatrix * (vCenter + (preRotatedQuad[int(gl_Normal.z)] * vScale) ); \n"
+               "	gl_Position = worldViewProj * (vCenter + (preRotatedQuad[int(gl_Normal.z)] * vScale) ); \n"
 
                //Color
                "	gl_FrontColor = gl_Color; \n"
@@ -228,6 +229,7 @@ mFadeInvisibleDist      (0.f)
          else        // OpenGL GLSL
          {
             vertexProg2 =
+               "uniform mat4 worldViewProj;\n"
                "uniform vec3  camPos; \n"
                "uniform float fadeGap; \n"
                "uniform float invisibleDist; \n"
@@ -239,7 +241,7 @@ mFadeInvisibleDist      (0.f)
                //Face the camera
                "	vec4 vCenter = vec4( gl_Vertex.x, gl_Vertex.y, gl_Vertex.z, 1.0 ); \n"
                "	vec4 vScale = vec4( gl_Normal.x, gl_Normal.y, gl_Normal.x , 1.0 ); \n"
-               "	gl_Position = gl_ModelViewProjectionMatrix * (vCenter + (preRotatedQuad[int(gl_Normal.z)] * vScale) ); \n"
+               "	gl_Position = worldViewProj * (vCenter + (preRotatedQuad[int(gl_Normal.z)] * vScale) ); \n"
 
                "	gl_FrontColor.xyz = gl_Color.xyz; \n"
 
@@ -687,8 +689,6 @@ MaterialPtr StaticBillboardSet::getFadeMaterial(const Ogre::MaterialPtr &protoMa
    {
       MaterialPtr fadeMaterial = protoMaterial->clone(getUniqueID("ImpostorFade"));
 
-      bool isglsl = Root::getSingleton().getRenderSystem()->getName() == "OpenGL Rendering Subsystem" ? true : false;
-
       //And apply the fade shader
       for (unsigned short t = 0; t < fadeMaterial->getNumTechniques(); ++t)
       {
@@ -701,9 +701,7 @@ MaterialPtr StaticBillboardSet::getFadeMaterial(const Ogre::MaterialPtr &protoMa
             pass->setVertexProgram("SpriteFade_vp");
             GpuProgramParametersSharedPtr params = pass->getVertexProgramParameters();
 
-            //glsl can use the built in gl_ModelViewProjectionMatrix
-            if (!isglsl)
-               params->setNamedAutoConstant("worldViewProj", GpuProgramParameters::ACT_WORLDVIEWPROJ_MATRIX);
+            params->setNamedAutoConstant("worldViewProj", GpuProgramParameters::ACT_WORLDVIEWPROJ_MATRIX);
 
             static const Ogre::String uScroll = "uScroll", vScroll = "vScroll",
                preRotatedQuad0 = "preRotatedQuad[0]", preRotatedQuad1 = "preRotatedQuad[1]",
@@ -808,9 +806,7 @@ void StaticBillboardSet::updateAll(const Vector3 &cameraDirection)
          static const Ogre::String Sprite_vp = "Sprite_vp";
          p->setVertexProgram(Sprite_vp);
 
-         // glsl can use the built in gl_ModelViewProjectionMatrix
-         if (!s_isGLSL)
-            p->getVertexProgramParameters()->setNamedAutoConstant("worldViewProj", GpuProgramParameters::ACT_WORLDVIEWPROJ_MATRIX);
+         p->getVertexProgramParameters()->setNamedAutoConstant("worldViewProj", GpuProgramParameters::ACT_WORLDVIEWPROJ_MATRIX);
 
          GpuProgramParametersSharedPtr params = p->getVertexProgramParameters();
          params->setNamedAutoConstant(uScroll, GpuProgramParameters::ACT_CUSTOM);
