@@ -498,7 +498,7 @@ void ImpostorTexture::renderTextures(bool force)
 	if (!renderTexture)
    {
 	renderTexture = TextureManager::getSingleton().createManual(getUniqueID("ImpostorTexture"), "Impostors",
-				TEX_TYPE_2D, textureSize * IMPOSTOR_YAW_ANGLES, textureSize * IMPOSTOR_PITCH_ANGLES, 0, PF_A8R8G8B8, TU_RENDERTARGET, loader.get());
+				TEX_TYPE_2D, textureSize * IMPOSTOR_YAW_ANGLES, textureSize * IMPOSTOR_PITCH_ANGLES, 0, PF_BYTE_RGBA, TU_RENDERTARGET, loader.get());
 	}
 	renderTexture->setNumMipmaps(MIP_UNLIMITED);
 	
@@ -578,34 +578,23 @@ void ImpostorTexture::renderTextures(bool force)
 	bool needsRegen = true;
 #ifdef IMPOSTOR_FILE_SAVE
 	//Calculate the filename hash used to uniquely identity this render
-	String strKey = entityKey;
-	char key[32] = {0};
-	uint32 i = 0;
-	for (String::const_iterator it = entityKey.begin(); it != entityKey.end(); ++it)
-	{
-		key[i] ^= *it;
-		i = (i+1) % sizeof(key);
-	}
-	for (i = 0; i < sizeof(key); ++i)
-		key[i] = (key[i] % 26) + 'A';
-
+	uint32 key = FastHash(entityKey.c_str(), entityKey.size(), 0);
 	String tempdir = this->group->getParentPagedGeometry()->getTempdir();
 	ResourceGroupManager::getSingleton().addResourceLocation(tempdir, "FileSystem", "Impostors");
 
-	String fileNamePNG = "Impostor." + String(key, sizeof(key)) + '.' + StringConverter::toString(textureSize) + ".png";
-	String fileNameDDS = "Impostor." + String(key, sizeof(key)) + '.' + StringConverter::toString(textureSize) + ".dds";
+	String fileName = StringUtil::format("Impostor.%08X.%d", key, textureSize);
 
 	//Attempt to load the pre-render file if allowed
 	needsRegen = force;
 	if (!needsRegen){
 		try{
-			texture = TextureManager::getSingleton().load(fileNameDDS, "Impostors", TEX_TYPE_2D, MIP_UNLIMITED);
+			texture = TextureManager::getSingleton().load(fileName+".dds", "Impostors", TEX_TYPE_2D, MIP_UNLIMITED);
 		}
-		catch (...){
+		catch (Exception&){
 			try{
-				texture = TextureManager::getSingleton().load(fileNamePNG, "Impostors", TEX_TYPE_2D, MIP_UNLIMITED);
+				texture = TextureManager::getSingleton().load(fileName+".png", "Impostors", TEX_TYPE_2D, MIP_UNLIMITED);
 			}
-			catch (...){
+			catch (Exception&){
 				needsRegen = true;
 			}
 		}
@@ -639,13 +628,13 @@ void ImpostorTexture::renderTextures(bool force)
 	
 #ifdef IMPOSTOR_FILE_SAVE
 		//Save RTT to file with respecting the temp dir
-		renderTarget->writeContentsToFile(tempdir + fileNamePNG);
+		renderTarget->writeContentsToFile(tempdir + fileName+".png");
         // force re-index
         ResourceGroupManager::getSingleton().removeResourceLocation(tempdir, "Impostors");
         ResourceGroupManager::getSingleton().addResourceLocation(tempdir, "FileSystem", "Impostors");
 
 		//Load the render into the appropriate texture view
-		texture = TextureManager::getSingleton().load(fileNamePNG, "Impostors", TEX_TYPE_2D, MIP_UNLIMITED);
+		texture = TextureManager::getSingleton().load(fileName+".png", "Impostors", TEX_TYPE_2D, MIP_UNLIMITED);
 #else
 		texture = renderTexture;
 #endif
@@ -688,22 +677,6 @@ void ImpostorTexture::renderTextures(bool force)
 	if (TextureManager::getSingletonPtr())
 		TextureManager::getSingleton().remove(renderTexture);
 #endif
-}
-
-String ImpostorTexture::removeInvalidCharacters(String s)
-{
-	Ogre::StringStream s2;
-
-	for (uint32 i = 0; i < s.length(); ++i){
-		char c = s[i];
-		if (c == '/' || c == '\\' || c == ':' || c == '*' || c == '?' || c == '\"' || c == '<' || c == '>' || c == '|'){
-			s2 << '-';
-		} else {
-			s2 << c;
-		}
-	}
-
-	return s2.str();
 }
 
 void ImpostorTexture::removeTexture(ImpostorTexture* Texture)

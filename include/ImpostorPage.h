@@ -356,8 +356,6 @@ namespace Forests
       void renderTextures(bool force);	// Renders the impostor texture grid
       void updateMaterials();				// Updates the materials to use the latest rendered impostor texture grid
 
-      Ogre::String removeInvalidCharacters(Ogre::String s);
-
       static std::map<Ogre::String, ImpostorTexture *> selfList;
       Ogre::SceneManager *sceneMgr;
       Ogre::Entity *entity;
