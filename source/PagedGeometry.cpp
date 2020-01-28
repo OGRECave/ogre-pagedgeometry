@@ -362,7 +362,7 @@ void PagedGeometry::_addDetailLevel(GeometryPageManager *mgr, Real maxRange, Rea
 
 	//Error check
 	if (maxRange <= minRange){
-		OGRE_EXCEPT(Ogre::Exception::ERR_RENDERINGAPI_ERROR, "Closer detail levels must be added before farther ones", "PagedGeometry::addDetailLevel()");
+		OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "Closer detail levels must be added before farther ones");
 	}
 
 	//Setup the new manager

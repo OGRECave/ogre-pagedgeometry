@@ -484,7 +484,7 @@ m_pParentGeom           (parent)
 
    const Ogre::MaterialPtr &parentMaterial = ent->getMaterial();
    if (!parentMaterial)
-      OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "BatchedGeometry. Empty parent material", "BatchedGeometry::SubBatch::SubBatch");
+      OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "Empty parent material");
 
    // SVA clone material
    // This function is used to make a single clone of materials used, since the materials
@@ -560,7 +560,7 @@ void BatchedGeometry::SubBatch::addSubEntity(SubEntity *ent, const Vector3 &posi
       case VET_COLOUR_ABGR:
          break;
       default:
-         OGRE_EXCEPT(Ogre::Exception::ERR_RENDERINGAPI_ERROR, "Unknown RenderSystem color format", "BatchedGeometry::SubBatch::addSubMesh()");
+         OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "Unknown RenderSystem color format");
          break;
       }
    }
