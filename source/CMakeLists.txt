@@ -6,6 +6,8 @@ FILE(GLOB sources *.cpp ${PagedGeometry_SOURCE_DIR}/include/*.h)
 
 set(LIBNAME "PagedGeometry")
 
+add_definitions(-DUSE_FRAGMENT_PROGRAMS)
+
 ADD_LIBRARY(${LIBNAME} STATIC ${sources})
 
 # install the library

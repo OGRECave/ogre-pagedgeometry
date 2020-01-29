@@ -387,6 +387,13 @@ void BatchPage::_updateShaders()
 				if (m_bFadeEnabled) vertexProgSource +=
 					"uniform vec3 camPos;          \n";
 
+				int i = 0;
+				for (const VertexElement& el : subBatch->m_pVertexData->vertexDeclaration->getElements())
+            	{
+					if (el.getSemantic() != VES_TEXTURE_COORDINATES) continue;
+         			vertexProgSource += StringUtil::format("attribute vec4 uv%d;\n", i++);
+				}
+
 				vertexProgSource +=
 					"void main() \n"
 					"{ \n";
@@ -433,7 +440,7 @@ void BatchPage::_updateShaders()
 					if (el->getSemantic() == VES_TEXTURE_COORDINATES)
 					{
 						vertexProgSource +=
-						"   gl_TexCoord[" + StringConverter::toString(texNum) + "] = gl_MultiTexCoord" + StringConverter::toString(texNum) + ";	\n";
+						"   gl_TexCoord[" + StringConverter::toString(texNum) + "] = uv" + StringConverter::toString(texNum) + ";	\n";
 						++texNum;
 					}
 				}
@@ -495,6 +502,9 @@ void BatchPage::_updateShaders()
 					//	pass->setVertexProgram(vertexProgName);
                if (!pass->hasVertexProgram())
                   pass->setVertexProgram(vertexProgName);
+#ifdef USE_FRAGMENT_PROGRAMS
+				  pass->setFragmentProgram("Ogre/BasicFragmentPrograms/DiffuseOneTexture");
+#endif
 
 					try
                {

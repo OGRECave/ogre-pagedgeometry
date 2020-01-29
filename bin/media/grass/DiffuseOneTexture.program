@@ -1,0 +1,17 @@
+fragment_program Ogre/BasicFragmentPrograms/DiffuseOneTextureGLSL glsl
+{
+    source DiffuseOneTexture.glsl
+}
+
+fragment_program Ogre/BasicFragmentPrograms/DiffuseOneTextureHLSL hlsl
+{
+    source Example_Basic.cg
+    entry_point diffuseOneTexture_fp
+    target ps_2_0
+}
+
+fragment_program Ogre/BasicFragmentPrograms/DiffuseOneTexture unified
+{
+    delegate Ogre/BasicFragmentPrograms/DiffuseOneTextureGLSL
+	delegate Ogre/BasicFragmentPrograms/DiffuseOneTextureHLSL
+}

@@ -1,0 +1,11 @@
+/*
+  Basic fragment program using texture and diffuse colour.
+*/
+void diffuseOneTexture_fp(float4 position          : POSITION, 
+						  float2 uv                : TEXCOORD0,
+						  float4 diffuse           : COLOR,
+						  out float4 colour        : COLOR,
+						  uniform sampler2D texMap : register(s0))
+{
+	colour = tex2D(texMap,uv) * diffuse;
+}
