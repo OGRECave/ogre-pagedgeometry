@@ -491,6 +491,8 @@ MaterialPtr StaticBillboardSet::getFadeMaterial(const Ogre::MaterialPtr &protoMa
 
             //Setup vertex program
             pass->setVertexProgram("SpriteFade_vp");
+            pass->setFragmentProgram("Default_AlphaTest");
+
             GpuProgramParametersSharedPtr params = pass->getVertexProgramParameters();
 
             static const Ogre::String uScroll = "uScroll", vScroll = "vScroll",
@@ -594,6 +596,7 @@ void StaticBillboardSet::updateAll(const Vector3 &cameraDirection)
       {
          static const Ogre::String Sprite_vp = "Sprite_vp";
          p->setVertexProgram(Sprite_vp);
+         p->setFragmentProgram("Default_AlphaTest");
 
          GpuProgramParametersSharedPtr params = p->getVertexProgramParameters();
          params->setNamedAutoConstant(uScroll, GpuProgramParameters::ACT_CUSTOM);

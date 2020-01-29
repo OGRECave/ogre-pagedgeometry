@@ -19,3 +19,15 @@ vertex_program SpriteFade_vp glsl hlsl
         param_named_auto camPos camera_position_object_space
     }
 }
+
+// Default pixel shader
+fragment_program Default_AlphaTest glsl hlsl
+{
+    source Default_fp.glsl
+    preprocessor_defines FOG,ALPHA_TEST
+    default_params
+    {
+        param_named_auto fogColour fog_colour
+        param_named_auto fogParams fog_params
+    }
+}

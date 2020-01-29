@@ -17,11 +17,9 @@ IN(vec4 normal, NORMAL)
 IN(vec4 colour, COLOR)
 IN(vec4 uv0, TEXCOORD0)
 
-#ifdef OGRE_HLSL
-OUT(vec4 gl_TexCoord[1], TEXCOORD0)
-OUT(vec4 gl_FrontColor, COLOR)
-OUT(float gl_FogFragCoord, FOG)
-#endif
+OUT(vec4 oUV, TEXCOORD0)
+OUT(vec4 oColour, COLOR)
+OUT(float oFogCoord, FOG)
 
 MAIN_DECLARATION
 {
@@ -31,20 +29,20 @@ MAIN_DECLARATION
 	gl_Position = mul(worldViewProj, vCenter + (preRotatedQuad[int(normal.z)] * vScale) );
 
 	//Color
-	gl_FrontColor = colour;
+	oColour = colour;
 
     //Fade out in the distance
 #ifdef FADE
 	vec4 position = vertex;
 	float dist = distance(camPos.xz, position.xz);
-	gl_FrontColor.w = (invisibleDist - dist) / fadeGap;
+	oColour.w = (invisibleDist - dist) / fadeGap;
 #endif
 
     //UV scroll
-	gl_TexCoord[0] = uv0;
-	gl_TexCoord[0].x += uScroll;
-	gl_TexCoord[0].y += vScroll;
+	oUV = uv0;
+	oUV.x += uScroll;
+	oUV.y += vScroll;
 
     //Fog
-	gl_FogFragCoord = gl_Position.z;
+	oFogCoord = gl_Position.z;
 }

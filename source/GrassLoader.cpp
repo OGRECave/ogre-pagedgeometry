@@ -1194,6 +1194,8 @@ void GrassLayer::_updateShaders()
 				//Apply the shader to the material
 				Pass *pass = tmpMat->getTechnique(0)->getPass(0);
 				pass->setVertexProgram(vsName);
+        		pass->setFragmentProgram("Default_AlphaTest");
+
 				GpuProgramParametersSharedPtr params = pass->getVertexProgramParameters();
                 params->setNamedAutoConstant("worldViewProj", GpuProgramParameters::ACT_WORLDVIEWPROJ_MATRIX);
 				params->setNamedAutoConstant("camPos", GpuProgramParameters::ACT_CAMERA_POSITION_OBJECT_SPACE);
