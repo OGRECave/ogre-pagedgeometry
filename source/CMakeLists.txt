@@ -1,5 +1,6 @@
 file(GLOB sources *.cpp ${CMAKE_SOURCE_DIR}/include/*.h)
 
+add_definitions(-DUSE_FRAGMENT_PROGRAMS)
 add_library(${CMAKE_PROJECT_NAME} STATIC ${sources})
 
 target_include_directories(

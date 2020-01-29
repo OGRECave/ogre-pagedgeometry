@@ -33,12 +33,10 @@ IN(vec4 uv1, TEXCOORD1)
 IN(vec4 uv2, TEXCOORD2)
 #endif
 
-#ifdef OGRE_HLSL
-OUT(vec4 gl_TexCoord[1], TEXCOORD0)
-OUT(vec4 gl_FrontColor, COLOR)
-OUT(float gl_FogFragCoord, FOG)
-#endif
 
+OUT(vec4 oUV, TEXCOORD0)
+OUT(vec4 oColour, COLOR)
+OUT(float oFogCoord, FOG)
 MAIN_DECLARATION
 {
 #ifdef LIGHTING
@@ -46,26 +44,26 @@ MAIN_DECLARATION
     vec3 light = normalize(objSpaceLight.xyz - (vertex.xyz * objSpaceLight.w));
     float diffuseFactor = max(dot(normal, light), 0.0);
 #   ifdef VERTEXCOLOUR
-    gl_FrontColor = (lightAmbient + diffuseFactor * lightDiffuse) * colour;
+    oColour = (lightAmbient + diffuseFactor * lightDiffuse) * colour;
 #   else
-    gl_FrontColor = (lightAmbient + diffuseFactor * lightDiffuse);
+    oColour = (lightAmbient + diffuseFactor * lightDiffuse);
 #   endif
 #else
 #   ifdef VERTEXCOLOUR
-    gl_FrontColor = colour;
+    oColour = colour;
 #   else
-    gl_FrontColor = vec4(1.0, 1.0, 1.0, 1.0);
+    oColour = vec4(1.0, 1.0, 1.0, 1.0);
 #   endif
 #endif
 
 #ifdef FADE
     //Fade out in the distance
     float dist = distance(camPos.xz, vertex.xz);
-    gl_FrontColor.a *= (invisibleDist - dist) / fadeGap;
+    oColour.a *= (invisibleDist - dist) / fadeGap;
 #endif
 
-    gl_TexCoord[0] = uv0;
-
+    oUV = uv0;
+	vec4 tmpPos = vertex;
 #ifdef ANIMATE
     vec4 params = uv1;
     vec4 originPos = uv2;
@@ -74,7 +72,7 @@ MAIN_DECLARATION
 	float heightCoeff = params.y;
 	float factorX = params.z;
 	float factorY = params.w;
-	vec4 tmpPos = vertex;
+
     /* 
     2 different methods are used to for the sin calculation :
     - the first one gives a better effect but at the cost of a few fps because of the 2 sines
@@ -90,9 +88,8 @@ MAIN_DECLARATION
 	tmpPos.y += sinval * radiusCoeff * radiusCoeff * factorY;
 	tmpPos.x += sinval * heightCoeff * heightCoeff * factorX;
 #   endif
-    vertex = tmpPos;
 #endif
 
-    gl_Position = mul(worldViewProj, vertex);
-    gl_FogFragCoord = gl_Position.z;
+    gl_Position = mul(worldViewProj, tmpPos);
+    oFogCoord = gl_Position.z;
 }

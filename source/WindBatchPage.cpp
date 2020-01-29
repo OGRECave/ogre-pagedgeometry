@@ -190,6 +190,9 @@ void WindBatchPage::_updateShaders()
 					//Setup vertex program
 					if (pass->getVertexProgramName() == "")
 						pass->setVertexProgram(vertexProgName);
+#ifdef USE_FRAGMENT_PROGRAMS
+				 		pass->setFragmentProgram("Ogre/BasicFragmentPrograms/DiffuseOneTexture");
+#endif
 
 					try{
 						GpuProgramParametersSharedPtr params = pass->getVertexProgramParameters();

@@ -330,6 +330,9 @@ void BatchPage::_updateShaders()
 					//	pass->setVertexProgram(vertexProgName);
                if (!pass->hasVertexProgram())
                   pass->setVertexProgram(vertexProgName);
+#ifdef USE_FRAGMENT_PROGRAMS
+				  pass->setFragmentProgram("Ogre/BasicFragmentPrograms/DiffuseOneTexture");
+#endif
 
 					try
                {

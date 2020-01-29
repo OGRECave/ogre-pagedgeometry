@@ -29,11 +29,9 @@ IN(vec4 normal, NORMAL)
 IN(vec4 colour, COLOR)
 IN(vec4 uv0, TEXCOORD0)
 
-#ifdef OGRE_HLSL
-OUT(vec4 gl_TexCoord[1], TEXCOORD0)
-OUT(vec4 gl_FrontColor, COLOR)
-OUT(float gl_FogFragCoord, FOG)
-#endif
+OUT(vec4 oUV, TEXCOORD0)
+OUT(vec4 oColour, COLOR)
+OUT(float oFogCoord, FOG)
 
 MAIN_DECLARATION
 {
@@ -87,7 +85,7 @@ MAIN_DECLARATION
 #endif
 
     gl_Position = mul(worldViewProj, position);
-    gl_FrontColor = color;
-    gl_TexCoord[0] = uv0;
-    gl_FogFragCoord = gl_Position.z;
+    oColour = color;
+    oUV = uv0;
+    oFogCoord = gl_Position.z;
 }
