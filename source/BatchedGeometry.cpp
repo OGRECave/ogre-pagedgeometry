@@ -649,52 +649,42 @@ void BatchedGeometry::SubBatch::build()
 
       if (srcIndexType == HardwareIndexBuffer::IT_32BIT)
       {
-         //Lock the input buffer
-         uint32 *source = static_cast<uint32*>(sourceIndexData->indexBuffer->lock(
-            sourceIndexData->indexStart, sourceIndexData->indexCount, HardwareBuffer::HBL_READ_ONLY));
-         uint32 *sourceEnd = source + sourceIndexData->indexCount;
+         sourceIndexData->indexBuffer->readData(
+               sourceIndexData->indexStart * sizeof(uint32),
+               sourceIndexData->indexCount * sizeof(uint32), indexBuffer32);
+         uint32 *updateEnd = indexBuffer32 + sourceIndexData->indexCount;
 
-         //And copy it to the output buffer
-         while (source != sourceEnd)
-            *indexBuffer32++ = static_cast<uint32>(*source++ + indexOffset);
-
-         sourceIndexData->indexBuffer->unlock();                     // Unlock the input buffer
-         indexOffset += queuedMesh.subMesh->vertexData->vertexCount; // Increment the index offset
+         // add indexOffset
+         while (indexBuffer32 != updateEnd)
+            *indexBuffer32++ += indexOffset;
       }
       else
       {
          if (destIndexType == HardwareIndexBuffer::IT_32BIT)
          {
             //-- Convert 16 bit to 32 bit indices --
+            std::vector<uint16> tmp(sourceIndexData->indexCount);
             //Lock the input buffer
-            uint16 *source = static_cast<uint16*>(sourceIndexData->indexBuffer->lock(
-               sourceIndexData->indexStart, sourceIndexData->indexCount, HardwareBuffer::HBL_READ_ONLY));
+            sourceIndexData->indexBuffer->readData(sourceIndexData->indexStart*sizeof(uint16), tmp.size(), tmp.data());
+            uint16 *source = tmp.data();
             uint16 *sourceEnd = source + sourceIndexData->indexCount;
 
             //And copy it to the output buffer
             while (source != sourceEnd)
-            {
-               uint32 indx = *source++;
-               *indexBuffer32++ = (indx + indexOffset);
-            }
-
-            sourceIndexData->indexBuffer->unlock();                  // Unlock the input buffer
-            indexOffset += queuedMesh.subMesh->vertexData->vertexCount; // Increment the index offset
+               *indexBuffer32++ = (*source++ + indexOffset);
          }
          else
          {
-            //Lock the input buffer
-            uint16 *source = static_cast<uint16*>(sourceIndexData->indexBuffer->lock(
-               sourceIndexData->indexStart, sourceIndexData->indexCount, HardwareBuffer::HBL_READ_ONLY));
-            uint16 *sourceEnd = source + sourceIndexData->indexCount;
+            sourceIndexData->indexBuffer->readData(
+                sourceIndexData->indexStart * sizeof(uint16),
+                sourceIndexData->indexCount * sizeof(uint16), indexBuffer16);
+            uint16 *updateEnd = indexBuffer16 + sourceIndexData->indexCount;
 
-            //And copy it to the output buffer
-            while (source != sourceEnd)
-               *indexBuffer16++ = static_cast<uint16>(*source++ + indexOffset);
-
-            sourceIndexData->indexBuffer->unlock();                  // Unlock the input buffer
-            indexOffset += queuedMesh.subMesh->vertexData->vertexCount; // Increment the index offset
+            // add indexOffset
+            while (indexBuffer16 != updateEnd)
+               *indexBuffer16++ += indexOffset;
          }
+         indexOffset += queuedMesh.subMesh->vertexData->vertexCount; // Increment the index offset
       }
 
    }  // For each queued mesh
@@ -724,6 +714,8 @@ void BatchedGeometry::SubBatch::_buildIdentiryOrientation(const QueuedMesh &queu
    VertexBufferBinding *sourceBinds = sourceVertexData->vertexBufferBinding;
    VertexBufferBinding *destBinds = dstVertexData->vertexBufferBinding;
 
+   std::vector<uchar> shadowBuf;
+
    // For each vertex buffer
    for (unsigned short ibuffer = 0, bufCnt = destBinds->getBufferCount(); ibuffer < bufCnt; ++ibuffer)
    {
@@ -731,7 +723,11 @@ void BatchedGeometry::SubBatch::_buildIdentiryOrientation(const QueuedMesh &queu
       {
          //Lock the input buffer
          const HardwareVertexBufferSharedPtr &sourceBuffer = sourceBinds->getBuffer(ibuffer);
-         uchar *sourceBase = static_cast<uchar*>(sourceBuffer->lock(HardwareBuffer::HBL_READ_ONLY));
+
+         shadowBuf.resize(sourceBuffer->getSizeInBytes());
+         sourceBuffer->readData(0, sourceBuffer->getSizeInBytes(), shadowBuf.data());
+         uchar *sourceBase = shadowBuf.data();
+
          uchar *destBase = vertexBuffers[ibuffer]; //Get the locked output buffer
 
          const VertexDeclaration::VertexElementList &elems = vertexBufferElements[ibuffer];
@@ -801,7 +797,6 @@ void BatchedGeometry::SubBatch::_buildIdentiryOrientation(const QueuedMesh &queu
          }
 
          vertexBuffers[ibuffer] = destBase;
-         sourceBuffer->unlock(); // unlock the input buffer
       }
       else
       {
@@ -848,6 +843,8 @@ void BatchedGeometry::SubBatch::_buildFullTransform(const QueuedMesh &queuedMesh
    VertexBufferBinding *sourceBinds = sourceVertexData->vertexBufferBinding;
    VertexBufferBinding *destBinds = dstVertexData->vertexBufferBinding;
 
+   std::vector<uchar> shadowBuf;
+
    // For each vertex buffer
    for (unsigned short ibuffer = 0, bufCnt = destBinds->getBufferCount(); ibuffer < bufCnt; ++ibuffer)
    {
@@ -855,7 +852,9 @@ void BatchedGeometry::SubBatch::_buildFullTransform(const QueuedMesh &queuedMesh
       {
          //Lock the input buffer
          const HardwareVertexBufferSharedPtr &sourceBuffer = sourceBinds->getBuffer(ibuffer);
-         uchar *sourceBase = static_cast<uchar*>(sourceBuffer->lock(HardwareBuffer::HBL_READ_ONLY));
+         shadowBuf.resize(sourceBuffer->getSizeInBytes());
+         sourceBuffer->readData(0, sourceBuffer->getSizeInBytes(), shadowBuf.data());
+         uchar *sourceBase = shadowBuf.data();
 
          //Get the locked output buffer
          uchar *destBase = vertexBuffers[ibuffer];
@@ -882,11 +881,7 @@ void BatchedGeometry::SubBatch::_buildFullTransform(const QueuedMesh &queuedMesh
                case VES_POSITION:
                   {
                      Vector3 tmp(sourcePtr[0] * scale.x, sourcePtr[1] * scale.x, sourcePtr[2] * scale.x);
-                     // rotate vector by matrix. Ogre::Matrix3::operator* (const Vector3&) is not fast
-                     tmp = Ogre::Vector3(
-                        mat[0] * tmp.x + mat[1] * tmp.y + mat[2] * tmp.z,
-                        mat[3] * tmp.x + mat[4] * tmp.y + mat[5] * tmp.z,
-                        mat[6] * tmp.x + mat[7] * tmp.y + mat[8] * tmp.z);
+                     tmp = m3MeshOrientation*tmp;
                      tmp += v3AddBatchPosition;
                      destPtr[0] = (float)tmp.x;
                      destPtr[1] = (float)tmp.y;
@@ -934,7 +929,6 @@ void BatchedGeometry::SubBatch::_buildFullTransform(const QueuedMesh &queuedMesh
 
          //Unlock the input buffer
          vertexBuffers[ibuffer] = destBase;
-         sourceBuffer->unlock();
       }
       else
       {
