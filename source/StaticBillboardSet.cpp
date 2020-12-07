@@ -403,8 +403,8 @@ void StaticBillboardSet::build()
       offset += VertexElement::getTypeSize(VET_FLOAT3);
       dcl->addElement(0, offset, VET_FLOAT3, VES_NORMAL);
       offset += VertexElement::getTypeSize(VET_FLOAT3);
-      dcl->addElement(0, offset, VET_COLOUR, VES_DIFFUSE);
-      offset += VertexElement::getTypeSize(VET_COLOUR);
+      dcl->addElement(0, offset, VET_UBYTE4_NORM, VES_DIFFUSE);
+      offset += VertexElement::getTypeSize(VET_UBYTE4_NORM);
       dcl->addElement(0, offset, VET_FLOAT2, VES_TEXTURE_COORDINATES);
       offset += VertexElement::getTypeSize(VET_FLOAT2);
 

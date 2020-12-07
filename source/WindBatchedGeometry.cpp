@@ -187,7 +187,7 @@ void WindBatchedGeometry::WindSubBatch::build()
       {
          Ogre::ushort i = (Ogre::ushort)vertBinding->getBufferCount();
 
-         vertDecl->addElement(i, 0, VET_COLOUR, VES_DIFFUSE);
+         vertDecl->addElement(i, 0, VET_UBYTE4_NORM, VES_DIFFUSE);
 
          HardwareVertexBufferSharedPtr buffer = HardwareBufferManager::getSingleton().createVertexBuffer(
             vertDecl->getVertexSize(i), m_pVertexData->vertexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY);

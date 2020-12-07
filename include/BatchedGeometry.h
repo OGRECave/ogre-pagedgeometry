@@ -179,7 +179,7 @@ namespace Forests
       Ogre::AxisAlignedBox    m_boundsAAB;
       TSubBatchMap            m_mapSubBatch;
       /// Internal matrix for remap vertex type to vertex size instead call VertexElement::getTypeSize
-      static const size_t     s_vertexType2Size[Ogre::VET_COLOUR_ABGR + 1];
+      static size_t     s_vertexType2Size[Ogre::VET_UBYTE4_NORM + 1];
 
    private:
       bool                    m_bWithinFarDistance;

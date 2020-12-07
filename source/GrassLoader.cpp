@@ -229,8 +229,8 @@ Mesh *GrassLoader::generateGrass_QUAD(PageInfo &page, GrassLayer *layer, const f
 	size_t offset = 0;
 	dcl->addElement(0, offset, VET_FLOAT3, VES_POSITION);
 	offset += VertexElement::getTypeSize(VET_FLOAT3);
-	dcl->addElement(0, offset, VET_COLOUR, VES_DIFFUSE);
-	offset += VertexElement::getTypeSize(VET_COLOUR);
+	dcl->addElement(0, offset, VET_UBYTE4_NORM, VES_DIFFUSE);
+	offset += VertexElement::getTypeSize(VET_UBYTE4_NORM);
 	dcl->addElement(0, offset, VET_FLOAT2, VES_TEXTURE_COORDINATES);
 	offset += VertexElement::getTypeSize(VET_FLOAT2);
 
@@ -396,8 +396,8 @@ Mesh *GrassLoader::generateGrass_CROSSQUADS(PageInfo &page, GrassLayer *layer, c
 	size_t offset = 0;
 	dcl->addElement(0, offset, VET_FLOAT3, VES_POSITION);
 	offset += VertexElement::getTypeSize(VET_FLOAT3);
-	dcl->addElement(0, offset, VET_COLOUR, VES_DIFFUSE);
-	offset += VertexElement::getTypeSize(VET_COLOUR);
+	dcl->addElement(0, offset, VET_UBYTE4_NORM, VES_DIFFUSE);
+	offset += VertexElement::getTypeSize(VET_UBYTE4_NORM);
 	dcl->addElement(0, offset, VET_FLOAT2, VES_TEXTURE_COORDINATES);
 	offset += VertexElement::getTypeSize(VET_FLOAT2);
 
@@ -616,8 +616,8 @@ Mesh *GrassLoader::generateGrass_SPRITE(PageInfo &page, GrassLayer *layer, const
 	offset += VertexElement::getTypeSize(VET_FLOAT3);
 	dcl->addElement(0, offset, VET_FLOAT4, VES_NORMAL);
 	offset += VertexElement::getTypeSize(VET_FLOAT4);
-	dcl->addElement(0, offset, VET_COLOUR, VES_DIFFUSE);
-	offset += VertexElement::getTypeSize(VET_COLOUR);
+	dcl->addElement(0, offset, VET_UBYTE4_NORM, VES_DIFFUSE);
+	offset += VertexElement::getTypeSize(VET_UBYTE4_NORM);
 	dcl->addElement(0, offset, VET_FLOAT2, VES_TEXTURE_COORDINATES);
 	offset += VertexElement::getTypeSize(VET_FLOAT2);
 

@@ -76,7 +76,7 @@ namespace Forests
          xPos((float)pos.x), yPos((float)pos.y), zPos((float)pos.z), xScaleHalf(0.5f * xScale), yScaleHalf(0.5f * yScale),
             texcoordIndexU(texcrdIndexU), texcoordIndexV(texcrdIndexV)
          {
-            Ogre::Root::getSingletonPtr()->getRenderSystem()->convertColourValue(clr, &color);
+            color = clr.getAsBYTE();
          }
 
 
@@ -132,9 +132,7 @@ namespace Forests
             //bb->texcoordIndexU = texcoordIndexU;
             //bb->texcoordIndexV = texcoordIndexV;
 
-            //Ogre::uint32 packedColor;
-            //Ogre::Root::getSingleton().getRenderSystem()->convertColourValue(color, &packedColor);
-            //bb->color = packedColor;
+            //bb->color = color;
          }
          else
          {

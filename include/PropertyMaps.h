@@ -181,25 +181,7 @@ namespace Forests
       Ogre::ColourValue getColorAt_Unpacked(Ogre::Real x, Ogre::Real z, const Ogre::TRect<Ogre::Real> &mapBounds)
       {
          Ogre::uint32 c = filter == MAPFILTER_NONE ? _getColorAt(x, z, mapBounds) : _getColorAt_Bilinear(x, z, mapBounds);
-         float r, g, b, a;
-         static Ogre::VertexElementType format = Ogre::Root::getSingleton().getRenderSystem()->getColourVertexElementType();
-         if (format == Ogre::VET_COLOUR_ARGB)
-         {
-            // 1/255 = 0,0039215686274509803921568627451
-            b = ((c) & 0xFF) * 0.0039215686f;
-            g = ((c >> 8) & 0xFF) * 0.0039215686f;
-            r = ((c >> 16) & 0xFF) * 0.0039215686f;
-            a = ((c >> 24) & 0xFF) * 0.0039215686f;
-         }
-         else
-         {
-            r = ((c) & 0xFF) * 0.0039215686f;
-            g = ((c >> 8) & 0xFF) * 0.0039215686f;
-            b = ((c >> 16) & 0xFF) * 0.0039215686f;
-            a = ((c >> 24) & 0xFF) * 0.0039215686f;
-         }
-
-         return Ogre::ColourValue(r, g, b, a);
+         return Ogre::ColourValue((Ogre::uchar*)&c);
       }
 
    private:

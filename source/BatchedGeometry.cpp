@@ -39,36 +39,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 using namespace Ogre;
 using namespace Forests;
 
-
-/// For Ogre 1.7.2 and 1.7.3 VertexElementType enum writed as
-///
-/// VET_FLOAT1 = 0
-/// VET_FLOAT2 = 1
-/// VET_FLOAT3 = 2
-/// VET_FLOAT4 = 3
-/// VET_COLOUR = 4
-/// VET_SHORT1 = 5
-/// VET_SHORT2 = 6
-/// VET_SHORT3 = 7
-/// VET_SHORT4 = 8
-/// VET_UBYTE4 = 9
-/// VET_COLOUR_ARGB = 10
-/// VET_COLOUR_ABGR = 11
-const size_t BatchedGeometry::s_vertexType2Size[VET_COLOUR_ABGR + 1] = {
-   VertexElement::getTypeSize(VET_FLOAT1),
-   VertexElement::getTypeSize(VET_FLOAT2),
-   VertexElement::getTypeSize(VET_FLOAT3),
-   VertexElement::getTypeSize(VET_FLOAT4),
-   VertexElement::getTypeSize(VET_COLOUR),
-   VertexElement::getTypeSize(VET_SHORT1),
-   VertexElement::getTypeSize(VET_SHORT2),
-   VertexElement::getTypeSize(VET_SHORT3),
-   VertexElement::getTypeSize(VET_SHORT4),
-   VertexElement::getTypeSize(VET_UBYTE4),
-   VertexElement::getTypeSize(VET_COLOUR_ARGB),
-   VertexElement::getTypeSize(VET_COLOUR_ABGR)
-};
-
+size_t BatchedGeometry::s_vertexType2Size[VET_UBYTE4_NORM + 1] = {0};
 
 //-------------------------------------------------------------------------------------
 ///
@@ -84,6 +55,11 @@ m_vecCenter          (Ogre::Vector3::ZERO),
 m_BoundsUndefined    (true)
 {
    assert(rootSceneNode);
+   if(s_vertexType2Size[0] != 0)
+      return;
+   
+   for(int i = VET_FLOAT1; i < VET_UBYTE4_NORM + 1; i++)
+      s_vertexType2Size[i] = VertexElement::getTypeSize(VertexElementType(i));
 }
 
 //-----------------------------------------------------------------------------
@@ -548,23 +524,6 @@ void BatchedGeometry::SubBatch::addSubEntity(SubEntity *ent, const Vector3 &posi
 
    //Add this submesh to the queue
    QueuedMesh newMesh(ent->getSubMesh(), position, orientation, scale, color, userData);
-   if (color != ColourValue::White)
-   {
-      m_RequireVertexColors = true;
-      VertexElementType format = Root::getSingleton().getRenderSystem()->getColourVertexElementType();
-      switch (format)
-      {
-      case VET_COLOUR_ARGB:
-         std::swap(newMesh.color.r, newMesh.color.b);
-         break;
-      case VET_COLOUR_ABGR:
-         break;
-      default:
-         OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "Unknown RenderSystem color format");
-         break;
-      }
-   }
-
    m_queueMesh.push_back(newMesh);
 
    //Increment the vertex/index count so the buffers will have room for this mesh
@@ -619,7 +578,7 @@ void BatchedGeometry::SubBatch::build()
       if (!m_pVertexData->vertexDeclaration->findElementBySemantic(VES_DIFFUSE))
       {
          Ogre::ushort i = (Ogre::ushort)vertBinding->getBufferCount();
-         vertDecl->addElement(i, 0, VET_COLOUR, VES_DIFFUSE);
+         vertDecl->addElement(i, 0, VET_UBYTE4_NORM, VES_DIFFUSE);
 
          HardwareVertexBufferSharedPtr buffer = HardwareBufferManager::getSingleton().createVertexBuffer(
             vertDecl->getVertexSize(i), m_pVertexData->vertexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY);
