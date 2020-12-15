@@ -62,10 +62,6 @@ void DensityMap::unload()
 
 DensityMap::~DensityMap()
 {
-	assert(pixels);
-	delete[] static_cast<uint8*>(pixels->data);
-	delete pixels;
-
 	//Remove self from selfList
 	selfList.erase(selfKey);
 }
@@ -84,12 +80,11 @@ DensityMap::DensityMap(TexturePtr map, MapChannel channel)
 	HardwarePixelBufferSharedPtr buff = map->getBuffer();
 
 	//Prepare a PixelBox (8-bit greyscale) to receive the density values
-	pixels = new PixelBox(Box(0, 0, buff->getWidth(), buff->getHeight()), PF_BYTE_L);
-	pixels->data = new uint8[pixels->getConsecutiveSize()];
+	pixels.create(PF_BYTE_L, buff->getWidth(), buff->getHeight());
 
 	if (channel == CHANNEL_COLOR){
 		//Copy to the greyscale density map directly if no channel extraction is necessary
-		buff->blitToMemory(*pixels);
+		buff->blitToMemory(pixels.getPixelBox());
 	} else {
 		//If channel extraction is necessary, first convert to a PF_R8G8B8A8 format PixelBox
 		//This is necessary for the code below to properly extract the desired channel
@@ -109,8 +104,8 @@ DensityMap::DensityMap(TexturePtr map, MapChannel channel)
 
 		//And copy that channel into the density map
 		uint8 *inputPtr = (uint8*)tmpPixels.data + channelOffset;
-		uint8 *outputPtr = (uint8*)pixels->data;
-		uint8 *outputEndPtr = outputPtr + pixels->getConsecutiveSize();
+		uint8 *outputPtr = pixels.getData();
+		uint8 *outputEndPtr = outputPtr + pixels.getSize();
 		while (outputPtr != outputEndPtr){
 			*outputPtr++ = *inputPtr;
 			inputPtr += 4;
@@ -126,49 +121,32 @@ DensityMap::DensityMap(TexturePtr map, MapChannel channel)
 //Make sure a density map exists before calling this.
 Ogre::Real DensityMap::_getDensityAt_Unfiltered(Ogre::Real x, Ogre::Real z, const TRect<Real> &mapBounds)
 {
-	assert(pixels);
+	assert(pixels.getData());
 
 	// Early out if the coordinates are outside map bounds.
 	if(x < mapBounds.left || x >= mapBounds.right || z < mapBounds.top || z >= mapBounds.bottom)
       return 0.f;
 
-	size_t mapWidth = pixels->getWidth(), mapHeight = pixels->getHeight();
-
-/* not needed anymore
-#if OGRE_PLATFORM != OGRE_PLATFORM_APPLE
-	// Patch incorrect PixelBox::getWidth() in OpenGL mode
-	if (Root::getSingleton().getRenderSystem()->getName() == "OpenGL Rendering Subsystem")
-		--mapWidth;
-#endif //OGRE_PLATFORM_APPLE
-*/
+	size_t mapWidth = pixels.getWidth(), mapHeight = pixels.getHeight();
 
 	size_t xindex = size_t(mapWidth * (x - mapBounds.left) / mapBounds.width());
 	size_t zindex = size_t(mapHeight * (z - mapBounds.top) / mapBounds.height());
 
-	uint8 *data = reinterpret_cast<uint8*>(pixels->data);
-	return data[mapWidth * zindex + xindex] * 0.00392157f; // 1/255.0f;
+	return *pixels.getData(xindex, zindex)/255.0f;
 }
 
 //Returns the density map value at the given location with bilinear filtering
 //Make sure a density map exists before calling this.
 Ogre::Real DensityMap::_getDensityAt_Bilinear(Ogre::Real x, Ogre::Real z, const TRect<Ogre::Real> &mapBounds)
 {
-	assert(pixels);
+	assert(pixels.getData());
 
 	// Early out if the coordinates are outside map bounds.
 	if(x < mapBounds.left || x >= mapBounds.right || z < mapBounds.top || z >= mapBounds.bottom)
 		return 0.f;
 
-	uint32 mapWidth = (uint32)pixels->getWidth();
-	uint32 mapHeight = (uint32)pixels->getHeight();
-
-/* not needed anymore
-#if OGRE_PLATFORM != OGRE_PLATFORM_APPLE
-	//Patch incorrect PixelBox::getWidth() in OpenGL mode
-	if (Root::getSingleton().getRenderSystem()->getName() == "OpenGL Rendering Subsystem")
-		--mapWidth;
-#endif //OGRE_PLATFORM_APPLE
-*/
+	uint32 mapWidth = pixels.getWidth();
+	uint32 mapHeight = pixels.getHeight();
 
 	Ogre::Real xIndexFloat = (mapWidth * (x - mapBounds.left) / mapBounds.width()) - 0.5f;
 	Ogre::Real zIndexFloat = (mapHeight * (z - mapBounds.top) / mapBounds.height()) - 0.5f;
@@ -183,12 +161,10 @@ Ogre::Real DensityMap::_getDensityAt_Bilinear(Ogre::Real x, Ogre::Real z, const 
 	Ogre::Real zRatio = zIndexFloat - zIndex;
 	Ogre::Real zRatioInv = 1.f - zRatio;
 
-	uint8 *data = (uint8*)pixels->data;
-
-	Ogre::Real val11 = data[mapWidth * zIndex + xIndex]      * 0.0039215686274509803921568627451f;
-	Ogre::Real val21 = data[mapWidth * zIndex + xIndex + 1]  * 0.0039215686274509803921568627451f;
-	Ogre::Real val12 = data[mapWidth * ++zIndex + xIndex]    * 0.0039215686274509803921568627451f;
-	Ogre::Real val22 = data[mapWidth * zIndex + xIndex + 1]  * 0.0039215686274509803921568627451f;
+	Ogre::Real val11 = *pixels.getData(xIndex, zIndex)/255.0f;
+	Ogre::Real val21 = *pixels.getData(xIndex + 1, zIndex)/255.0f;
+	Ogre::Real val12 = *pixels.getData(xIndex, ++zIndex)/255.0f;
+	Ogre::Real val22 = *pixels.getData(xIndex + 1, zIndex)/255.0f;
 
 	Ogre::Real val1 = xRatioInv * val11 + xRatio * val21;
 	Ogre::Real val2 = xRatioInv * val12 + xRatio * val22;
@@ -237,10 +213,6 @@ void ColorMap::unload()
 
 ColorMap::~ColorMap()
 {
-	assert(pixels);
-	delete[] static_cast<uint8*>(pixels->data);
-	delete pixels;
-
 	//Remove self from selfList
 	selfList.erase(selfKey);
 }
@@ -258,17 +230,16 @@ ColorMap::ColorMap(TexturePtr map, MapChannel channel)
 	//Get the texture buffer
 	HardwarePixelBufferSharedPtr buff = map->getBuffer();
 
-	//Prepare a PixelBox (24-bit RGB) to receive the color values
-	pixels = new PixelBox(Box(0, 0, buff->getWidth(), buff->getHeight()), PF_BYTE_RGBA);
+	//Prepare a PixelBox to receive the color values
+	pixels.create(PF_BYTE_RGBA, buff->getWidth(), buff->getHeight());
+
 	//Patch for Ogre's incorrect blitToMemory() when copying from PF_L8 in OpenGL
 	if (buff->getFormat() == PF_L8)
 		channel = CHANNEL_RED;
 
-	pixels->data = new uint8[pixels->getConsecutiveSize()];
-
 	if (channel == CHANNEL_COLOR){
 		//Copy to the color map directly if no channel extraction is necessary
-		buff->blitToMemory(*pixels);
+		buff->blitToMemory(pixels.getPixelBox());
 	} else {
 		//If channel extraction is necessary, first convert to a PF_R8G8B8A8 format PixelBox
 		//This is necessary for the code below to properly extract the desired channel
@@ -288,8 +259,8 @@ ColorMap::ColorMap(TexturePtr map, MapChannel channel)
 
 		//And copy that channel into the density map
 		uint8 *inputPtr = (uint8*)tmpPixels.data + channelOffset;
-		uint8 *outputPtr = (uint8*)pixels->data;
-		uint8 *outputEndPtr = outputPtr + pixels->getConsecutiveSize();
+		uint8 *outputPtr = pixels.getData();
+		uint8 *outputEndPtr = outputPtr + pixels.getSize();
 		while (outputPtr != outputEndPtr){
 			*outputPtr++ = *inputPtr;
 			*outputPtr++ = *inputPtr;
@@ -304,9 +275,9 @@ ColorMap::ColorMap(TexturePtr map, MapChannel channel)
 }
 
 //Returns the color map value at the given location
-uint32 ColorMap::_getColorAt(Ogre::Real x, Ogre::Real z, const TRect<Real> &mapBounds)
+uint32 ColorMap::_getColorAt(Ogre::Real x, Ogre::Real z, const RealRect &mapBounds)
 {
-	assert(pixels);
+	assert(pixels.getData());
 
 	// Early out if the coordinates are outside map bounds.
 	if(x < mapBounds.left || x >= mapBounds.right || z < mapBounds.top || z >= mapBounds.bottom)
@@ -314,14 +285,13 @@ uint32 ColorMap::_getColorAt(Ogre::Real x, Ogre::Real z, const TRect<Real> &mapB
 		return 0xFFFFFFFF;
 	}
 
-	uint32 mapWidth = (uint32)pixels->getWidth();
-	uint32 mapHeight = (uint32)pixels->getHeight();
+	uint32 mapWidth = (uint32)pixels.getWidth();
+	uint32 mapHeight = (uint32)pixels.getHeight();
 
 	uint32 xindex = uint32(mapWidth * (x - mapBounds.left) / mapBounds.width());
 	uint32 zindex = uint32(mapHeight * (z - mapBounds.top) / mapBounds.height());
 
-	uint32 *data = (uint32*)pixels->data;
-	return data[mapWidth * zindex + xindex];
+	return *pixels.getData<uint32>(xindex, zindex);
 }
 
 uint32 ColorMap::_interpolateColor(uint32 color1, uint32 color2, Ogre::Real ratio, Ogre::Real ratioInv)
@@ -346,7 +316,7 @@ uint32 ColorMap::_interpolateColor(uint32 color1, uint32 color2, Ogre::Real rati
 
 uint32 ColorMap::_getColorAt_Bilinear(Ogre::Real x, Ogre::Real z, const TRect<Real> &mapBounds)
 {
-	assert(pixels);
+	assert(pixels.getData());
 
 	// Early out if the coordinates are outside map bounds.
 	if(x < mapBounds.left || x >= mapBounds.right || z < mapBounds.top || z >= mapBounds.bottom)
@@ -354,8 +324,8 @@ uint32 ColorMap::_getColorAt_Bilinear(Ogre::Real x, Ogre::Real z, const TRect<Re
 		return 0xFFFFFFFF;
 	}
 
-	uint32 mapWidth = (uint32)pixels->getWidth();
-	uint32 mapHeight = (uint32)pixels->getHeight();
+	uint32 mapWidth = pixels.getWidth();
+	uint32 mapHeight = pixels.getHeight();
 	Ogre::Real xIndexFloat = (mapWidth * (x - mapBounds.left) / mapBounds.width()) - 0.5f;
 	Ogre::Real zIndexFloat = (mapHeight * (z - mapBounds.top) / mapBounds.height()) - 0.5f;
 
@@ -369,12 +339,10 @@ uint32 ColorMap::_getColorAt_Bilinear(Ogre::Real x, Ogre::Real z, const TRect<Re
 	Ogre::Real zRatio = zIndexFloat - zIndex;
 	Ogre::Real zRatioInv = 1.f - zRatio;
 
-	uint32 *data = (uint32*)pixels->data;
-
-	uint32 val11 = data[mapWidth * zIndex + xIndex];
-	uint32 val21 = data[mapWidth * zIndex + xIndex + 1];
-	uint32 val12 = data[mapWidth * ++zIndex + xIndex];
-	uint32 val22 = data[mapWidth * zIndex + xIndex + 1];
+	uint32 val11 = *pixels.getData<uint32>(xIndex, zIndex);
+	uint32 val21 = *pixels.getData<uint32>(xIndex + 1, zIndex);
+	uint32 val12 = *pixels.getData<uint32>(xIndex, ++zIndex);
+	uint32 val22 = *pixels.getData<uint32>(xIndex + 1, zIndex);
 
 	uint32 val1 = _interpolateColor(val11, val21, xRatio, xRatioInv);
 	uint32 val2 = _interpolateColor(val12, val22, xRatio, xRatioInv);

@@ -84,8 +84,7 @@ namespace Forests
       will remain unchanged. */
       Ogre::PixelBox getPixelBox()
       {
-         assert(pixels);
-         return *pixels;
+         return pixels.getPixelBox();
       }
 
       /** \brief Gets the density level at the specified position
@@ -93,7 +92,7 @@ namespace Forests
       The boundary given defines the area where this density map takes effect.
       Normally this is set to your terrain's bounds so the density map is aligned
       to your heightmap, but you could apply it anywhere you want. */
-      Ogre::Real getDensityAt(Ogre::Real x, Ogre::Real z, const Ogre::TRect<Ogre::Real> &mapBounds)
+      Ogre::Real getDensityAt(Ogre::Real x, Ogre::Real z, const Ogre::RealRect &mapBounds)
       {
          if (filter == MAPFILTER_NONE)
             return _getDensityAt_Unfiltered(x, z, mapBounds);
@@ -101,8 +100,8 @@ namespace Forests
             return _getDensityAt_Bilinear(x, z, mapBounds);
       }
 
-      Ogre::Real _getDensityAt_Unfiltered(Ogre::Real x, Ogre::Real z, const Ogre::TRect<Ogre::Real> &mapBounds);
-      Ogre::Real _getDensityAt_Bilinear(Ogre::Real x, Ogre::Real z, const Ogre::TRect<Ogre::Real> &mapBounds);
+      Ogre::Real _getDensityAt_Unfiltered(Ogre::Real x, Ogre::Real z, const Ogre::RealRect &mapBounds);
+      Ogre::Real _getDensityAt_Bilinear(Ogre::Real x, Ogre::Real z, const Ogre::RealRect &mapBounds);
 
    private:
       DensityMap(Ogre::TexturePtr texture, MapChannel channel);
@@ -113,7 +112,7 @@ namespace Forests
       Ogre::uint32 refCount;
 
       MapFilter filter;
-      Ogre::PixelBox *pixels;
+      Ogre::Image pixels;
    };
 
    /** \brief A 2D greyscale image that is assigned to a certain region of your world to represent color levels.
@@ -158,8 +157,7 @@ namespace Forests
       will remain unchanged. */
       Ogre::PixelBox getPixelBox()
       {
-         assert(pixels);
-         return *pixels;
+         return pixels.getPixelBox();
       }
 
       /** \brief Gets the color value at the specified position
@@ -170,7 +168,7 @@ namespace Forests
       The boundary given defines the area where this color map takes effect.
       Normally this is set to your terrain's bounds so the color map is aligned
       to your heightmap, but you could apply it anywhere you want. */
-      Ogre::uint32 getColorAt(Ogre::Real x, Ogre::Real z, const Ogre::TRect<Ogre::Real> &mapBounds)
+      Ogre::uint32 getColorAt(Ogre::Real x, Ogre::Real z, const Ogre::RealRect &mapBounds)
       {
          return filter == MAPFILTER_NONE ? _getColorAt(x, z, mapBounds) : _getColorAt_Bilinear(x, z, mapBounds);
       }
@@ -178,7 +176,7 @@ namespace Forests
       /** \brief Gets the color value at the specified position
 
       The unpacks the 32-bit color value into an Ogre::ColourValue and returns it. */
-      Ogre::ColourValue getColorAt_Unpacked(Ogre::Real x, Ogre::Real z, const Ogre::TRect<Ogre::Real> &mapBounds)
+      Ogre::ColourValue getColorAt_Unpacked(Ogre::Real x, Ogre::Real z, const Ogre::RealRect &mapBounds)
       {
          Ogre::uint32 c = filter == MAPFILTER_NONE ? _getColorAt(x, z, mapBounds) : _getColorAt_Bilinear(x, z, mapBounds);
          return Ogre::ColourValue((Ogre::uchar*)&c);
@@ -196,14 +194,14 @@ namespace Forests
       Ogre::uint32 _interpolateColor(Ogre::uint32 color1, Ogre::uint32 color2, Ogre::Real ratio, Ogre::Real ratioInv);
 
       //Returns the color map value at the given location
-      Ogre::uint32 _getColorAt(Ogre::Real x, Ogre::Real z, const Ogre::TRect<Ogre::Real> &mapBounds);
+      Ogre::uint32 _getColorAt(Ogre::Real x, Ogre::Real z, const Ogre::RealRect &mapBounds);
 
       //Returns the color map value at the given location with bilinear filtering
-      Ogre::uint32 _getColorAt_Bilinear(Ogre::Real x, Ogre::Real z, const Ogre::TRect<Ogre::Real> &mapBounds);
+      Ogre::uint32 _getColorAt_Bilinear(Ogre::Real x, Ogre::Real z, const Ogre::RealRect &mapBounds);
 
       MapFilter filter;
-      Ogre::PixelBox *pixels;
-      Ogre::TRect<Ogre::Real> mapBounds;
+      Ogre::Image pixels;
+      Ogre::RealRect mapBounds;
    };
 
 }
