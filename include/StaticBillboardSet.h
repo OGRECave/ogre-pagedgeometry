@@ -274,7 +274,6 @@ namespace Forests
 
       typedef std::map<Ogre::String, Ogre::MaterialPtr> FadedMaterialMap;
 
-      static bool             s_isGLSL;                  ///< OpenGL
       //static bool             s_shadersGenerated;        ///< First instance generate shaders for billboard rendering
       static unsigned int     s_nSelfInstances;          ///< Instances counter
       static FadedMaterialMap s_mapFadedMaterial;        ///< 
