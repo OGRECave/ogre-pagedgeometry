@@ -274,191 +274,26 @@ void BatchPage::_updateShaders()
 		//If the shader hasn't been created yet, create it
 		if (!HighLevelGpuProgramManager::getSingleton().getByName(vertexProgName))
 		{
-			Pass *pass = ptrMat->getTechnique(0)->getPass(0);
-			String vertexProgSource;
+			String vertexProgSource = Root::getSingleton().openFileStream("BatchPage_vp.glsl")->getAsString();
 
-			if(!shaderLanguage.compare("hlsl") || !shaderLanguage.compare("cg"))
-			{
-
-				vertexProgSource =
-					"void main( \n"
-					"	float4 iPosition : POSITION, \n"
-					"	float3 normal    : NORMAL,	\n"
-					"	out float4 oPosition : POSITION, \n";
-
-				if (subBatch->m_pVertexData->vertexDeclaration->findElementBySemantic(VES_DIFFUSE) != NULL) vertexProgSource +=
-					"	float4 iColor    : COLOR, \n";
-
-				unsigned texNum = 0;
-				for (unsigned short i = 0; i < subBatch->m_pVertexData->vertexDeclaration->getElementCount(); ++i)
-            {
-					const VertexElement *el = subBatch->m_pVertexData->vertexDeclaration->getElement(i);
-					if (el->getSemantic() == VES_TEXTURE_COORDINATES)
-               {
-                  String uvType;
-                  switch (el->getType())
-                  {
-                  case VET_FLOAT1: uvType = "float"; break;
-                  case VET_FLOAT2: uvType = "float2"; break;
-                  case VET_FLOAT3: uvType = "float3"; break;
-                  case VET_FLOAT4: uvType = "float4"; break;
-                  }
-
-						vertexProgSource +=
-						"	" + uvType + " iUV" + StringConverter::toString(texNum) + "			: TEXCOORD" + StringConverter::toString(texNum) + ",	\n"
-						"	out " + uvType + " oUV" + StringConverter::toString(texNum) + "		: TEXCOORD" + StringConverter::toString(texNum) + ",	\n";
-
-						++texNum;
-					}
-				}
-
-				vertexProgSource +=
-					"	out float oFog : FOG,	\n"
-					"	out float4 oColor : COLOR, \n";
-
-				if (lightingEnabled) vertexProgSource +=
-					"	uniform float4 objSpaceLight,	\n"
-					"	uniform float4 lightDiffuse,	\n"
-					"	uniform float4 lightAmbient,	\n";
-
-				if (m_bFadeEnabled) vertexProgSource +=
-					"	uniform float3 camPos, \n";
-
-				vertexProgSource +=
-					"	uniform float4x4 worldViewProj,	\n"
-					"	uniform float fadeGap, \n"
-					"   uniform float invisibleDist )\n"
-					"{	\n";
-
-				if (lightingEnabled)
-            {
-					//Perform lighting calculations (no specular)
-					vertexProgSource +=
-					"	float3 light = normalize(objSpaceLight.xyz - (iPosition.xyz * objSpaceLight.w)); \n"
-					"	float diffuseFactor = max(dot(normal, light), 0); \n";
-					if (subBatch->m_pVertexData->vertexDeclaration->findElementBySemantic(VES_DIFFUSE) != NULL)
-						vertexProgSource += "oColor = (lightAmbient + diffuseFactor * lightDiffuse) * iColor; \n";
-					else
-						vertexProgSource += "oColor = (lightAmbient + diffuseFactor * lightDiffuse); \n";
-				}
-            else
-            {
-					if (subBatch->m_pVertexData->vertexDeclaration->findElementBySemantic(VES_DIFFUSE) != NULL)
-						vertexProgSource += "oColor = iColor; \n";
-					else
-						vertexProgSource += "oColor = float4(1, 1, 1, 1); \n";
-				}
-
-				if (m_bFadeEnabled) vertexProgSource +=
-					//Fade out in the distance
-					"	float dist = distance(camPos.xz, iPosition.xz);	\n"
-					"	oColor.a *= (invisibleDist - dist) / fadeGap;   \n";
-
-				texNum = 0;
-				for (size_t i = 0, iCnt = subBatch->m_pVertexData->vertexDeclaration->getElementCount(); i < iCnt; ++i)
-            {
-					const VertexElement *el = subBatch->m_pVertexData->vertexDeclaration->getElement(i);
-					if (el->getSemantic() == VES_TEXTURE_COORDINATES)
-               {
-						vertexProgSource +=
-						"	oUV" + StringConverter::toString(texNum) + " = iUV" + StringConverter::toString(texNum) + ";	\n";
-						++texNum;
-					}
-				}
-
-				vertexProgSource +=
-					"	oPosition = mul(worldViewProj, iPosition);  \n"
-					"	oFog = oPosition.z; \n"
-					"}";
-			}
-
-			if(!shaderLanguage.compare("glsl"))
-			{
-				vertexProgSource =
-                    "uniform mat4 worldViewProj;\n"
-					"uniform float fadeGap;        \n"
-					"uniform float invisibleDist;   \n";
-
-				if (lightingEnabled) vertexProgSource +=
-					"uniform vec4 objSpaceLight;   \n"
-					"uniform vec4 lightDiffuse;	   \n"
-					"uniform vec4 lightAmbient;	   \n";
-
-				if (m_bFadeEnabled) vertexProgSource +=
-					"uniform vec3 camPos;          \n";
-
-				vertexProgSource +=
-					"void main() \n"
-					"{ \n";
-
-				if (lightingEnabled)
-				{
-					//Perform lighting calculations (no specular)
-					vertexProgSource +=
-					"   vec3 light = normalize(objSpaceLight.xyz - (gl_Vertex.xyz * objSpaceLight.w)); \n"
-					"   float diffuseFactor = max(dot(gl_Normal, light), 0.0); \n";
-					if (subBatch->m_pVertexData->vertexDeclaration->findElementBySemantic(VES_DIFFUSE) != NULL)
-					{
-						vertexProgSource += "   gl_FrontColor = (lightAmbient + diffuseFactor * lightDiffuse) * gl_Color; \n";
-					}
-					else
-					{
-						vertexProgSource += "   gl_FrontColor = (lightAmbient + diffuseFactor * lightDiffuse); \n";
-					}
-				}
-				else
-				{
-					if (subBatch->m_pVertexData->vertexDeclaration->findElementBySemantic(VES_DIFFUSE) != NULL)
-					{
-						vertexProgSource += "   gl_FrontColor = gl_Color; \n";
-					}
-					else
-					{
-						vertexProgSource += "   gl_FrontColor = vec4(1.0, 1.0, 1.0, 1.0); \n";
-					}
-				}
-
-				if (m_bFadeEnabled)
-				{
-					vertexProgSource +=
-					//Fade out in the distance
-					"   float dist = distance(camPos.xz, gl_Vertex.xz);	\n"
-					"   gl_FrontColor.a *= (invisibleDist - dist) / fadeGap;   \n";
-				}
-
-				unsigned texNum = 0;
-				for (size_t i = 0, iCnt = subBatch->m_pVertexData->vertexDeclaration->getElementCount(); i < iCnt; ++i)
-				{
-					const VertexElement *el = subBatch->m_pVertexData->vertexDeclaration->getElement(i);
-					if (el->getSemantic() == VES_TEXTURE_COORDINATES)
-					{
-						vertexProgSource +=
-						"   gl_TexCoord[" + StringConverter::toString(texNum) + "] = gl_MultiTexCoord" + StringConverter::toString(texNum) + ";	\n";
-						++texNum;
-					}
-				}
-
-				vertexProgSource +=
-					"   gl_Position = worldViewProj * gl_Vertex;  \n"
-					"   gl_FogFragCoord = gl_Position.z; \n"
-					"}";
-			}
-
+			String defines;
+			if (lightingEnabled) defines += "LIGHTING,";
+			if (subBatch->m_pVertexData->vertexDeclaration->findElementBySemantic(VES_DIFFUSE)) defines += "VERTEXCOLOUR,";
+			if (m_bFadeEnabled) defines += "FADE,";
 
 			HighLevelGpuProgramPtr vertexShader = HighLevelGpuProgramManager::getSingleton().createProgram(
 				vertexProgName, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, shaderLanguage, GPT_VERTEX_PROGRAM);
 
 			vertexShader->setSource(vertexProgSource);
+			vertexShader->setParameter("preprocessor_defines", defines);
 
 			if (shaderLanguage == "hlsl")
 			{
 				vertexShader->setParameter("target", "vs_1_1");
-				vertexShader->setParameter("entry_point", "main");
 			}
 			else if(shaderLanguage == "cg")
 			{
 				vertexShader->setParameter("profiles", "vs_1_1 arbvp1");
-				vertexShader->setParameter("entry_point", "main");
 			}
 			// GLSL can only have one entry point "main".
 
