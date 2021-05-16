@@ -118,7 +118,7 @@ IF(NOT WIN32)
 ENDIF()
 
 # --- Ogre 3D graphics engine ---
-find_package( OGRE 1.10 REQUIRED )
+find_package( OGRE REQUIRED CONFIG)
 
 # now add the directories
 add_subdirectory(source)
