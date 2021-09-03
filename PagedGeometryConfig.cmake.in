@@ -1,0 +1,5 @@
+@PACKAGE_INIT@
+
+include("${CMAKE_CURRENT_LIST_DIR}/PagedGeometryTargets.cmake")
+
+check_required_components(PagedGeometry)
