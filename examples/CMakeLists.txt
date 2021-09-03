@@ -1,15 +1,15 @@
 
 # PagedGeometry includes
-include_directories(${PagedGeometry_SOURCE_DIR}/include)
-include_directories(${PagedGeometry_BINARY_DIR}/include)
+include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${CMAKE_BINARY_DIR}/include)
 
 # external includes
 include_directories(${OGRE_INCLUDE_DIRS})
-link_directories   (${OGRE_LIBRARY_DIRS})
+link_directories(${OGRE_LIBRARY_DIRS})
 
 macro(example_app NAME)
-	add_executable(${NAME} WIN32 ${NAME}.cpp)
-	target_link_libraries(${NAME} PagedGeometry ${OGRE_LIBRARIES})
+    add_executable(${NAME} WIN32 ${NAME}.cpp)
+    target_link_libraries(${NAME} PagedGeometry ${OGRE_LIBRARIES})
 endmacro(example_app)
 
 example_app(Example1)
