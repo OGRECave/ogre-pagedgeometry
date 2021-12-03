@@ -55,10 +55,8 @@ public:
 	void render();			//Renders a single frame, updating PagedGeometry and Ogre
 
 	//Various pointers to Ogre objects are stored here:
-	Root *root;
 	RenderWindow *window;
 	Viewport *viewport;
-	SceneManager *sceneMgr;
 	Camera *camera;
 	SceneNode* cameraNode;
 
@@ -99,10 +97,7 @@ int main(int argc, char *argv[])
 
 World::World(RenderWindow* win)
 {
-    //Setup Ogre::Root and the scene manager
-    root = Root::getSingletonPtr();
     window = win;
-    sceneMgr = root->createSceneManager();
 
 	//Initialize the camera and viewport
 	camera = sceneMgr->createCamera("MainCamera");

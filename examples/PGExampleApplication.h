@@ -108,6 +108,7 @@ protected:
     virtual void chooseSceneManager(void)
     {
         mSceneMgr = mRoot->createSceneManager();
+        RTShader::ShaderGenerator::getSingleton().addSceneManager(mSceneMgr);
     }
 	
     virtual void createCamera(void)

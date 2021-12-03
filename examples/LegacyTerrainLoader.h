@@ -16,7 +16,17 @@ same license as the rest of the engine.
 
 struct TerrainWorld
 {
+    Ogre::Root *root;
+    Ogre::SceneManager *sceneMgr;
     Ogre::TerrainGroup* terrain = nullptr;
+
+    TerrainWorld()
+    {
+        //Setup Ogre::Root and the scene manager
+        root = Ogre::Root::getSingletonPtr();
+        sceneMgr = root->createSceneManager();
+        Ogre::RTShader::ShaderGenerator::getSingleton().addSceneManager(sceneMgr);
+    }
 
     void unloadTerrain()
     {
