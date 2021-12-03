@@ -16,6 +16,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 #include <OgreTimer.h>
 #include <OgreCamera.h>
 #include <OgreVector3.h>
+#include <OgreHighLevelGpuProgramManager.h>
 
 #include "PagedGeometry.h"
 #include "StaticBillboardSet.h"
@@ -70,6 +71,16 @@ m_nRenderQueue(queue)
 	geometryAllowedVisible = true;
 	tempdir=""; // empty for current working directory
 	shadersEnabled = true; // enable shaders by default
+
+	auto& mgr = HighLevelGpuProgramManager::getSingleton();
+	for(auto lang : {"glsl", "hlsl", "glsles"})
+	{
+		if(mgr.isSyntaxSupported(lang))
+		{
+			shaderLanguage = lang;
+			break;
+		}
+	}
 }
 
 PagedGeometry::~PagedGeometry()

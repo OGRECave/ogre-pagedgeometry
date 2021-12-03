@@ -594,6 +594,8 @@ public:
 	void setShadersEnabled(bool value) { shadersEnabled=value; }
 	bool getShadersEnabled() { return shadersEnabled; }
 
+	const Ogre::String& getShaderLanguage() const { return shaderLanguage; }
+
 	/*
 	\brief Immediately loads visible geometry.
 	\param maxTime The maximum amount of time (in milliseconds) which cacheGeometry()
@@ -687,6 +689,7 @@ protected:
 	Ogre::SceneManager *sceneMgr;
 	Ogre::SceneNode *rootNode;				//PagedGeometry's own "root" node
 	bool shadersEnabled;
+	Ogre::String shaderLanguage;
 
 	bool geometryAllowedVisible;	//If set to false, all geometry managed by this PagedGeometry is hidden
 

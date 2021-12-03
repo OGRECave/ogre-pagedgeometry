@@ -260,16 +260,7 @@ void BatchPage::_updateShaders()
 		tmpName << "vp";
 
 		const String vertexProgName = tmpName.str();
-
-        HighLevelGpuProgramManager& mgr = HighLevelGpuProgramManager::getSingleton();
-
-		String shaderLanguage;
-		if (mgr.isLanguageSupported("hlsl"))
-			shaderLanguage = "hlsl";
-		else if(mgr.isLanguageSupported("glsl"))
-			shaderLanguage = "glsl";
-		else
-			shaderLanguage = "cg";
+		String shaderLanguage = m_pPagedGeom->getShaderLanguage();
 
 		//If the shader hasn't been created yet, create it
 		if (!HighLevelGpuProgramManager::getSingleton().getByName(vertexProgName))
@@ -291,11 +282,6 @@ void BatchPage::_updateShaders()
 			{
 				vertexShader->setParameter("target", "vs_1_1");
 			}
-			else if(shaderLanguage == "cg")
-			{
-				vertexShader->setParameter("profiles", "vs_1_1 arbvp1");
-			}
-			// GLSL can only have one entry point "main".
 
 			vertexShader->load();
 		}

@@ -1141,18 +1141,10 @@ void GrassLayer::_updateShaders()
 				//tmpMat->setReceiveShadows(false);
 
 				//Check if the desired shader already exists (if not, compile it)
-				String shaderLanguage;
+				String shaderLanguage = geom->getShaderLanguage();
 				HighLevelGpuProgramPtr vertexShader = Ogre::static_pointer_cast<HighLevelGpuProgram>(HighLevelGpuProgramManager::getSingleton().getByName(vsName));
 				if (!vertexShader)
 				{
-					HighLevelGpuProgramManager& mgr = HighLevelGpuProgramManager::getSingleton();
-					if (mgr.isLanguageSupported("hlsl"))
-						shaderLanguage = "hlsl";
-					else if(mgr.isLanguageSupported("glsl"))
-						shaderLanguage = "glsl";
-					else
-						shaderLanguage = "cg";
-
 					//Generate the grass shader
 					String vertexProgSource = Root::getSingleton().openFileStream("Grass_vp.glsl")->getAsString();
 
@@ -1176,11 +1168,6 @@ void GrassLayer::_updateShaders()
 					{
 						vertexShader->setParameter("target", "vs_1_1");
 					}
-					else if(shaderLanguage == "cg")
-					{
-						vertexShader->setParameter("profiles", "vs_1_1 arbvp1");
-					}
-					// GLSL can only have one entry point "main".
 
 					vertexShader->load();
 				} else
