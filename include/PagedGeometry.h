@@ -595,6 +595,7 @@ public:
 	bool getShadersEnabled() { return shadersEnabled; }
 
 	const Ogre::String& getShaderLanguage() const { return shaderLanguage; }
+	const char* getFragmentProgramName() const;
 
 	/*
 	\brief Immediately loads visible geometry.

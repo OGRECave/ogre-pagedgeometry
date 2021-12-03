@@ -491,7 +491,7 @@ MaterialPtr StaticBillboardSet::getFadeMaterial(const Ogre::MaterialPtr &protoMa
 
             //Setup vertex program
             pass->setVertexProgram("SpriteFade_vp");
-            pass->setFragmentProgram("Default_AlphaTest");
+            pass->setFragmentProgram(mpSceneMgr->getFogMode() == FOG_NONE ? "Default_AlphaTest_NoFog" : "Default_AlphaTest");
 
             GpuProgramParametersSharedPtr params = pass->getVertexProgramParameters();
 
@@ -532,7 +532,7 @@ MaterialPtr StaticBillboardSet::getFadeMaterial(const Ogre::MaterialPtr &protoMa
 
 //-----------------------------------------------------------------------------
 ///
-void StaticBillboardSet::updateAll(const Vector3 &cameraDirection)
+void StaticBillboardSet::updateAll(const Vector3 &cameraDirection, const char* fragmentProgramName)
 {
    // s_nSelfInstances will only be greater than 0 if one or more StaticBillboardSet's are using BB_METHOD_ACCELERATED
    if (s_nSelfInstances == 0)
@@ -596,7 +596,7 @@ void StaticBillboardSet::updateAll(const Vector3 &cameraDirection)
       {
          static const Ogre::String Sprite_vp = "Sprite_vp";
          p->setVertexProgram(Sprite_vp);
-         p->setFragmentProgram("Default_AlphaTest");
+         p->setFragmentProgram(fragmentProgramName);
 
          GpuProgramParametersSharedPtr params = p->getVertexProgramParameters();
          params->setNamedAutoConstant(uScroll, GpuProgramParameters::ACT_CUSTOM);

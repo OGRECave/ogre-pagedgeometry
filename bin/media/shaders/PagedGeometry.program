@@ -31,3 +31,9 @@ fragment_program Default_AlphaTest glsl glsles hlsl
         param_named_auto fogParams fog_params
     }
 }
+
+fragment_program Default_AlphaTest_NoFog glsl glsles hlsl
+{
+    source Default_fp.glsl
+    preprocessor_defines ALPHA_TEST
+}

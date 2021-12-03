@@ -176,7 +176,7 @@ void WindBatchPage::_updateShaders()
 					//Setup vertex program
 					if (pass->getVertexProgramName() == "")
 						pass->setVertexProgram(vertexProgName);
-					pass->setFragmentProgram("Default_AlphaTest");
+					pass->setFragmentProgram(m_pPagedGeom->getFragmentProgramName());
 
 					try{
 						GpuProgramParametersSharedPtr params = pass->getVertexProgramParameters();

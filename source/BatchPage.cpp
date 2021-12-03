@@ -316,7 +316,7 @@ void BatchPage::_updateShaders()
 					//	pass->setVertexProgram(vertexProgName);
                if (!pass->hasVertexProgram())
                   pass->setVertexProgram(vertexProgName);
-				pass->setFragmentProgram("Default_AlphaTest");
+				pass->setFragmentProgram(m_pPagedGeom->getFragmentProgramName());
 
 					try
                {

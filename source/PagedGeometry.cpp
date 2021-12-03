@@ -260,7 +260,7 @@ void PagedGeometry::update()
 	}
 
 	//Update misc. subsystems
-   StaticBillboardSet::updateAll(_convertToLocal(sceneCam->getDerivedDirection()));
+   StaticBillboardSet::updateAll(_convertToLocal(sceneCam->getDerivedDirection()), getFragmentProgramName());
 }
 
 void PagedGeometry::reloadGeometry()
@@ -382,6 +382,11 @@ void PagedGeometry::_addDetailLevel(GeometryPageManager *mgr, Real maxRange, Rea
 	mgr->setTransition(transitionLength);
 
 	managerList.push_back(mgr);
+}
+
+const char* PagedGeometry::getFragmentProgramName() const
+{
+	return sceneMgr->getFogMode() != FOG_NONE ? "Default_AlphaTest" : "Default_AlphaTest_NoFog";
 }
 
 //-----------------------------------------------------------------------------

@@ -239,7 +239,7 @@ namespace Forests
       manually per frame from your program loop. If updateAll() doesn't get called one way
       or another, your billboards will not be updated to face the camera.
       */
-      static void updateAll(const Ogre::Vector3 &cameraDirection);
+      static void updateAll(const Ogre::Vector3 &cameraDirection, const char* fragmentProgramName);
 
    private:
       ///
