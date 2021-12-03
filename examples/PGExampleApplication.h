@@ -186,6 +186,9 @@ protected:
         {
             (*it)->removeDetailLevels();
         }
+
+        delete mTerrainGroup;
+        delete TerrainGlobalOptions::getSingletonPtr();
     }
 
     virtual void createViewports(void)

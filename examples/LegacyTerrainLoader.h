@@ -14,6 +14,17 @@ same license as the rest of the engine.
 
 #include <OgreTerrainGroup.h>
 
+struct TerrainWorld
+{
+    Ogre::TerrainGroup* terrain = nullptr;
+
+    void unloadTerrain()
+    {
+        delete terrain;
+        delete Ogre::TerrainGlobalOptions::getSingletonPtr();
+    }
+};
+
 inline Ogre::TerrainGroup* loadLegacyTerrain(const Ogre::String& cfgFileName, Ogre::SceneManager* sceneMgr)
 {
     using namespace Ogre;

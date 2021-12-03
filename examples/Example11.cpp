@@ -41,7 +41,6 @@ public:
 	void createScene(void);
 protected:
 	TerrainGlobalOptions* mTerrainGlobals;
-	static TerrainGroup* mTerrainGroup;
 	bool mPaging;
 	TerrainPaging* mTerrainPaging;
 	PageManager* mPageManager;
@@ -63,7 +62,7 @@ protected:
 	MaterialPtr buildDepthShadowMaterial(const String& textureName);
 };
 
-TerrainGroup* PGSampleApp::mTerrainGroup = 0;
+static TerrainGroup* gTerrainGroup = NULL;
 
 // SAMPLE IMPLEMENTATION
 PGSampleApp::PGSampleApp() : ExampleApplication()
@@ -131,6 +130,8 @@ void PGSampleApp::createScene(void)
 	mTerrainGroup = OGRE_NEW TerrainGroup(mSceneMgr, Terrain::ALIGN_X_Z, TERRAIN_SIZE, TERRAIN_WORLD_SIZE);
 	mTerrainGroup->setFilenameConvention(TERRAIN_FILE_PREFIX, TERRAIN_FILE_SUFFIX);
 	mTerrainGroup->setOrigin(mTerrainPos + Vector3(TERRAIN_WORLD_SIZE/2, 0, TERRAIN_WORLD_SIZE/2));
+
+	gTerrainGroup = mTerrainGroup;
 
 	configureTerrainDefaults(l);
 #ifdef PAGING
@@ -415,7 +416,7 @@ void PGSampleApp::initBlendMaps(Terrain* terrain)
 
 float PGSampleApp::getTerrainHeight(const float x, const float z, void *userData)
 {
-	return mTerrainGroup->getHeightAtWorldPosition(x, 1000, z);
+	return gTerrainGroup->getHeightAtWorldPosition(x, 1000, z);
 }
 
 void PGSampleApp::createPGDemo(void)

@@ -44,7 +44,7 @@ using namespace Forests;
 //Demo world class
 //[NOTE] The main PagedGeometry-related sections of this class are load() and
 //render. These functions setup and use PagedGeometry in the scene.
-class World
+class World : public TerrainWorld
 {
 public:
 	World(RenderWindow* win);
@@ -205,7 +205,7 @@ void World::load()
 	sceneMgr->setFog(FOG_LINEAR, viewport->getBackgroundColour(), 0, 100, 700);
 
 	//Load the terrain
-	auto terrain = loadLegacyTerrain("terrain.cfg", sceneMgr);
+	terrain = loadLegacyTerrain("terrain.cfg", sceneMgr);
 
     //Setup the height function (so the Y values of trees can be calculated when they are placed on the terrain)
     HeightFunction::initialize(terrain);
@@ -239,6 +239,8 @@ void World::unload()
 
 	//Delete the PagedGeometry instance
 	delete trees;
+
+	unloadTerrain();
 }
 
 void World::run()
