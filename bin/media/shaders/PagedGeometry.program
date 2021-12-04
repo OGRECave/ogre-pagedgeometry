@@ -24,7 +24,7 @@ vertex_program SpriteFade_vp glsl glsles hlsl
 fragment_program Default_AlphaTest glsl glsles hlsl
 {
     source Default_fp.glsl
-    preprocessor_defines FOG,ALPHA_TEST
+    preprocessor_defines USE_FOG,ALPHA_TEST
     default_params
     {
         param_named_auto fogColour fog_colour

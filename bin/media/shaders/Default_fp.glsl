@@ -17,7 +17,7 @@ MAIN_DECLARATION
         discard;
 #endif
     gl_FragColor *= saturate(oColour);
-#ifdef FOG
+#ifdef USE_FOG
     float fogf = saturate((fogParams.z - abs(oFogCoord)) * fogParams.w);
     gl_FragColor.rgb = mix(fogColour.rgb, gl_FragColor.rgb, fogf);
 #endif
