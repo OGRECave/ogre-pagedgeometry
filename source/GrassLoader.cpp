@@ -236,7 +236,7 @@ Mesh *GrassLoader::generateGrass_QUAD(PageInfo &page, GrassLayer *layer, const f
 
 	//Populate a new vertex buffer with grass
 	HardwareVertexBufferSharedPtr vbuf = HardwareBufferManager::getSingleton()
-		.createVertexBuffer(offset, subMesh->vertexData->vertexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY, false);
+		.createVertexBuffer(offset, subMesh->vertexData->vertexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY, true);
 	float* pReal = static_cast<float*>(vbuf->lock(HardwareBuffer::HBL_DISCARD));
 
 	//Calculate size variance
@@ -326,7 +326,7 @@ Mesh *GrassLoader::generateGrass_QUAD(PageInfo &page, GrassLayer *layer, const f
 	subMesh->indexData->indexStart = 0;
 	subMesh->indexData->indexCount = 6 * quadCount;
 	subMesh->indexData->indexBuffer = HardwareBufferManager::getSingleton()
-		.createIndexBuffer(HardwareIndexBuffer::IT_16BIT, subMesh->indexData->indexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY);
+		.createIndexBuffer(HardwareIndexBuffer::IT_16BIT, subMesh->indexData->indexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY, true);
 	uint16* pI = static_cast<uint16*>(subMesh->indexData->indexBuffer->lock(HardwareBuffer::HBL_DISCARD));
 	for (uint16 i = 0; i < quadCount; ++i)
 	{
@@ -403,7 +403,7 @@ Mesh *GrassLoader::generateGrass_CROSSQUADS(PageInfo &page, GrassLayer *layer, c
 
 	//Populate a new vertex buffer with grass
 	HardwareVertexBufferSharedPtr vbuf = HardwareBufferManager::getSingleton()
-		.createVertexBuffer(offset, subMesh->vertexData->vertexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY, false);
+		.createVertexBuffer(offset, subMesh->vertexData->vertexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY, true);
 	float* pReal = static_cast<float*>(vbuf->lock(HardwareBuffer::HBL_DISCARD));
 
 	//Calculate size variance
@@ -543,7 +543,7 @@ Mesh *GrassLoader::generateGrass_CROSSQUADS(PageInfo &page, GrassLayer *layer, c
 	subMesh->indexData->indexStart = 0;
 	subMesh->indexData->indexCount = 6 * quadCount;
 	subMesh->indexData->indexBuffer = HardwareBufferManager::getSingleton()
-		.createIndexBuffer(HardwareIndexBuffer::IT_16BIT, subMesh->indexData->indexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY);
+		.createIndexBuffer(HardwareIndexBuffer::IT_16BIT, subMesh->indexData->indexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY, true);
 	uint16* pI = static_cast<uint16*>(subMesh->indexData->indexBuffer->lock(HardwareBuffer::HBL_DISCARD));
 	for (uint16 i = 0; i < quadCount; ++i)
 	{
@@ -623,7 +623,7 @@ Mesh *GrassLoader::generateGrass_SPRITE(PageInfo &page, GrassLayer *layer, const
 
 	//Populate a new vertex buffer with grass
 	HardwareVertexBufferSharedPtr vbuf = HardwareBufferManager::getSingleton()
-		.createVertexBuffer(offset, subMesh->vertexData->vertexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY, false);
+		.createVertexBuffer(offset, subMesh->vertexData->vertexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY, true);
 	float* pReal = static_cast<float*>(vbuf->lock(HardwareBuffer::HBL_DISCARD));
 
 	//Calculate size variance
@@ -691,7 +691,7 @@ Mesh *GrassLoader::generateGrass_SPRITE(PageInfo &page, GrassLayer *layer, const
 	subMesh->indexData->indexStart = 0;
 	subMesh->indexData->indexCount = 6 * quadCount;
 	subMesh->indexData->indexBuffer = HardwareBufferManager::getSingleton()
-		.createIndexBuffer(HardwareIndexBuffer::IT_16BIT, subMesh->indexData->indexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY);
+		.createIndexBuffer(HardwareIndexBuffer::IT_16BIT, subMesh->indexData->indexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY, true);
 	uint16* pI = static_cast<uint16*>(subMesh->indexData->indexBuffer->lock(HardwareBuffer::HBL_DISCARD));
 	for (uint16 i = 0; i < quadCount; ++i)
 	{
