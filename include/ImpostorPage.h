@@ -301,38 +301,19 @@ namespace Forests
       }
    };
 
-   //--------------------------------------------------------------------------
-   /// Responsible for making sure that the texture is rerendered when the
-   /// texture resource needs to be reloaded.
-   class ImpostorTextureResourceLoader : public Ogre::ManualResourceLoader
-   {
-   public:
-      /**
-      *    Ctor.
-      * @param renderContext The ImpostorTexture to which this instance belongs.
-      */
-      ImpostorTextureResourceLoader(ImpostorTexture& impostorTexture);
-
-
-      /**
-      *    At load time the texture will be rerendered.
-      * @param resource 
-      */
-      virtual void loadResource (Ogre::Resource *resource);
-   protected:
-      ImpostorTexture& texture;
-   };
-
    //-------------------------------------------------------------------------------------
    //This is used internally by ImpostorPage. An ImpostorTexture is actually multiple
    //images of an entity from various rotations. ImpostorTextures are applied
    //to billboards to create the effect of 3D shapes, when in reality they are simply
    //flat billboards.
-   class ImpostorTexture
+   class ImpostorTexture : public Ogre::ManualResourceLoader
    {
       friend class ImpostorBatch;
       friend class ImpostorTextureResourceLoader;
 
+      /// Responsible for making sure that the texture is rerendered when the
+      /// texture resource needs to be reloaded.
+      void loadResource (Ogre::Resource *resource) override;
    public:
       /** Returns a pointer to an ImpostorTexture for the specified entity. If one does not
       already exist, one will automatically be created.
@@ -375,9 +356,6 @@ namespace Forests
       {
          return prefix + Ogre::StringConverter::toString(++GUID);
       }
-
-      //This will only be used when IMPOSTOR_FILE_SAVE is set to 0
-      std::auto_ptr<ImpostorTextureResourceLoader> loader;
    };
 
 

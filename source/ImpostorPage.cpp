@@ -357,16 +357,10 @@ String ImpostorBatch::generateEntityKey(Entity *entity)
 
 //-------------------------------------------------------------------------------------
 
-
-ImpostorTextureResourceLoader::ImpostorTextureResourceLoader(ImpostorTexture& impostorTexture)
-: texture(impostorTexture)
-{
-}
-
-void ImpostorTextureResourceLoader::loadResource (Ogre::Resource *resource)
+void ImpostorTexture::loadResource (Ogre::Resource *resource)
 {
 	if (resource->getLoadingState() == Ogre::Resource::LOADSTATE_UNLOADED) {
-		texture.regenerate();
+		regenerate();
 	}
 }
 
@@ -378,8 +372,7 @@ unsigned long ImpostorTexture::GUID = 0;
 
 //Do not use this constructor yourself - instead, call getTexture()
 //to get/create an ImpostorTexture for an Entity.
-ImpostorTexture::ImpostorTexture(ImpostorPage *group, Entity *entity) :
-loader(0)
+ImpostorTexture::ImpostorTexture(ImpostorPage *group, Entity *entity)
 {
 	//Store scene manager and entity
    ImpostorTexture::sceneMgr = group->getParentPagedGeometry()->getSceneManager();
@@ -481,12 +474,13 @@ void ImpostorTexture::regenerateAll()
 
 void ImpostorTexture::renderTextures(bool force)
 {
+	Ogre::ManualResourceLoader* loader = 0;
 #ifdef IMPOSTOR_FILE_SAVE
 	TexturePtr renderTexture;
 #else
 	TexturePtr renderTexture(texture);
 	//if we're not using a file image we need to set up a resource loader, so that the texture is regenerated if it's ever unloaded (such as switching between fullscreen and the desktop in win32)
-	loader = std::auto_ptr<ImpostorTextureResourceLoader>(new ImpostorTextureResourceLoader(*this));
+	loader = this;
 #endif
 	RenderTexture *renderTarget;
 	Camera *renderCamera;
@@ -498,7 +492,7 @@ void ImpostorTexture::renderTextures(bool force)
 	if (!renderTexture)
    {
 	renderTexture = TextureManager::getSingleton().createManual(getUniqueID("ImpostorTexture"), "Impostors",
-				TEX_TYPE_2D, textureSize * IMPOSTOR_YAW_ANGLES, textureSize * IMPOSTOR_PITCH_ANGLES, 0, PF_BYTE_RGBA, TU_RENDERTARGET, loader.get());
+				TEX_TYPE_2D, textureSize * IMPOSTOR_YAW_ANGLES, textureSize * IMPOSTOR_PITCH_ANGLES, 0, PF_BYTE_RGBA, TU_RENDERTARGET, loader);
 	}
 	renderTexture->setNumMipmaps(MIP_UNLIMITED);
 	
