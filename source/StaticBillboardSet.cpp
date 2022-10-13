@@ -386,9 +386,8 @@ void StaticBillboardSet::setMaterial(const String &materialName, const Ogre::Str
    }
    else  // old GPU compatibility
    {
-      mPtrMaterial = Ogre::static_pointer_cast<Material>(MaterialManager::getSingleton().getByName(materialName, resourceGroup));
-      mpFallbackBillboardSet->setMaterialName(mPtrMaterial->getName(), mPtrMaterial->getGroup());
-      // SVA. Since Ogre 1.7.3 Ogre::BillboardSet have setMaterial(const MaterialPtr&) method
+      mPtrMaterial = MaterialManager::getSingleton().getByName(materialName, resourceGroup);
+      mpFallbackBillboardSet->setMaterial(mPtrMaterial);
    }
 }
 
@@ -516,7 +515,7 @@ MaterialPtr StaticBillboardSet::getFadeMaterial(const Ogre::MaterialPtr &protoMa
 
             pass->setSceneBlending(SBT_TRANSPARENT_ALPHA);
             //pass->setAlphaRejectFunction(CMPF_ALWAYS_PASS);
-            //pass->setDepthWriteEnabled(false);
+            pass->setDepthWriteEnabled(false);
 
          }  // for Pass
 
