@@ -59,7 +59,6 @@ protected:
 	void getTerrainImage(bool flipX, bool flipY, Image& img);
 	void initBlendMaps(Terrain* terrain);
 	void configureShadows(bool enabled, bool depthShadows);
-	MaterialPtr buildDepthShadowMaterial(const String& textureName);
 };
 
 static TerrainGroup* gTerrainGroup = NULL;
@@ -258,21 +257,14 @@ void PGSampleApp::configureShadows(bool enabled, bool depthShadows)
 		if (depthShadows)
 		{
 			mSceneMgr->setShadowTextureCount(3);
-			mSceneMgr->setShadowTextureConfig(0, 2048, 2048, PF_FLOAT32_R);
-			mSceneMgr->setShadowTextureConfig(1, 1024, 1024, PF_FLOAT32_R);
-			mSceneMgr->setShadowTextureConfig(2, 1024, 1024, PF_FLOAT32_R);
+			mSceneMgr->setShadowTextureConfig(0, 2048, 2048, PF_DEPTH16);
+			mSceneMgr->setShadowTextureConfig(1, 1024, 1024, PF_DEPTH16);
+			mSceneMgr->setShadowTextureConfig(2, 1024, 1024, PF_DEPTH16);
 			mSceneMgr->setShadowTextureSelfShadow(true);
 			mSceneMgr->setShadowCasterRenderBackFaces(true);
 
 			MaterialPtr casterMat = MaterialManager::getSingleton().getByName("PSSM/shadow_caster");
 			mSceneMgr->setShadowTextureCasterMaterial(casterMat);
-
-			MaterialPtr houseMat = buildDepthShadowMaterial("fw12b.jpg");
-			for (EntityList::iterator i = mHouseList.begin(); i != mHouseList.end(); ++i)
-			{
-				(*i)->setMaterial(houseMat);
-			}
-
 		}
 		else
 		{
@@ -298,33 +290,6 @@ void PGSampleApp::configureShadows(bool enabled, bool depthShadows)
 	}
 
 
-}
-
-MaterialPtr PGSampleApp::buildDepthShadowMaterial(const String& textureName)
-{
-	String matName = "DepthShadows/" + textureName;
-
-	MaterialPtr ret = MaterialManager::getSingleton().getByName(matName).staticCast<Material>();
-	if (ret.isNull())
-	{
-		MaterialPtr baseMat = MaterialManager::getSingleton().getByName("Ogre/shadow/depth/integrated/pssm").staticCast<Material>();
-		ret = baseMat->clone(matName);
-		Pass* p = ret->getTechnique(0)->getPass(0);
-		p->getTextureUnitState("diffuse")->setTextureName(textureName);
-
-		Vector4 splitPoints;
-		const PSSMShadowCameraSetup::SplitPointList& splitPointList = 
-			static_cast<PSSMShadowCameraSetup*>(mPSSMSetup.get())->getSplitPoints();
-		for (int i = 0; i < 3; ++i)
-		{
-			splitPoints[i] = splitPointList[i];
-		}
-		p->getFragmentProgramParameters()->setNamedConstant("pssmSplitPoints", splitPoints);
-
-
-	}
-
-	return ret;
 }
 
 void  PGSampleApp::defineTerrain(long x, long y, bool flat)
