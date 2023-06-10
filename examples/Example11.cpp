@@ -277,7 +277,6 @@ void PGSampleApp::configureShadows(bool enabled, bool depthShadows)
 			mSceneMgr->setShadowTextureCasterMaterial(MaterialPtr());
 		}
 
-		matProfile->setReceiveDynamicShadowsDepth(depthShadows);
 		matProfile->setReceiveDynamicShadowsPSSM(static_cast<PSSMShadowCameraSetup*>(mPSSMSetup.get()));
 
 		//addTextureShadowDebugOverlay(TL_RIGHT, 3);

@@ -1,6 +1,7 @@
+#define USE_OGRE_FROM_FUTURE
 #include <OgreUnifiedShader.h>
 
-uniform SAMPLER2D(texMap, 0);
+SAMPLER2D(texMap, 0);
 
 uniform vec4 fogColour;
 uniform vec4 fogParams;
