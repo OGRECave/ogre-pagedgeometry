@@ -16,7 +16,6 @@ Permission is granted to anyone to use this software for any purpose, including 
 
 #include <OgreRoot.h>
 #include <OgreCamera.h>
-#include <OgreVector3.h>
 #include <OgreMeshManager.h>
 #include <OgreMesh.h>
 #include <OgreSubMesh.h>

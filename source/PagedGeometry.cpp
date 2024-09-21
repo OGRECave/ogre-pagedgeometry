@@ -15,7 +15,6 @@ Permission is granted to anyone to use this software for any purpose, including 
 #include <OgreRoot.h>
 #include <OgreTimer.h>
 #include <OgreCamera.h>
-#include <OgreVector3.h>
 #include <OgreHighLevelGpuProgramManager.h>
 
 #include "PagedGeometry.h"

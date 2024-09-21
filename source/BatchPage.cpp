@@ -14,7 +14,6 @@ Permission is granted to anyone to use this software for any purpose, including 
 
 #include <OgreRoot.h>
 #include <OgreCamera.h>
-#include <OgreVector3.h>
 #include <OgreQuaternion.h>
 #include <OgreEntity.h>
 #include <OgreRenderSystem.h>
@@ -252,6 +251,8 @@ void BatchPage::_updateShaders()
             case VET_FLOAT2: uvType = "2"; break;
             case VET_FLOAT3: uvType = "3"; break;
             case VET_FLOAT4: uvType = "4"; break;
+			default:
+				OGRE_EXCEPT(Exception::ERR_INTERNAL_ERROR, "Unsupported texture coordinate type");
             }
             tmpName << uvType << '_';
 			}

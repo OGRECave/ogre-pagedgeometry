@@ -16,7 +16,6 @@ Permission is granted to anyone to use this software for any purpose, including 
 #include <OgreRoot.h>
 #include <OgreRenderSystem.h>
 #include <OgreCamera.h>
-#include <OgreVector3.h>
 #include <OgreQuaternion.h>
 #include <OgreSceneNode.h>
 #include <OgreString.h>
@@ -203,14 +202,10 @@ void BatchedGeometry::extractVertexDataFromShared(const Ogre::MeshPtr &mesh)
 	if (!mesh || !mesh->sharedVertexData)
 		return;
 
-   Mesh::SubMeshIterator subMeshIterator = mesh->getSubMeshIterator();
-
    // Get shared vertex data
    VertexData *oldVertexData = mesh->sharedVertexData;
 
-   while (subMeshIterator.hasMoreElements()) {
-      SubMesh *subMesh = subMeshIterator.getNext();
-
+   for (SubMesh *subMesh : mesh->getSubMeshes()) {
       // Get index data
       IndexData *indexData = subMesh->indexData;
       HardwareIndexBufferSharedPtr ib = indexData->indexBuffer;
