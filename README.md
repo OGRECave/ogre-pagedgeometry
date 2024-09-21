@@ -16,7 +16,9 @@ Graphics Engine</a>, which provides highly optimized methods for rendering massi
 of small meshes covering a possibly infinite area. This is especially well suited for dense
 forests and outdoor scenes, with millions of trees, bushes, grass, rocks, etc., etc.
 
-![](docs/PagedGeometryScreen1.jpg) Expansive jungle scene with 240,000 trees and animated vegetation
+![](docs/PagedGeometryScreen1.jpg)
+
+Expansive jungle scene with 240,000 trees and animated vegetation
 
 Paged geometry gives you many advantages over plain entities, the main one being speed:
 With proper usage of detail levels, outdoor scenes managed by PagedGeometry can
