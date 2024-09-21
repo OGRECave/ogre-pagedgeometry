@@ -1170,7 +1170,7 @@ SKIP_FUNCTION_MACROS   = YES
 # is run, you must also specify the path to the tagfile here.
 
 ## Local note: This depends on path to a modified ogre (which generates doxygen tags).
-TAGFILES               = ${OGRE_CONFIG_DIR}/docs/api/Ogre.tag=https://ogrecave.github.io/ogre/api/1.10/
+TAGFILES               = ${OGRE_CONFIG_DIR}/docs/api/Ogre.tag=https://ogrecave.github.io/ogre/api/latest/
 
 # When a file name is specified after GENERATE_TAGFILE, doxygen will create 
 # a tag file that is based on the input files it reads.
