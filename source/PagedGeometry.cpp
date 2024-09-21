@@ -74,7 +74,7 @@ m_nRenderQueue(queue)
 	auto& mgr = HighLevelGpuProgramManager::getSingleton();
 	for(auto lang : {"glsl", "hlsl", "glsles"})
 	{
-		if(mgr.isSyntaxSupported(lang))
+		if(mgr.isLanguageSupported(lang))
 		{
 			shaderLanguage = lang;
 			break;
