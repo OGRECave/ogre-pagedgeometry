@@ -1485,7 +1485,7 @@ template <class PageType> inline GeometryPageManager* PagedGeometry::addDetailLe
 	GeometryPageManager *mgr = new GeometryPageManager(this);
 
 	//If vertex shaders aren't supported, don't use transitions
-	Ogre::Root *root = root->getSingletonPtr();	//Work-around for Linux compiler bug
+	Ogre::Root *root = Ogre::Root::getSingletonPtr();
 	if (!root->getRenderSystem()->getCapabilities()->hasCapability(Ogre::RSC_VERTEX_PROGRAM))
 		transitionLength = 0;
 
