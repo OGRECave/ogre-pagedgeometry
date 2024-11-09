@@ -239,7 +239,7 @@ void PGSampleApp::configureShadows(bool enabled, bool depthShadows)
 		// 3 textures per directional light (PSSM)
 		mSceneMgr->setShadowTextureCountPerLightType(Ogre::Light::LT_DIRECTIONAL, 3);
 
-		if (mPSSMSetup.isNull())
+		if (!mPSSMSetup)
 		{
 			// shadow camera setup
 			PSSMShadowCameraSetup* pssmSetup = new PSSMShadowCameraSetup();
@@ -249,7 +249,7 @@ void PGSampleApp::configureShadows(bool enabled, bool depthShadows)
 			pssmSetup->setOptimalAdjustFactor(1, 1);
 			pssmSetup->setOptimalAdjustFactor(2, 0.5);
 
-			mPSSMSetup.bind(pssmSetup);
+			mPSSMSetup.reset(pssmSetup);
 
 		}
 		mSceneMgr->setShadowCameraSetup(mPSSMSetup);
