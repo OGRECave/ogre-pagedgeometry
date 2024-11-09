@@ -160,7 +160,7 @@ namespace Forests
       Ogre::Real getBoundingRadius(void) const                 { return m_fRadius; }
 
    private:
-      bool isVisible();
+      bool isVisible() const;
       const Ogre::String& getMovableType(void) const;
       void visitRenderables(Ogre::Renderable::Visitor* visitor, bool debugRenderables) { /* empty */ }     
       void _notifyCurrentCamera(Ogre::Camera *cam);

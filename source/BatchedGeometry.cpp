@@ -396,7 +396,7 @@ void BatchedGeometry::_updateRenderQueue(RenderQueue *queue)
 
 //-----------------------------------------------------------------------------
 ///
-bool BatchedGeometry::isVisible()
+bool BatchedGeometry::isVisible() const
 {
    return mVisible && m_bWithinFarDistance;
 }
