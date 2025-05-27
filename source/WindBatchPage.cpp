@@ -12,6 +12,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 //WindBatchPage is an extension to PagedGeometry which displays entities as static geometry but that is affected by wind.
 //-------------------------------------------------------------------------------------
 
+#include <sstream>
 #include <OgreRoot.h>
 #include <OgreCamera.h>
 #include <OgreQuaternion.h>

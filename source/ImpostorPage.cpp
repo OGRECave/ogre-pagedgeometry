@@ -13,6 +13,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 //ImposterPage is an extension to PagedGeometry which displays entities as imposters.
 //-------------------------------------------------------------------------------------
 
+#include <sstream>
 #include <OgreRoot.h>
 #include <OgreTimer.h>
 #include <OgreCamera.h>
