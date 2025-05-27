@@ -73,7 +73,7 @@ set(PAGEDGEOMETRY_ALTERNATE_COORDSYSTEM "FALSE" CACHE BOOL "alternate coordinate
 set(PAGEDGEOMETRY_USER_DATA "FALSE" CACHE BOOL "ability to attach user data to entities")
 
 # configuration of the config.h
-CONFIGURE_FILE("${CMAKE_SOURCE_DIR}/include/PagedGeometryConfig.h.in" "${CMAKE_BINARY_DIR}/include/PagedGeometryConfig.h")
+CONFIGURE_FILE("${PROJECT_SOURCE_DIR}/include/PagedGeometryConfig.h.in" "${PROJECT_BINARY_DIR}/include/PagedGeometryConfig.h")
 
 # some additional compiler flags
 if (NOT WIN32)
@@ -115,7 +115,7 @@ find_package(Doxygen)
 if (DOXYGEN_FOUND)
     message("found doxygen, generating documentation")
     # prepare doxygen configuration file
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile.in ${CMAKE_BINARY_DIR}/Doxyfile)
+    configure_file(${PROJECT_SOURCE_DIR}/docs/Doxyfile.in ${PROJECT_BINARY_DIR}/Doxyfile)
 
     add_custom_target(
             doc_doxygen
@@ -134,27 +134,27 @@ if (DOXYGEN_FOUND)
 endif (DOXYGEN_FOUND)
 
 # other doc files
-set(DOC_FILES Contributors.txt zlib.txt README.md Todo.txt)
+set(DOC_FILES Contributors.txt LICENSE.txt README.md Todo.txt)
 install(FILES ${DOC_FILES} DESTINATION TYPE DOC)
 
 # install the PkgConfig file
-configure_file("${CMAKE_SOURCE_DIR}/PagedGeometry.pc.in" "${CMAKE_BINARY_DIR}/PagedGeometry.pc" @ONLY)
-install(FILES "${CMAKE_BINARY_DIR}/PagedGeometry.pc" DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+configure_file("${PROJECT_SOURCE_DIR}/PagedGeometry.pc.in" "${PROJECT_BINARY_DIR}/PagedGeometry.pc" @ONLY)
+install(FILES "${PROJECT_BINARY_DIR}/PagedGeometry.pc" DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
 
 configure_package_config_file(
         PagedGeometryConfig.cmake.in
-        ${CMAKE_BINARY_DIR}/PagedGeometryConfig.cmake
+	${PROJECT_BINARY_DIR}/PagedGeometryConfig.cmake
         INSTALL_DESTINATION ${CMAKEFILES_INSTALL_DIR}
 )
 
 write_basic_package_version_file(
-        ${CMAKE_BINARY_DIR}/PagedGeometryConfigVersion.cmake
+	${PROJECT_BINARY_DIR}/PagedGeometryConfigVersion.cmake
         VERSION "${CMAKE_PROJECT_VERSION}"
         COMPATIBILITY SameMajorVersion
 )
 
 install(
-        FILES ${CMAKE_BINARY_DIR}/PagedGeometryConfig.cmake
-        ${CMAKE_BINARY_DIR}/PagedGeometryConfigVersion.cmake
+	FILES ${PROJECT_BINARY_DIR}/PagedGeometryConfig.cmake
+	${PROJECT_BINARY_DIR}/PagedGeometryConfigVersion.cmake
         DESTINATION ${CMAKEFILES_INSTALL_DIR}
 )
