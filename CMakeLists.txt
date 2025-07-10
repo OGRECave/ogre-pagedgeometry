@@ -101,6 +101,18 @@ ENDIF ()
 
 # --- Ogre 3D graphics engine ---
 find_package(OGRE REQUIRED CONFIG)
+if (OGRE_STATIC)
+find_package(ZLIB)
+find_package(SDL2)
+find_package(assimp CONFIG)
+find_package(pugixml CONFIG)
+
+add_library(fix::assimp INTERFACE IMPORTED)
+set_target_properties(fix::assimp PROPERTIES
+       INTERFACE_LINK_LIBRARIES "${ASSIMP_LIBRARIES};pugixml"
+       INTERFACE_LINK_DIRECTORIES "${ASSIMP_LIBRARY_DIRS}"
+)
+endif()
 
 # now add the directories
 add_subdirectory(source)
