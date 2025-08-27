@@ -521,7 +521,8 @@ WARN_LOGFILE           =
 # directories like "/usr/src/myproject". Separate the files or directories 
 # with spaces.
 
-INPUT                  = "${PagedGeometry_SOURCE_DIR}/source/" \
+INPUT                  = "${CMAKE_SOURCE_DIR}/BuildingPagedGeom.md" \
+                         "${PagedGeometry_SOURCE_DIR}/source/" \
                          "${PagedGeometry_SOURCE_DIR}/include/" \
                          "${PagedGeometry_BINARY_DIR}/include/" \
                          "${CMAKE_SOURCE_DIR}/docs/" \
