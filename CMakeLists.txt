@@ -6,7 +6,7 @@
 ######################################################################
 # cmake system for PagedGeometry updated on 2-9-2021 by Edgar{at}AnotherFoxGuy{DOT}com
 
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.5)
 
 # define the project
 project(
