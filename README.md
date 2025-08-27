@@ -42,6 +42,8 @@ scaled game area.
 
 # Getting Started
 
+Your first stop is going to be @ref building-pageom.
+
 When you're ready to start learning how to use PagedGeometry, the best place to start is
 with @ref tut1. The tutorials will teach you how to use many
 important PagedGeometry features, step by step. This API reference isn't recommended

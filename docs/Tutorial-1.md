@@ -19,30 +19,16 @@ See also
 -   Example 1 - “TreeLoader3D”
 
 
-# Compiling PagedGeometry
+# Setting up a PagedGeometry project
 
-The first thing you should do after extracting PagedGeometry somewhere
-is compile it. By default, the PagedGeometry library files
-(PagedGeometry.lib, and PagedGeometry\_d.lib) are not included in the
-download, so you'll have to compile them yourself. Fortunately, this is
-fairly easy to do, since PagedGeometry doesn't require any external
-libraries besides Ogre. First, double-click on “PagedGeometry.sln” to
-open up the PagedGeometry library project in Visual Studio. Then find
-the “Solution Explorer” window right-click on “Solution 'PagedGeometry'
-(1 project)”, and select “Batch Build”. Click “Select All”, then
-“Build”, and wait until PagedGeometry has finished compiling (the status
-bar at the bottom of the screen should say “Build succeeded” when
-finished).
+Refer to @ref building-pageom for instructions how to compile the
+source code into a static library (PagedGeometry.lib on Windows).
 
 Next, you need to instruct your compiler that your project will be using
 PagedGeometry. Simply add PagedGeometry.lib in the “/lib” folder to your
 linker inputs, and make sure all the PagedGeometry header files are
 available to your compiler. If you're not sure how to do this, refer to
 the included examples.
-
-As an alternate to the lib method described above, you can simply add
-all of PagedGeometry's .cpp files (found in the “/source” folder) to
-your project. Sometimes this is just as easy as the lib method.
 
 Note: This tutorial assumes you already have Ogre up and running in your
 application, or at least have a basic understanding of what a Camera or
