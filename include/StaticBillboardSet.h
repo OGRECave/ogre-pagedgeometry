@@ -32,35 +32,23 @@ Permission is granted to anyone to use this software for any purpose, including 
 
 namespace Forests
 {
-
-   class SBMaterialRef;
-   typedef std::map<Ogre::Material*, SBMaterialRef*> SBMaterialRefList;
-
-   /** Different methods used to render billboards. This can be supplied as a parameter
-   to the StaticBillboardSet constructor to manually select how you want billboards
-   rendered (although in almost all cases BB_METHOD_ACCELERATED is the best choice).*/
+   /** Different methods used to render billboards.
+   \deprecated Billboards are always kept facing the camera by a vertex shader now. The value is ignored. */
    enum BillboardMethod
    {
-      /** This mode accelerates the performance of billboards by using vertex shaders
-      to keep billboards facing the camera. Note: If the computer's hardware is not
-      capable	of vertex shaders, it will automatically fall back to BB_METHOD_COMPATIBLE
-      mode.*/
+      /// Use vertex shaders to keep billboards facing the camera
       BB_METHOD_ACCELERATED = 1,
-
-      /** Unlike BB_METHOD_ACCELERATED, this does not use vertex shaders to align
-      billboards to the camera. This is more compatible with old video cards,
-      although it can result in poor performance with high amounts of billboards.*/
+      /// \deprecated same as BB_METHOD_ACCELERATED
       BB_METHOD_COMPATIBLE = 0
    };
-
 
    //--------------------------------------------------------------------------
    /// A faster alternative to Ogre's built-in BillboardSet class.
    ///
    /// This class provides a method of displaying billboards faster than Ogre's built-in
    /// BillboardSet functions by taking advantage of the static nature of tree billboards.
-   /// However, if your video card does not support vertex shaders, using this class over
-   /// Ogre's built-in Billboard class will have no performance benefit.
+   /// All billboards are stored in a single static vertex buffer and a vertex shader
+   /// keeps them facing the camera, so there is no per frame CPU work.
    ///
    /// @note StaticBillboardSet does not allow billboards to be moved or deleted individually in real-time
    class StaticBillboardSet
@@ -79,10 +67,8 @@ namespace Forests
             color = clr.getAsBYTE();
          }
 
-
          // SVA mem friendly aligment
          float xPos, yPos, zPos;
-         //float xScale, yScale;
          float xScaleHalf, yScaleHalf;
          Ogre::uint32 color;
          Ogre::uint16 texcoordIndexU, texcoordIndexV;
@@ -92,9 +78,8 @@ namespace Forests
       /**
       \brief Initializes a StaticBillboardSet object.
       \param mgr The SceneManager to be used to display the billboards.
-      \param method The method used when rendering billboards. See the BillboardMethod
-      documentation for more information. In almost all cases, this should be set to
-      BB_METHOD_ACCELERATED for optimal speed and efficiency.
+      \param rootSceneNode The scene node the billboards will be attached to.
+      \param method Ignored. See BillboardMethod.
       */
       StaticBillboardSet(Ogre::SceneManager *mgr, Ogre::SceneNode *rootSceneNode, BillboardMethod method = BB_METHOD_ACCELERATED);
       ~StaticBillboardSet();
@@ -104,43 +89,20 @@ namespace Forests
       \param position The desired position of the billboard.
       \param xScale The width scale of the billboard.
       \param yScale The height scale of the billboard.
-      \param texcoordIndex The texture tile this billboard will use. This value shoud be 
-      0..n, where n is the number of slices set with setTextureSlices()
+      \param color The color of the billboard.
+      \param texcoordIndexU The horizontal texture tile this billboard will use.
+      \param texcoordIndexV The vertical texture tile this billboard will use.
 
-      The texcoordIndex option is only applicable if you have used setTextureSlices()
-      to divide the applied material into a number of horizontal segments. texcoordIndex selects
-      which segment is applied to the billboard as a texture.
+      The texcoordIndex options are only applicable if you have used setTextureStacksAndSlices()
+      to divide the applied material into a grid of images. They select which image of the grid
+      is applied to the billboard.
 
       \note Any billboards created will not appear in the scene until you call build()
       */
       void createBillboard(const Ogre::Vector3 &position, float xScale = 1.0f, float yScale = 1.0f,
          const Ogre::ColourValue &color = Ogre::ColourValue::White, Ogre::uint16 texcoordIndexU = 0, Ogre::uint16 texcoordIndexV = 0)
       {
-         if (mRenderMethod == BB_METHOD_ACCELERATED)
-         {
-            mBillboardBuffer.push_back(new StaticBillboard(position, xScale, yScale, color, texcoordIndexU, texcoordIndexV));
-
-            //mBillboardBuffer.push_back(bb);
-
-            ////bb->position = position;
-            //bb->xPos = (float)position.x;
-            //bb->yPos = (float)position.y;
-            //bb->zPos = (float)position.z;
-            //bb->xScaleHalf = xScale * 0.5f;
-            //bb->yScaleHalf = yScale * 0.5f;
-
-            //bb->texcoordIndexU = texcoordIndexU;
-            //bb->texcoordIndexV = texcoordIndexV;
-
-            //bb->color = color;
-         }
-         else
-         {
-            Ogre::Billboard *bb = mpFallbackBillboardSet->createBillboard(position, color);
-            bb->setDimensions(xScale, yScale);
-            bb->setTexcoordRect(texcoordIndexU * mfUFactor, texcoordIndexV * mfVFactor,
-               (texcoordIndexU + 1) * mfUFactor, (texcoordIndexV + 1) * mfVFactor);
-         }
+         mBillboardBuffer.push_back(StaticBillboard(position, xScale, yScale, color, texcoordIndexU, texcoordIndexV));
       }
 
       /**
@@ -151,6 +113,8 @@ namespace Forests
       pivot around the center and positioning a billboard will place it's center at the desired
       location. Other origins, like BBO_BOTTOM_CENTER are good for trees, etc. BBO_CENTER is
       used by default.
+
+      \note The origin only applies to billboards built afterwards, see build()
       */
       void setBillboardOrigin(Ogre::BillboardOrigin origin);
 
@@ -158,10 +122,8 @@ namespace Forests
       /// This returns the current billboard origin as set by setBillboardOrigin().
       Ogre::BillboardOrigin getBillboardOrigin() const   { return mBBOrigin; }
 
-      /// Returns the method used to render billboards.
-      /// The billboard render method is set in the constructor. See the BillboardMethod enum
-      /// documentation for more information on billboard render methods.
-      BillboardMethod getRenderMethod() const            { return mRenderMethod; }
+      /// \deprecated always returns BB_METHOD_ACCELERATED
+      BillboardMethod getRenderMethod() const            { return BB_METHOD_ACCELERATED; }
 
       ///Sets whether or not this StaticBillboardSet will be rendered.
       /// \param visible The desired visibility state of the StaticBillboardSet (true/false)
@@ -191,8 +153,6 @@ namespace Forests
 
       \note invisibleDist may be greater than or less than visibleDist, depending on
       whether the geometry is fading out or in to the distance.
-
-      \note setFade() only works in BB_MODE_ACCELERATED mode.
       */
       void setFade(bool enabled, Ogre::Real visibleDist, Ogre::Real invisibleDist);
 
@@ -208,9 +168,10 @@ namespace Forests
       /**
       \brief Applies a material to the billboards in this set.
       \param materialName The name of the material to apply to this StaticBillboardSet.
+      \param resourceGroup The resource group of the material.
 
-      This may actually modify the material to include a vertex shader (which
-      is used to keep the billboards facing the camera).
+      Passes without a vertex program get the billboard vertex shader assigned (which
+      is used to keep the billboards facing the camera), so the material may be modified.
       */
       void setMaterial(const Ogre::String &materialName, const Ogre::String &resourceGroup =
          Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME);
@@ -228,31 +189,22 @@ namespace Forests
       */
       void setTextureStacksAndSlices(Ogre::uint16 stacks, Ogre::uint16 slices);
 
-      /**
-      \brief Manually updates all StaticBillboardSet objects for a frame.
-
-      \note If you are using root->startRendering() or root->renderOneFrame() to update
-      your scene, there is no need to use this function at all. Doing so would be redundant
-      and ineffient, as it will be called	automatically in this case.
-
-      However, if you	update all your render targets yourself, you will have to call this
-      manually per frame from your program loop. If updateAll() doesn't get called one way
-      or another, your billboards will not be updated to face the camera.
-      */
-      static void updateAll(const Ogre::Vector3 &cameraDirection, const char* fragmentProgramName);
+      /// \deprecated billboards are kept facing the camera by the vertex shader alone, so this does nothing
+      static void updateAll(const Ogre::Vector3 &cameraDirection, const char* fragmentProgramName) {}
 
    private:
+      /// Assigns the billboard vertex shader to all passes without a vertex program
+      void prepareMaterial(const Ogre::MaterialPtr &material);
       ///
       Ogre::MaterialPtr getFadeMaterial(const Ogre::MaterialPtr &protoMaterial, Ogre::Real visibleDist, Ogre::Real invisibleDist);
+      ///
+      void destroyEntity();
 
    private:
-
-      typedef std::vector < StaticBillboard* >  TBillBuf;
+      typedef std::vector<StaticBillboard> TBillBuf;
 
       bool                    mVisible;                  ///<
       bool                    mFadeEnabled;              ///<
-      BillboardMethod         mRenderMethod;             ///<
-
       Ogre::SceneManager*     mpSceneMgr;                ///<
       Ogre::SceneNode*        mpSceneNode;               ///<
       Ogre::Entity*           mpEntity;                  ///<
@@ -261,55 +213,19 @@ namespace Forests
       Ogre::MaterialPtr       mPtrMaterial;              ///<
       Ogre::MaterialPtr       mPtrFadeMaterial;          ///<
       float                   mfUFactor, mfVFactor;      ///<
-
-      Ogre::BillboardSet*     mpFallbackBillboardSet;    ///<
       Ogre::BillboardOrigin   mBBOrigin;                 ///<
       Ogre::Real              mFadeVisibleDist;          ///<
       Ogre::Real              mFadeInvisibleDist;        ///<
       TBillBuf                mBillboardBuffer;          ///<
 
-
       // static data
    private:
-
       typedef std::map<Ogre::String, Ogre::MaterialPtr> FadedMaterialMap;
 
-      //static bool             s_shadersGenerated;        ///< First instance generate shaders for billboard rendering
       static unsigned int     s_nSelfInstances;          ///< Instances counter
-      static FadedMaterialMap s_mapFadedMaterial;        ///< 
-
-      //static Ogre::uint32 selfInstances;
+      static FadedMaterialMap s_mapFadedMaterial;        ///<
       static unsigned long GUID;
       static Ogre::String getUniqueID(const Ogre::String &prefix) { return prefix + Ogre::StringConverter::toString(++GUID); }
-   };
-
-
-
-   //-------------------------------------------------------------------------------------
-
-   //SBMaterialRef::addMaterialRef() and ::removeMaterialRef() are used to keep track
-   //of all the materials in use by the billboard system. This is necessary when keeping
-   //the materials' vertex shaders up-to-date. To get the list of all materials in use,
-   //use getList().
-   class SBMaterialRef
-   {
-   public:
-      static void addMaterialRef(const Ogre::MaterialPtr &matP, Ogre::BillboardOrigin o);
-      static void removeMaterialRef(const Ogre::MaterialPtr &matP);
-
-      inline static SBMaterialRefList &getList() { return selfList; }
-
-      inline Ogre::Material *getMaterial() { return material; }
-      inline Ogre::BillboardOrigin getOrigin() { return origin; }
-
-   private:
-      SBMaterialRef(Ogre::Material *mat, Ogre::BillboardOrigin o);
-
-      static SBMaterialRefList selfList;
-
-      Ogre::uint32 refCount;
-      Ogre::Material *material;
-      Ogre::BillboardOrigin origin;
    };
 }
 
