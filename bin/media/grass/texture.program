@@ -1,0 +1,4 @@
+fragment_program Ogre/BasicFragmentPrograms/DiffuseOneTextureGLSL glsl
+{
+    source DiffuseOneTexture.glsl
+}
