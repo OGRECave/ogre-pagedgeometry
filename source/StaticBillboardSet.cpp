@@ -465,8 +465,9 @@ MaterialPtr StaticBillboardSet::getFadeMaterial(const Ogre::MaterialPtr &protoMa
 {
    assert(protoMaterial);
 
+   // Note: the signature must not contain anything specific to this set, so all sets can share the material
    Ogre::StringStream materialSignature;
-   materialSignature << mEntityName << "|";
+   materialSignature << protoMaterial->getName() << "|";
    materialSignature << visibleDist_ << "|";
    materialSignature << invisibleDist_ << "|";
    materialSignature << protoMaterial->getTechnique(0)->getPass(0)->getTextureUnitState(0)->getTextureUScroll() << "|";
