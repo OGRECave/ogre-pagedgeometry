@@ -38,3 +38,26 @@ fragment_program Default_AlphaTest_NoFog glsl glsles hlsl
     source Default_fp.glsl
     preprocessor_defines ALPHA_TEST
 }
+
+// Impostors: camera alignment and selection of the atlas image matching the view angle
+vertex_program SpriteImpostor_vp glsl glsles hlsl
+{
+    source Sprite_vp.glsl
+    preprocessor_defines IMPOSTOR
+    default_params
+    {
+        param_named_auto worldViewProj worldviewproj_matrix
+        param_named_auto camPos camera_position_object_space
+    }
+}
+
+vertex_program SpriteImpostorFade_vp glsl glsles hlsl
+{
+    source Sprite_vp.glsl
+    preprocessor_defines IMPOSTOR,FADE
+    default_params
+    {
+        param_named_auto worldViewProj worldviewproj_matrix
+        param_named_auto camPos camera_position_object_space
+    }
+}

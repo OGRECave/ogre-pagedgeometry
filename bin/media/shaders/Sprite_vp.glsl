@@ -1,11 +1,18 @@
 #include <OgreUnifiedShader.h>
 
+#ifdef OGRE_HLSL
+#define atan atan2
+#endif
+
 uniform mat4 worldViewProj;
 uniform vec3 camPos;
 uniform vec2 uvScroll;
 #ifdef FADE
 uniform float fadeGap;
 uniform float invisibleDist;
+#endif
+#ifdef IMPOSTOR
+uniform vec4 impostorParams;   // x: yaw angles, y: pitch angles, z: min pitch, w: pitch angles per radian
 #endif
 
 MAIN_PARAMETERS
@@ -38,6 +45,18 @@ MAIN_DECLARATION
 
     //UV scroll
     oUV = vec4(uv0.zw + uvScroll, 0.0, 0.0);
+
+#ifdef IMPOSTOR
+    //Select the atlas image rendered from the direction closest to the camera.
+    //The texcoords point to the image of yaw 0 (already offset by the impostor rotation),
+    //the texture wraps around horizontally.
+    vec3 toCam = camPos - vec3(pivot.x, pivot.y + vertex.w, pivot.z);
+    float yaw = atan(toCam.x, toCam.z);
+    float pitch = atan(toCam.y, length(toCam.xz));
+    float yawIndex = floor(yaw * impostorParams.x / 6.2831853 + 0.5);
+    float pitchIndex = clamp(floor((pitch - impostorParams.z) * impostorParams.w), 0.0, impostorParams.y - 1.0);
+    oUV.xy += vec2(yawIndex / impostorParams.x, pitchIndex / impostorParams.y);
+#endif
 
     //Fog
     oFogCoord = gl_Position.z;
