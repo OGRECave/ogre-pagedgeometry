@@ -1004,6 +1004,7 @@ private:
 	//These values and functions are used by the GeometryPageManager internally.
 	Ogre::Vector3 _centerPoint;		//The central point of this page (used to visibility calculation)
 	int _xIndex, _zIndex;			//The absolute grid position of this page
+	int _slot;						//Index of this page in GeometryPageManager::pageLoaded
 	unsigned long _inactiveTime;	//How long this page has been inactive (used to calculate expired pages)
 	bool _visible;		//Flag indicating if page is visible
 	bool _fadeEnable;	//Flag indicating if page fading is enabled
@@ -1448,7 +1449,19 @@ private:
 		#endif
 
 		geomGrid[z * geomGridX + x] = page;
+		geomGridSlot[z * geomGridX + x] = page->_slot;
 	}
+
+	//Keeps pageLoaded up to date. Must be called whenever _loaded of a page changes
+	inline void _updateLoaded(GeometryPage *page)
+	{
+		pageLoaded[page->_slot] = page->_loaded;
+	}
+
+	//Whether the page is loaded, by page slot. Kept separately from the pages, so update() can scan
+	//the grid for pages to load without touching every page (which is slow due to cache misses).
+	std::vector<Ogre::uint8> pageLoaded;
+	std::vector<int> geomGridSlot;	//The page slot of each grid cell
 
 	//Utility functions for loading/unloading geometry pages (see source for detailed descriptions)
 	void _loadPage(GeometryPage *page);
@@ -1527,6 +1540,8 @@ template <class PageType> inline void GeometryPageManager::initPages(const TBoun
 
 	//Allocate grid array
 	geomGrid = new GeometryPage *[geomGridX * geomGridZ];
+	geomGridSlot.resize(geomGridX * geomGridZ);
+	pageLoaded.assign(geomGridX * geomGridZ, 0);
 
 	int xioffset = Ogre::Math::Floor(gridBounds.left / mainGeom->getPageSize());
 	int zioffset = Ogre::Math::Floor(gridBounds.top / mainGeom->getPageSize());
@@ -1542,6 +1557,7 @@ template <class PageType> inline void GeometryPageManager::initPages(const TBoun
 			page->_centerPoint.y = 0.0f;
 			page->_xIndex = x + xioffset;
 			page->_zIndex = z + zioffset;
+			page->_slot = z * geomGridX + x;
 			page->_inactiveTime = 0;
 			page->_loaded = false;
 			page->_needsUnload = false;
