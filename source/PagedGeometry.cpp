@@ -257,9 +257,6 @@ void PagedGeometry::update()
 			prevMgr = mgr;
 		}
 	}
-
-	//Update misc. subsystems
-   StaticBillboardSet::updateAll(_convertToLocal(sceneCam->getDerivedDirection()), getFragmentProgramName());
 }
 
 void PagedGeometry::reloadGeometry()

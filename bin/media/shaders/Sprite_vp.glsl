@@ -1,21 +1,18 @@
 #include <OgreUnifiedShader.h>
 
 uniform mat4 worldViewProj;
+uniform vec3 camPos;
+uniform vec2 uvScroll;
 #ifdef FADE
-uniform vec3  camPos;
 uniform float fadeGap;
 uniform float invisibleDist;
 #endif
-uniform float uScroll;
-uniform float vScroll;
-uniform vec4  preRotatedQuad[4];
 
 MAIN_PARAMETERS
 
-IN(vec4 vertex, POSITION)
-IN(vec4 normal, NORMAL)
+IN(vec4 vertex, POSITION)   // xyz: pivot, w: height of the billboard center above the pivot
+IN(vec4 uv0, TEXCOORD0)     // xy: corner offset along right/up, zw: texcoords
 IN(vec4 colour, COLOR)
-IN(vec4 uv0, TEXCOORD0)
 
 OUT(vec4 oUV, TEXCOORD0)
 OUT(vec4 oColour, COLOR)
@@ -23,26 +20,25 @@ OUT(float oFogCoord, FOG)
 
 MAIN_DECLARATION
 {
-    //Face the camera
-	vec4 vCenter = vec4( vertex.x, vertex.y, vertex.z, 1.0 );
-	vec4 vScale = vec4( normal.x, normal.y, normal.x , 1.0 );
-	gl_Position = mul(worldViewProj, vCenter + (preRotatedQuad[int(normal.z)] * vScale) );
+    //Face the camera, but stay upright
+    vec3 pivot = vertex.xyz;
+    vec3 dir = normalize(pivot - camPos);
+    vec3 right = vec3(-dir.z, 0.0, dir.x) * inversesqrt(max(dir.x * dir.x + dir.z * dir.z, 1e-6));
+    vec3 up = cross(right, dir);
+    gl_Position = mul(worldViewProj, vec4(pivot + right * uv0.x + up * uv0.y, 1.0));
 
-	//Color
-	oColour = colour;
+    //Color
+    oColour = colour;
 
     //Fade out in the distance
 #ifdef FADE
-	vec4 position = vertex;
-	float dist = distance(camPos.xz, position.xz);
-	oColour.w = (invisibleDist - dist) / fadeGap;
+    float dist = distance(camPos.xz, pivot.xz);
+    oColour.w = (invisibleDist - dist) / fadeGap;
 #endif
 
     //UV scroll
-	oUV = uv0;
-	oUV.x += uScroll;
-	oUV.y += vScroll;
+    oUV = vec4(uv0.zw + uvScroll, 0.0, 0.0);
 
     //Fog
-	oFogCoord = gl_Position.z;
+    oFogCoord = gl_Position.z;
 }
