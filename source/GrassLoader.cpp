@@ -1097,9 +1097,8 @@ void GrassLayer::_updateShaders()
 	if (shaderNeedsUpdate){
 		shaderNeedsUpdate = false;
 
-		//Proceed only if there is no custom vertex shader and the user's computer supports vertex shaders
-		const RenderSystemCapabilities *caps = Root::getSingleton().getRenderSystem()->getCapabilities();
-		if (caps->hasCapability(RSC_VERTEX_PROGRAM) && geom->getShadersEnabled())
+		//Proceed only if there is no custom vertex shader
+		if (geom->getShadersEnabled())
 		{
 			//Calculate fade range
 			float farViewDist = (float)geom->getDetailLevels().front()->getFarRange();

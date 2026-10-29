@@ -70,15 +70,7 @@ void BatchPage::init(PagedGeometry *geom_, const Any &data)
    m_nLODLevel    = datacast;
 	m_bFadeEnabled = false;
 
-	if (!m_pPagedGeom->getShadersEnabled())
-		m_bShadersSupported = false;     // shaders disabled by config
-   else
-	{
-		// determine if shaders available
-		const RenderSystemCapabilities *caps = Root::getSingleton().getRenderSystem()->getCapabilities();
-      // For example, GeForce4MX has vertex shadres 1.1 and no pixel shaders
-      m_bShadersSupported = caps->hasCapability(RSC_VERTEX_PROGRAM) ? true : false;
-	}
+	m_bShadersSupported = m_pPagedGeom->getShadersEnabled();
 
 	++s_nRefCount;
 }
@@ -128,24 +120,6 @@ void BatchPage::build()
 	while (it.hasMoreElements())
    {
 		BatchedGeometry::SubBatch *subBatch = it.getNext();
-		const MaterialPtr &ptrMat = subBatch->getMaterial();
-
-		//Disable specular unless a custom shader is being used.
-		//This is done because the default shader applied by BatchPage
-		//doesn't support specular, and fixed-function needs to look
-		//the same as the shader (for computers with no shader support)
-		for (unsigned short t = 0, tCnt = ptrMat->getNumTechniques(); t < tCnt; ++t)
-      {
-			Technique *tech = ptrMat->getTechnique(t);
-			for (unsigned short p = 0, pCnt = tech->getNumPasses(); p < pCnt; ++p)
-         {
-				Pass *pass = tech->getPass(p);
-				//if (pass->getVertexProgramName() == "")
-				//	pass->setSpecular(0, 0, 0, 1);
-            if (!pass->hasVertexProgram())
-               pass->setSpecular(0.f, 0.f, 0.f, 1.f);
-			}
-		}
 
 		//Store the original materials
 		m_vecUnfadedMaterials.push_back(subBatch->getMaterial());

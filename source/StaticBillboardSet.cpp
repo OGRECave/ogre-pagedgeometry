@@ -66,14 +66,6 @@ mFadeInvisibleDist      (0.f)
 {
    assert(rootSceneNode);
 
-   //Fall back to BB_METHOD_COMPATIBLE if vertex shaders are not available
-   if (method == BB_METHOD_ACCELERATED)
-   {
-      const RenderSystemCapabilities *caps = Root::getSingleton().getRenderSystem()->getCapabilities();
-      if (!caps->hasCapability(RSC_VERTEX_PROGRAM))
-         mRenderMethod = BB_METHOD_COMPATIBLE;
-   }
-
    mpSceneNode = rootSceneNode->createChildSceneNode();
    mEntityName = getUniqueID("SBSentity");
 

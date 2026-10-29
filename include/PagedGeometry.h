@@ -1484,11 +1484,6 @@ template <class PageType> inline GeometryPageManager* PagedGeometry::addDetailLe
 	//Create a new page manager
 	GeometryPageManager *mgr = new GeometryPageManager(this);
 
-	//If vertex shaders aren't supported, don't use transitions
-	Ogre::Root *root = Ogre::Root::getSingletonPtr();
-	if (!root->getRenderSystem()->getCapabilities()->hasCapability(Ogre::RSC_VERTEX_PROGRAM))
-		transitionLength = 0;
-
 	//Add it to the list (also initializing maximum viewing distance)
 	_addDetailLevel(mgr, maxRange, transitionLength);
 
