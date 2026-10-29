@@ -196,42 +196,6 @@ void ImpostorPage::removeEntities()
 }
 
 
-//-----------------------------------------------------------------------------
-///
-void ImpostorPage::update()
-{
-   if (m_mapImpostorBatches.empty())  // SVA speed up
-      return;
-
-	//Calculate the direction the impostor batches should be facing
-	Vector3 camPos = m_pPagedGeom->_convertToLocal(m_pPagedGeom->getCamera()->getDerivedPosition());
-	
-	// Update all batches
-   Ogre::Real distX = camPos.x - m_vecCenter.x;
-	Ogre::Real distZ = camPos.z - m_vecCenter.z;
-	Ogre::Real distY = camPos.y - m_vecCenter.y;
-	Ogre::Real distRelZ = Math::Sqrt(distX * distX + distZ * distZ);
-	Radian pitch = Math::ATan2(distY, distRelZ);
-
-	Radian yaw;
-	if (distRelZ > m_pPagedGeom->getPageSize() * 3)
-   {
-		yaw = Math::ATan2(distX, distZ);
-	}
-   else
-   {
-		Vector3 dir = m_pPagedGeom->_convertToLocal(m_pPagedGeom->getCamera()->getDerivedDirection());
-		yaw = Math::ATan2(-dir.x, -dir.z);
-	}
-
-   TImpostorBatchs::iterator iter = m_mapImpostorBatches.begin(), iend = m_mapImpostorBatches.end();
-   while (iter != iend)
-   {
-      iter->second->setAngle(pitch.valueDegrees(), yaw.valueDegrees());
-      ++iter;
-   }
-}
-
 void ImpostorPage::regenerate(Entity *ent)
 {
 	ImpostorTexture *tex = ImpostorTexture::getTexture(NULL, ent);
@@ -261,11 +225,7 @@ m_pTexture  (NULL)
 	bbset->setTextureStacksAndSlices(IMPOSTOR_PITCH_ANGLES, IMPOSTOR_YAW_ANGLES);
 
 	setBillboardOrigin(ImpostorPage::getImpostorPivot());
-
-	//Default the angle to 0 degrees
-	pitchIndex = -1;
-	yawIndex = -1;
-	setAngle(0.0f, 0.0f);
+	bbset->setMaterial(m_pTexture->material->getName(), m_pTexture->material->getGroup());
 
 	//Init. variables
 	igroup = group;
@@ -294,40 +254,6 @@ ImpostorBatch *ImpostorBatch::getBatch(ImpostorPage *group, Entity *entity)
    batch = new ImpostorBatch(group, entity);
    group->injectImpostorBatch(entityKey, batch);   // warning! function can return false
    return batch;
-}
-
-//Rotates all the impostors to the specified angle (virtually - it actually changes
-//their materials to produce this same effect)
-void ImpostorBatch::setAngle(Ogre::Real pitchDeg, Ogre::Real yawDeg)
-{
-	// Calculate pitch material index
-	int newPitchIndex = 0;
-#ifdef IMPOSTOR_RENDER_ABOVE_ONLY
-	if (pitchDeg > 0)
-   {
-		float maxPitchIndexDeg = (90.0f * (IMPOSTOR_PITCH_ANGLES-1)) / IMPOSTOR_PITCH_ANGLES;
-		newPitchIndex = (int)(IMPOSTOR_PITCH_ANGLES * (pitchDeg / maxPitchIndexDeg));
-		if (newPitchIndex > IMPOSTOR_PITCH_ANGLES-1) newPitchIndex = IMPOSTOR_PITCH_ANGLES-1;
-	}
-#else
-	float minPitchIndexDeg = -90.0f;
-	float maxPitchIndexDeg = ((180.0f * (IMPOSTOR_PITCH_ANGLES-1)) / IMPOSTOR_PITCH_ANGLES) - 90.0f;
-	newPitchIndex = (int)(IMPOSTOR_PITCH_ANGLES * ((pitchDeg - minPitchIndexDeg) / (maxPitchIndexDeg - minPitchIndexDeg)));
-	if (newPitchIndex > IMPOSTOR_PITCH_ANGLES-1) newPitchIndex = IMPOSTOR_PITCH_ANGLES-1;
-	if (newPitchIndex < 0) newPitchIndex = 0;
-#endif
-	
-	// Calculate yaw material index
-   int newYawIndex = yawDeg > 0 ? int(IMPOSTOR_YAW_ANGLES * (yawDeg / 360.0f) + 0.5f) % IMPOSTOR_YAW_ANGLES :
-      int(IMPOSTOR_YAW_ANGLES + IMPOSTOR_YAW_ANGLES * (yawDeg / 360.0f) + 0.5f) % IMPOSTOR_YAW_ANGLES;
-	
-	// Change materials if necessary
-	if (newPitchIndex != pitchIndex || newYawIndex != yawIndex)
-   {
-		pitchIndex = newPitchIndex;
-		yawIndex = newYawIndex;
-		bbset->setMaterial(m_pTexture->material[pitchIndex][yawIndex]->getName());
-	}
 }
 
 void ImpostorBatch::setBillboardOrigin(BillboardOrigin origin)
@@ -394,45 +320,38 @@ ImpostorTexture::ImpostorTexture(ImpostorPage *group, Entity *entity)
 	//Render impostor textures
 	renderTextures(false);
 	
-	//Set up materials
-	for (int o = 0; o < IMPOSTOR_YAW_ANGLES; ++o){
-	for (int i = 0; i < IMPOSTOR_PITCH_ANGLES; ++i){
-		material[i][o] = MaterialManager::getSingleton().create(getUniqueID("ImpostorMaterial"), "Impostors");
+	//Set up the material
+	material = MaterialManager::getSingleton().create(getUniqueID("ImpostorMaterial"), "Impostors");
 
-		Material *m = material[i][o].get();
-		Pass *p = m->getTechnique(0)->getPass(0);
-		
-		TextureUnitState *t = p->createTextureUnitState(texture->getName());
-		
-		t->setTextureUScroll((float)o / IMPOSTOR_YAW_ANGLES);
-		t->setTextureVScroll((float)i / IMPOSTOR_PITCH_ANGLES);
+	Pass *p = material->getTechnique(0)->getPass(0);
+	p->createTextureUnitState(texture->getName());
+	p->setLightingEnabled(false);
+	material->setReceiveShadows(false);
 
-		p->setLightingEnabled(false);
-		m->setReceiveShadows(false);
-		
-		if (group->getBlendMode() == ALPHA_REJECT_IMPOSTOR){
-			p->setAlphaRejectSettings(CMPF_GREATER_EQUAL, 128);
-			//p->setAlphaRejectSettings(CMPF_GREATER_EQUAL, 64);
-		} else if (group->getBlendMode() == ALPHA_BLEND_IMPOSTOR){
-			p->setSceneBlending(SBF_SOURCE_ALPHA, SBF_ONE_MINUS_SOURCE_ALPHA);
-			p->setDepthWriteEnabled(false);  
-		}
+	if (group->getBlendMode() == ALPHA_REJECT_IMPOSTOR){
+		p->setAlphaRejectSettings(CMPF_GREATER_EQUAL, 128);
+	} else if (group->getBlendMode() == ALPHA_BLEND_IMPOSTOR){
+		p->setSceneBlending(SBF_SOURCE_ALPHA, SBF_ONE_MINUS_SOURCE_ALPHA);
+		p->setDepthWriteEnabled(false);
 	}
-	}
+
+	//The vertex shader picks the atlas image per impostor, matching the angles used in renderTextures()
+	p->setVertexProgram("SpriteImpostor_vp");
+	p->setFragmentProgram(group->getParentPagedGeometry()->getFragmentProgramName());
+#ifdef IMPOSTOR_RENDER_ABOVE_ONLY
+	const Real minPitch = 0;
+	const Real maxPitch = Math::HALF_PI * (IMPOSTOR_PITCH_ANGLES - 1) / IMPOSTOR_PITCH_ANGLES;
+#else
+	const Real minPitch = -Math::HALF_PI;
+	const Real maxPitch = Math::PI * (IMPOSTOR_PITCH_ANGLES - 1) / IMPOSTOR_PITCH_ANGLES - Math::HALF_PI;
+#endif
+	p->getVertexProgramParameters()->setNamedConstant("impostorParams",
+		Vector4(IMPOSTOR_YAW_ANGLES, IMPOSTOR_PITCH_ANGLES, minPitch, IMPOSTOR_PITCH_ANGLES / (maxPitch - minPitch)));
 }
 
 void ImpostorTexture::updateMaterials()
 {
-	for (int o = 0; o < IMPOSTOR_YAW_ANGLES; ++o){
-		for (int i = 0; i < IMPOSTOR_PITCH_ANGLES; ++i){
-			Material *m = material[i][o].get();
-			Pass *p = m->getTechnique(0)->getPass(0);
-
-			TextureUnitState *t = p->getTextureUnitState(0);
-
-			t->setTextureName(texture->getName());
-		}
-	}
+	material->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(texture->getName());
 }
 
 ImpostorTexture::~ImpostorTexture()
@@ -442,14 +361,10 @@ ImpostorTexture::~ImpostorTexture()
 		TextureManager::getSingleton().remove(texture);
 	texture.reset();
 
-	//Delete materials
-	for (int o = 0; o < IMPOSTOR_YAW_ANGLES; ++o){
-	for (int i = 0; i < IMPOSTOR_PITCH_ANGLES; ++i){
-		if (MaterialManager::getSingletonPtr())
-			MaterialManager::getSingleton().remove(material[i][o]);
-        material[i][o].reset();
-	}
-	}
+	//Delete material
+	if (MaterialManager::getSingletonPtr())
+		MaterialManager::getSingleton().remove(material);
+	material.reset();
 	
 	//Remove self from list of ImpostorTexture's
 	selfList.erase(entityKey);

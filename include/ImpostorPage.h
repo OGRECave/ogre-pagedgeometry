@@ -99,7 +99,6 @@ namespace Forests
       void removeEntities();
       void setVisible(bool visible);
       void setFade(bool enabled, Ogre::Real visibleDist, Ogre::Real invisibleDist);
-      void update();
 
       PagedGeometry* getParentPagedGeometry() const   { return m_pPagedGeom; }
       void setBlendMode(ImpostorBlendMode blendMode)  { m_blendMode = blendMode; }
@@ -277,8 +276,6 @@ namespace Forests
       ///
       void addBillboard(const Ogre::Vector3 &position, const Ogre::Quaternion &rotation,
          const Ogre::Vector3 &scale, const Ogre::ColourValue &color = Ogre::ColourValue::White);
-      ///
-      void setAngle(Ogre::Real pitchDeg, Ogre::Real yawDeg);
 
       static Ogre::String generateEntityKey(Ogre::Entity *entity);
 
@@ -291,8 +288,6 @@ namespace Forests
       Ogre::Vector3 entityBBCenter;
 
       ImpostorPage *igroup;
-
-      Ogre::uint16 pitchIndex, yawIndex;
 
       static unsigned long GUID;
       static inline Ogre::String getUniqueID(const Ogre::String &prefix)
@@ -343,7 +338,8 @@ namespace Forests
       Ogre::String entityKey;
       ImpostorPage *group;
 
-      Ogre::MaterialPtr material[IMPOSTOR_PITCH_ANGLES][IMPOSTOR_YAW_ANGLES];
+      /// The vertex shader selects the atlas image matching the view direction of each impostor
+      Ogre::MaterialPtr material;
       Ogre::TexturePtr texture;
 
       Ogre::ResourceHandle sourceMesh;
