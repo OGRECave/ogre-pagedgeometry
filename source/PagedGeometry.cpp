@@ -498,45 +498,37 @@ void GeometryPageManager::update(unsigned long deltaTime, Vector3 &camPos, Vecto
 	//Now, in that general area, find what pages are within the cacheDist radius
 	//Pages within the cacheDist radius will be added to the pending block list
 	//to be loaded later, and pages within farDist will be loaded immediately.
-	for (int x = x1; x <= x2; ++x){
-		for (int z = z1; z <= z2; ++z){
-			GeometryPage *blk = _getGridPage(x, z);
-			
-			Real dx = camPos.x - blk->_centerPoint.x;
-			Real dz = camPos.z - blk->_centerPoint.z;
-			Real distSq = dx * dx + dz * dz;
-			
-			//If the page is in the cache radius...
-			if (distSq <= cacheDistSq){
-				//If the block hasn't been loaded yet, it should be
-				if (blk->_loaded == false){
-					//Test if the block's distance is between nearDist and farDist
-					if (distSq >= nearDistSq && distSq < farTransDistSq){
-						//If so, load the geometry immediately
-						_loadPage(blk);
-						loadedList.push_back(blk);
-						blk->_iter = (--loadedList.end());
+	//Note: this only needs to look at pages which are not loaded yet. The page centers are computed
+	//from the grid position, so loaded pages are not touched at all.
+	const Real pageSize = mainGeom->getPageSize();
+	for (int z = z1; z <= z2; ++z){
+		Real dz = camPos.z - (gridBounds.top + (z + 0.5f) * pageSize);
+		Real dzSq = dz * dz;
+		if (dzSq > cacheDistSq)
+			continue;
 
-						//And remove it from the pending list if necessary
-						if (blk->_pending){
-							pendingList.remove(blk);
-							blk->_pending = false;
-						}
-					} else {
-						//Otherwise, add it to the pending geometry list (if not already)
-						//Pages in then pending list will be loaded later (see below)
-						if (!blk->_pending){
-							pendingList.push_back(blk);
-							blk->_pending = true;
-						}
-					}
-				} else {
-					//Set the inactive time to 0 (since the page is active). This
-					//must be done in order to keep it from expiring (and deleted).
-					//This way, blocks not in the cache radius won't have their
-					//inactivity clock reset, and they will expire in a few seconds.
-					blk->_inactiveTime = 0;
-				}
+		for (int x = x1; x <= x2; ++x){
+			Real dx = camPos.x - (gridBounds.left + (x + 0.5f) * pageSize);
+			Real distSq = dx * dx + dzSq;
+
+			//If the page is in the cache radius and hasn't been loaded yet, it should be
+			const int cell = z * geomGridX + x;
+			if (distSq > cacheDistSq || pageLoaded[geomGridSlot[cell]])
+				continue;
+
+			GeometryPage *blk = geomGrid[cell];
+
+			//Test if the block's distance is between nearDist and farDist
+			if (distSq >= nearDistSq && distSq < farTransDistSq){
+				//If so, load the geometry immediately (this also removes it from the pending list)
+				_loadPage(blk);
+				loadedList.push_back(blk);
+				blk->_iter = (--loadedList.end());
+			} else if (!blk->_pending){
+				//Otherwise, add it to the pending geometry list (if not already)
+				//Pages in then pending list will be loaded later (see below)
+				pendingList.push_back(blk);
+				blk->_pending = true;
 			}
 		}
 	}
@@ -609,7 +601,17 @@ void GeometryPageManager::update(unsigned long deltaTime, Vector3 &camPos, Vecto
 	while (i1 != i2)
 	{
 		GeometryPage *blk = *i1;
-		
+
+		Real dx = camPos.x - blk->_centerPoint.x;
+		Real dz = camPos.z - blk->_centerPoint.z;
+		Real distSq = dx * dx + dz * dz;
+
+		//Set the inactive time to 0 if the page is within the cache radius (since the page is active).
+		//This must be done in order to keep it from expiring (and deleted). This way, blocks not in
+		//the cache radius won't have their inactivity clock reset, and they will expire in a few seconds.
+		if (distSq <= cacheDistSq)
+			blk->_inactiveTime = 0;
+
 		//If the geometry has expired...
 		if (blk->_inactiveTime >= inactivePageLife){
 			if (!blk->_keepLoaded) {
@@ -624,9 +626,6 @@ void GeometryPageManager::update(unsigned long deltaTime, Vector3 &camPos, Vecto
 		} else {
 			//Update it's visibility/fade status based on it's distance from the camera
 			bool visible = false;
-			Real dx = camPos.x - blk->_centerPoint.x;
-			Real dz = camPos.z - blk->_centerPoint.z;
-			Real distSq = dx * dx + dz * dz;
 
 			Real overlap = 0, tmp;
 
@@ -827,11 +826,6 @@ void GeometryPageManager::preloadGeometry(const TBounds & area)
 				loadedList.push_back(page);
 				page->_iter = (--loadedList.end());
 
-				//And remove it from the pending list if necessary
-				if (page->_pending){
-					pendingList.remove(page);
-					page->_pending = false;
-				}
 			}
 
 			//Flag the page so it won't expire and be deleted in a few seconds if
@@ -894,6 +888,13 @@ void GeometryPageManager::_loadPage(GeometryPage *page)
 	page->_inactiveTime = 0;
 	page->_loaded = true;
 	page->_fadeEnable = false;
+
+	//And remove it from the pending list if necessary
+	if (page->_pending){
+		pendingList.remove(page);
+		page->_pending = false;
+	}
+	_updateLoaded(page);
 }
 
 //Unloads the given page of geometry immediately
@@ -924,6 +925,7 @@ void GeometryPageManager::_unloadPage(GeometryPage *page)
 	page->_inactiveTime = 0;
 	page->_loaded = false;
 	page->_fadeEnable = false;
+	_updateLoaded(page);
 }
 
 //"Virtually" unloads the given page of geometry. In reality it is unloaded during the next load.
@@ -932,6 +934,7 @@ void GeometryPageManager::_unloadPageDelayed(GeometryPage *page)
 {
 	page->_needsUnload = true;
 	page->_loaded = false;
+	_updateLoaded(page);
 }
 
 
