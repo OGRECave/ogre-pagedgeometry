@@ -939,9 +939,8 @@ void BatchedGeometry::SubBatch::addSelfToRenderQueue(RenderQueueGroup *rqg)
    if (!m_Built)
       return;
 
-   //Update material technique based on camera distance
-   m_pBestTechnique = m_ptrMaterial->getBestTechnique(m_ptrMaterial->getLodIndex(
-      m_pParentGeom->m_fMinDistanceSquared * m_pParentGeom->m_fMinDistanceSquared));
+   //Update material technique based on camera distance (the distance LOD strategy expects squared values)
+   m_pBestTechnique = m_ptrMaterial->getBestTechnique(m_ptrMaterial->getLodIndex(m_pParentGeom->m_fMinDistanceSquared));
    rqg->addRenderable(this, m_pBestTechnique, OGRE_RENDERABLE_DEFAULT_PRIORITY);
 }
 
