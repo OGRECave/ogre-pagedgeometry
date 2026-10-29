@@ -177,7 +177,7 @@ void WindBatchPage::_updateShaders()
 					//Setup vertex program
 					if (pass->getVertexProgramName() == "")
 						pass->setVertexProgram(vertexProgName);
-					pass->setFragmentProgram(m_pPagedGeom->getFragmentProgramName());
+					pass->setFragmentProgram(m_pPagedGeom->getFragmentProgramName(pass, m_bFadeEnabled));
 
 					try{
 						GpuProgramParametersSharedPtr params = pass->getVertexProgramParameters();
@@ -203,8 +203,9 @@ void WindBatchPage::_updateShaders()
 							params->setNamedAutoConstant("fadeGap", GpuProgramParameters::ACT_CUSTOM);
 							params->setNamedConstant("fadeGap", m_fInvisibleDist - m_fVisibleDist);
 
-							if (pass->getAlphaRejectFunction() == CMPF_ALWAYS_PASS)
-								pass->setSceneBlending(SBT_TRANSPARENT_ALPHA);
+							//Complement the dither pattern of the detail level fading out
+							pass->getFragmentProgramParameters()->setNamedConstant("ditherInvert",
+								m_fInvisibleDist < m_fVisibleDist ? 1.f : 0.f);
 						}
 					}
 					catch (const Ogre::Exception &e)

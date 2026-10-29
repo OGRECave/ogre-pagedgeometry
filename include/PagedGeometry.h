@@ -595,7 +595,10 @@ public:
 	bool getShadersEnabled() { return shadersEnabled; }
 
 	const Ogre::String& getShaderLanguage() const { return shaderLanguage; }
+	/// The PagedGeometry pixel shader with alpha test (and dithered fading)
 	const char* getFragmentProgramName() const;
+	/// The PagedGeometry pixel shader for the given pass. The alpha test is skipped for opaque, non fading passes
+	const char* getFragmentProgramName(const Ogre::Pass *pass, bool fading) const;
 
 	/*
 	\brief Immediately loads visible geometry.

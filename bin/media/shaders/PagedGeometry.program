@@ -61,3 +61,20 @@ vertex_program SpriteImpostorFade_vp glsl glsles hlsl
         param_named_auto camPos camera_position_object_space
     }
 }
+
+// Pixel shader without alpha test, for opaque geometry (keeps early depth testing)
+fragment_program Default glsl glsles hlsl
+{
+    source Default_fp.glsl
+    preprocessor_defines USE_FOG
+    default_params
+    {
+        param_named_auto fogColour fog_colour
+        param_named_auto fogParams fog_params
+    }
+}
+
+fragment_program Default_NoFog glsl glsles hlsl
+{
+    source Default_fp.glsl
+}
