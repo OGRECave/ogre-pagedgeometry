@@ -93,8 +93,9 @@ void WindBatchPage::_updateShaders()
 		}
 
 		//Compile the shader script based on various material / fade options
+		//(the names must differ from BatchPage, which uses the same shader without ANIMATE)
 		Ogre::StringStream tmpName;
-		tmpName << "BatchPage_";
+		tmpName << "WindBatchPage_";
 		if (m_bFadeEnabled)
 			tmpName << "fade_";
 		if (lightingEnabled)
@@ -154,7 +155,7 @@ void WindBatchPage::_updateShaders()
 
 		//Now that the shader is ready to be applied, apply it
 		Ogre::StringStream materialSignature;
-		materialSignature << "BatchMat|";
+		materialSignature << "WindBatchMat|";
 		materialSignature << ptrMat->getName() << "|";
 		if (m_bFadeEnabled)
       {
