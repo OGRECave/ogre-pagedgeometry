@@ -52,9 +52,7 @@ void WindBatchPage::init(PagedGeometry *geom, const Any &data)
 	m_nLODLevel    = datacast; 
 	m_pPagedGeom   = geom;
 	m_bFadeEnabled = false;
-
-	const RenderSystemCapabilities *caps = Root::getSingleton().getRenderSystem()->getCapabilities();
-   m_bShadersSupported = caps->hasCapability(RSC_VERTEX_PROGRAM) ? true : false;    // <-- DELETE THIS
+   m_bShadersSupported = geom->getShadersEnabled();
 
    ++s_nRefCount;
 }
