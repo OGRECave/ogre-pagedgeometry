@@ -158,13 +158,7 @@ void BatchPage::setFade(bool enabled, Real visibleDist, Real invisibleDist)
 	{
 		m_bFadeEnabled = enabled;
 
- 		if (enabled)
-			//Transparent batches should render after impostors
-         m_pBatchGeom->setRenderQueueGroup(m_pPagedGeom ? m_pPagedGeom->getRenderQueue() : RENDER_QUEUE_6);
-      else
-         //Opaque batches should render in the normal render queue
-         m_pBatchGeom->setRenderQueueGroup(RENDER_QUEUE_MAIN);
-
+		//Note: fading uses dithering, so the batches stay opaque and in the normal render queue
 		m_fVisibleDist    = visibleDist;
 		m_fInvisibleDist  = invisibleDist;
 		_updateShaders();
@@ -291,7 +285,7 @@ void BatchPage::_updateShaders()
 					//	pass->setVertexProgram(vertexProgName);
                if (!pass->hasVertexProgram())
                   pass->setVertexProgram(vertexProgName);
-				pass->setFragmentProgram(m_pPagedGeom->getFragmentProgramName());
+				pass->setFragmentProgram(m_pPagedGeom->getFragmentProgramName(pass, m_bFadeEnabled));
 
 					try
                {
@@ -318,8 +312,9 @@ void BatchPage::_updateShaders()
 							params->setNamedAutoConstant("fadeGap", GpuProgramParameters::ACT_CUSTOM);
 							params->setNamedConstant("fadeGap", m_fInvisibleDist - m_fVisibleDist);
 
-							if (pass->getAlphaRejectFunction() == CMPF_ALWAYS_PASS)
-								pass->setSceneBlending(SBT_TRANSPARENT_ALPHA);
+							//Complement the dither pattern of the detail level fading out
+							pass->getFragmentProgramParameters()->setNamedConstant("ditherInvert",
+								m_fInvisibleDist < m_fVisibleDist ? 1.f : 0.f);
 						}
 					}
 					catch (...)

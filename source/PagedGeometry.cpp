@@ -385,6 +385,15 @@ const char* PagedGeometry::getFragmentProgramName() const
 	return sceneMgr->getFogMode() != FOG_NONE ? "Default_AlphaTest" : "Default_AlphaTest_NoFog";
 }
 
+const char* PagedGeometry::getFragmentProgramName(const Pass *pass, bool fading) const
+{
+	if (fading || pass->getAlphaRejectFunction() != CMPF_ALWAYS_PASS || pass->isTransparent())
+		return getFragmentProgramName();
+
+	//Without discard, the GPU can reject hidden fragments before shading them
+	return sceneMgr->getFogMode() != FOG_NONE ? "Default" : "Default_NoFog";
+}
+
 //-----------------------------------------------------------------------------
 ///
 void PagedGeometry::setCustomParam(const Ogre::String &entity, const Ogre::String &paramName, float paramValue)

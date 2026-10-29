@@ -368,8 +368,8 @@ MaterialPtr StaticBillboardSet::getFadeMaterial(const Ogre::MaterialPtr &protoMa
          params->setNamedConstant("invisibleDist", invisibleDist_);
          params->setNamedConstant("fadeGap", invisibleDist_ - visibleDist_);
 
-         pass->setSceneBlending(SBT_TRANSPARENT_ALPHA);
-         pass->setDepthWriteEnabled(false);
+         //Fading is dithered, so no blending is needed. Complement the pattern of the detail level fading out
+         pass->getFragmentProgramParameters()->setNamedConstant("ditherInvert", invisibleDist_ < visibleDist_ ? 1.f : 0.f);
 
       }  // for Pass
 
