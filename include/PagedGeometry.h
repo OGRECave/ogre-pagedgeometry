@@ -611,6 +611,15 @@ public:
 	void setVisibilityFlags(Ogre::uint32 flags) { visibilityFlags = flags; }
 	Ogre::uint32 getVisibilityFlags() const { return visibilityFlags; }
 
+	/**
+	\brief Renders and caches the impostor texture for an entity without loading a page.
+
+	This is useful to pre-warm the impostor cache before the first page containing the
+	entity is loaded, avoiding a generation hitch at runtime. The PagedGeometry instance
+	must have a camera / scene manager and a temp directory configured.
+	*/
+	void preloadImpostor(Ogre::Entity *entity);
+
 	/*
 	\brief Immediately loads visible geometry.
 	\param maxTime The maximum amount of time (in milliseconds) which cacheGeometry()

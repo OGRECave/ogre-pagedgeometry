@@ -19,6 +19,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 
 #include "PagedGeometry.h"
 #include "StaticBillboardSet.h"
+#include "ImpostorPage.h"
 
 using namespace Ogre;
 using namespace std;
@@ -98,6 +99,25 @@ PagedGeometry::~PagedGeometry()
 void PagedGeometry::setTempDir(Ogre::String dir)
 {
    tempdir = dir;
+}
+
+void PagedGeometry::preloadImpostor(Ogre::Entity *entity)
+{
+	if (!entity || !sceneMgr)
+		return;
+
+	// Nothing to do if a live page already created the texture
+	if (ImpostorTexture::getTexture(NULL, entity))
+		return;
+
+	// A temporary page provides the render nodes and the impostor resource group
+	// that ImpostorTexture expects, without touching any loaded page.
+	ImpostorPage page;
+	page.init(this, Ogre::Any());
+
+	ImpostorTexture *texture = ImpostorTexture::getTexture(&page, entity);
+	if (texture)
+		ImpostorTexture::removeTexture(texture);
 }
 
 void PagedGeometry::setPageLoader(PageLoader *loader)
