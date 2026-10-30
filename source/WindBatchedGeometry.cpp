@@ -382,7 +382,7 @@ void WindBatchedGeometry::WindSubBatch::build()
 				//-- Convert 16 bit to 32 bit indices --
 				std::vector<uint16> tmp(sourceIndexData->indexCount);
 				//Lock the input buffer
-				sourceIndexData->indexBuffer->readData(sourceIndexData->indexStart*sizeof(uint16), tmp.size(), tmp.data());
+				sourceIndexData->indexBuffer->readData(sourceIndexData->indexStart*sizeof(uint16), sourceIndexData->indexCount * sizeof(uint16), tmp.data());
 				uint16 *source = tmp.data();
 				uint16 *sourceEnd = source + sourceIndexData->indexCount;
 
