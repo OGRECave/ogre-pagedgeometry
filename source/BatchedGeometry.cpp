@@ -43,15 +43,15 @@ size_t BatchedGeometry::s_vertexType2Size[VET_UBYTE4_NORM + 1] = {0};
 //-------------------------------------------------------------------------------------
 ///
 BatchedGeometry::BatchedGeometry(Ogre::SceneManager *mgr, Ogre::SceneNode *rootSceneNode) :
+m_Built              (false),
+m_BoundsUndefined    (true),
+m_vecCenter          (Ogre::Vector3::ZERO),
+m_bWithinFarDistance (false),
 m_fRadius            (0.f),
 m_fMinDistanceSquared(0.f),
 m_pSceneMgr          (mgr),
 m_pSceneNode         (NULL),
-m_pParentSceneNode   (rootSceneNode),
-m_bWithinFarDistance (false),
-m_Built              (false),
-m_vecCenter          (Ogre::Vector3::ZERO),
-m_BoundsUndefined    (true)
+m_pParentSceneNode   (rootSceneNode)
 {
    assert(rootSceneNode);
    if(s_vertexType2Size[0] != 0)
@@ -442,13 +442,13 @@ Ogre::Vector3 BatchedGeometry::_convertToLocal(const Vector3 &globalVec) const
 //-----------------------------------------------------------------------------
 ///
 BatchedGeometry::SubBatch::SubBatch(BatchedGeometry *parent, SubEntity *ent) :
-m_pBestTechnique        (NULL),
 m_pVertexData           (0),
 m_pIndexData            (0),
 m_Built                 (false),
 m_RequireVertexColors   (false),
 m_pSubMesh              (0),
-m_pParentGeom           (parent)
+m_pParentGeom           (parent),
+m_pBestTechnique        (NULL)
 {
    assert(ent);
    m_pSubMesh = ent->getSubMesh();

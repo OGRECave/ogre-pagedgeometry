@@ -450,11 +450,11 @@ float PagedGeometry::getCustomParam(const Ogre::String &paramName, float default
 
 GeometryPageManager::GeometryPageManager(PagedGeometry *mainGeom)
 : mainGeom(mainGeom)
-	, cacheTimer(0) // Reset the cache timer
-	, scrollBuffer(NULL)
 	, geomGrid(NULL)
+	, scrollBuffer(NULL)
 	, geomGridX(0)
 	, geomGridZ(0)
+	, cacheTimer(0) // Reset the cache timer
 {
 	//Use default cache speeds
 	setCacheSpeed();
