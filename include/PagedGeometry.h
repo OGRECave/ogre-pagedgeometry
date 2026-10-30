@@ -600,6 +600,17 @@ public:
 	/// The PagedGeometry pixel shader for the given pass. The alpha test is skipped for opaque, non fading passes
 	const char* getFragmentProgramName(const Ogre::Pass *pass, bool fading) const;
 
+	/**
+	\brief Sets the visibility flags used by all geometry managed by this instance.
+
+	This is applied to grass entities, batched geometry and impostor billboard sets
+	created afterwards. Call it before adding detail levels. It is useful to exclude
+	vegetation from special render passes (reflections, minimaps, etc.).
+	Defaults to 0xFFFFFFFF.
+	*/
+	void setVisibilityFlags(Ogre::uint32 flags) { visibilityFlags = flags; }
+	Ogre::uint32 getVisibilityFlags() const { return visibilityFlags; }
+
 	/*
 	\brief Immediately loads visible geometry.
 	\param maxTime The maximum amount of time (in milliseconds) which cacheGeometry()
@@ -694,6 +705,8 @@ protected:
 	Ogre::SceneNode *rootNode;				//PagedGeometry's own "root" node
 	bool shadersEnabled;
 	Ogre::String shaderLanguage;
+
+	Ogre::uint32 visibilityFlags;	//Visibility flags applied to all managed geometry
 
 	bool geometryAllowedVisible;	//If set to false, all geometry managed by this PagedGeometry is hidden
 

@@ -47,6 +47,7 @@ unsigned long StaticBillboardSet::GUID             = 0;
 StaticBillboardSet::StaticBillboardSet(SceneManager *mgr, SceneNode *rootSceneNode, BillboardMethod method) :
 mVisible                (true),
 mFadeEnabled            (false),
+mVisibilityFlags        (0xFFFFFFFF),
 mpSceneMgr              (mgr),
 mpSceneNode             (NULL),
 mpEntity                (NULL),
@@ -228,6 +229,7 @@ void StaticBillboardSet::build()
    // Create an entity for the mesh
    mpEntity = mpSceneMgr->createEntity(mEntityName, mPtrMesh->getName(), mPtrMesh->getGroup());
    mpEntity->setCastShadows(false);
+   mpEntity->setVisibilityFlags(mVisibilityFlags);
    mpEntity->setMaterial(mFadeEnabled ? mPtrFadeMaterial : mPtrMaterial);
 
    // Add to scene

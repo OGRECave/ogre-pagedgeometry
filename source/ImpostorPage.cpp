@@ -222,6 +222,7 @@ m_pTexture  (NULL)
 	//Create billboard set
    PagedGeometry *pg = group->getParentPagedGeometry();
    bbset = new StaticBillboardSet(pg->getSceneManager(), pg->getSceneNode());
+	bbset->setVisibilityFlags(pg->getVisibilityFlags());
 	bbset->setTextureStacksAndSlices(IMPOSTOR_PITCH_ANGLES, IMPOSTOR_YAW_ANGLES);
 
 	setBillboardOrigin(ImpostorPage::getImpostorPivot());

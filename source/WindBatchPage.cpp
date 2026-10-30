@@ -49,6 +49,8 @@ void WindBatchPage::init(PagedGeometry *geom, const Any &data)
 #endif
 
    m_pBatchGeom   = new WindBatchedGeometry(geom->getSceneManager(), geom->getSceneNode(), geom);
+   m_pBatchGeom->setVisibilityFlags(geom->getVisibilityFlags());
+   m_pBatchGeom->setRenderQueueGroup(geom->getRenderQueue());
 	m_nLODLevel    = datacast; 
 	m_pPagedGeom   = geom;
 	m_bFadeEnabled = false;
