@@ -786,7 +786,7 @@ void GeometryPageManager::reloadGeometryPages(const Vector3 &center, Real radius
 				Real distX = (pos.x - center.x), distZ = (pos.z - center.z);
 				Real distSq = distX * distX + distZ * distZ;
 				
-				if (distSq <= radius) {
+				if (distSq <= radiusSq) {
 					_unloadPage(page);
 					loadedList.erase(page->_iter);
 				}
