@@ -27,6 +27,7 @@ namespace Forests {
 
 //-------------------------------------------------------------------------------------
 PagedGeometry::PagedGeometry(Camera* cam, const Real pageSize, Ogre::RenderQueueGroupID queue) :
+visibilityFlags(0xFFFFFFFF),
 m_nRenderQueue(queue)
 {
 	//Setup camera, scene manager, and scene node

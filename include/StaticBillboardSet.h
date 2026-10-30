@@ -176,6 +176,10 @@ namespace Forests
       void setMaterial(const Ogre::String &materialName, const Ogre::String &resourceGroup =
          Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME);
 
+      /// Sets the visibility flags applied to the generated billboard entity.
+      void setVisibilityFlags(Ogre::uint32 flags) { mVisibilityFlags = flags; }
+      Ogre::uint32 getVisibilityFlags() const { return mVisibilityFlags; }
+
       /**
       \brief Sets how many horizontal slices and vertical stacks the currently applied material is using.
       \param stacks The number of vertical stacks.
@@ -205,6 +209,7 @@ namespace Forests
 
       bool                    mVisible;                  ///<
       bool                    mFadeEnabled;              ///<
+      Ogre::uint32            mVisibilityFlags;          ///<
       Ogre::SceneManager*     mpSceneMgr;                ///<
       Ogre::SceneNode*        mpSceneNode;               ///<
       Ogre::Entity*           mpEntity;                  ///<

@@ -67,6 +67,8 @@ void BatchPage::init(PagedGeometry *geom_, const Any &data)
    m_pPagedGeom   = geom_;
 	m_pSceneMgr    = m_pPagedGeom->getSceneManager();
    m_pBatchGeom   = new BatchedGeometry(m_pSceneMgr, m_pPagedGeom->getSceneNode());
+   m_pBatchGeom->setVisibilityFlags(m_pPagedGeom->getVisibilityFlags());
+   m_pBatchGeom->setRenderQueueGroup(m_pPagedGeom->getRenderQueue());
    m_nLODLevel    = datacast;
 	m_bFadeEnabled = false;
 
