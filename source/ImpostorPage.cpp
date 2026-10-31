@@ -484,7 +484,10 @@ void ImpostorTexture::renderTextures(bool force)
 	//Calculate the filename hash used to uniquely identity this render
 	uint32 key = FastHash(entityKey.c_str(), entityKey.size(), 0);
 	String tempdir = this->group->getParentPagedGeometry()->getTempdir();
-	ResourceGroupManager::getSingleton().addResourceLocation(tempdir, "FileSystem", "Impostors");
+	//Adding the same location repeatedly creates duplicate archive entries; removing
+	//one of them then leaves dangling pointers in the resource group index.
+	if (!ResourceGroupManager::getSingleton().resourceLocationExists(tempdir, "Impostors"))
+		ResourceGroupManager::getSingleton().addResourceLocation(tempdir, "FileSystem", "Impostors");
 
 	String fileName = StringUtil::format("Impostor.%08X.%d", key, textureSize);
 
