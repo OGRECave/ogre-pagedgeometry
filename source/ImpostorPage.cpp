@@ -35,6 +35,7 @@ Ogre::uint  Forests::ImpostorPage::s_nImpostorResolution    = 128;
 Ogre::uint  Forests::ImpostorPage::s_nSelfInstances         = 0;
 Ogre::uint  Forests::ImpostorPage::s_nUpdateInstanceID      = 0;
 ColourValue Forests::ImpostorPage::s_clrImpostorBackground  = ColourValue(0.0f, 0.3f, 0.0f, 0.0f);
+String Forests::ImpostorPage::s_materialScheme             = "";
 BillboardOrigin Forests::ImpostorPage::s_impostorPivot      = BBO_CENTER;
 
 
@@ -429,6 +430,8 @@ void ImpostorTexture::renderTextures(bool force)
 	renderViewport->setClearEveryFrame(true);
 	renderViewport->setShadowsEnabled(false);
 	renderViewport->setBackgroundColour(ImpostorPage::getImpostorBackgroundColor());
+	if (!ImpostorPage::getMaterialScheme().empty())
+		renderViewport->setMaterialScheme(ImpostorPage::getMaterialScheme());
 	
 	//Set up scene node
 	SceneNode* node = sceneMgr->getSceneNode("ImpostorPage::renderNode");
