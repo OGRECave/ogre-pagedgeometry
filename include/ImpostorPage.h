@@ -163,6 +163,18 @@ namespace Forests
       static const Ogre::ColourValue& getImpostorBackgroundColor() { return s_clrImpostorBackground; }
 
       /**
+      \brief Sets the material scheme used while rendering the impostor textures.
+
+      This can be used to strip effects that must not be baked into the atlas,
+      for example fog or wind animation. The default is an empty string, which
+      leaves the viewport on the default material scheme.
+      */
+      static void setMaterialScheme(const Ogre::String &scheme) { s_materialScheme = scheme; }
+
+      ///
+      static const Ogre::String& getMaterialScheme() { return s_materialScheme; }
+
+      /**
       \brief Sets the billboard pivot point used when rendering camera-facing impostors
 
       This function can be used to set how impostors should rotate to face the camera. By default,
@@ -237,6 +249,7 @@ namespace Forests
       static Ogre::uint             s_nSelfInstances;          ///<
       static Ogre::uint             s_nUpdateInstanceID;       ///<
       static Ogre::ColourValue      s_clrImpostorBackground;   ///<
+      static Ogre::String           s_materialScheme;          ///<
       static Ogre::BillboardOrigin  s_impostorPivot;           ///<
    }; // end class ImpostorPage
 
